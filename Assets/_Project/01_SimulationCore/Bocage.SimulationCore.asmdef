@@ -1,0 +1,14 @@
+{
+    "name": "Bocage.SimulationCore",
+    "rootNamespace": "Bocage.SimulationCore",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

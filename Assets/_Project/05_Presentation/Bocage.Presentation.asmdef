@@ -1,0 +1,19 @@
+{
+    "name": "Bocage.Presentation",
+    "rootNamespace": "Bocage.Presentation",
+    "references": [
+        "Bocage.SimulationCore",
+        "Bocage.Sensors",
+        "Bocage.Decision",
+        "Bocage.Indicators"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

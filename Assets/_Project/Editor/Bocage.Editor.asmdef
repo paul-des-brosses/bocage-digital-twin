@@ -1,0 +1,22 @@
+{
+    "name": "Bocage.Editor",
+    "rootNamespace": "Bocage.Editor",
+    "references": [
+        "Bocage.SimulationCore",
+        "Bocage.Sensors",
+        "Bocage.Decision",
+        "Bocage.Indicators",
+        "Bocage.Presentation"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
