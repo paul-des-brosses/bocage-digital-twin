@@ -513,20 +513,29 @@ comparaisons hors-sujet.
 
 ---
 
-### 33. Workflow Git : utilisateur gère, Claude Code propose
+### 33. Workflow Git : Claude Code exécute (révisé)
 
 **Contexte** : qui exécute les commandes Git.
 
-**Décision** : l'utilisateur exécute toutes les commandes Git
-(commit, push, branche, merge). Claude Code propose des messages
-Conventional Commits aux moments opportuns.
+**Décision (révisée le 2026-04-25)** : Claude Code exécute lui-même
+`git add`, `git commit`, `git push` au format Conventional Commits,
+aux moments opportuns. L'utilisateur garde un pouvoir d'intervention
+permanent (stop, amend, revert, no-push). Les opérations risquées
+(force push, `reset --hard`, rewrite d'historique poussé) restent à
+valider explicitement.
 
-**Raison** : l'utilisateur garde le contrôle de l'historique Git
-(important en portfolio public), Claude Code reste cantonné à la
-production technique.
+**Décision initiale (rejetée le 2026-04-25)** : l'utilisateur exécute
+toutes les commandes Git, Claude Code propose seulement les messages.
+Constat à l'usage : friction conversationnelle élevée, chaque palier
+nécessitait un copier-coller manuel.
 
-**Alternative écartée** : Claude Code commit directement — perte de
-contrôle, risques de bruit dans l'historique.
+**Raison** : fluidité de la session de production. L'historique
+reste propre tant que les messages restent rigoureux et que les
+moments de commit sont bien choisis. Le pouvoir d'intervention
+permanent suffit pour rattraper toute dérive.
+
+**Alternative écartée** : revenir à la décision initiale au cas par
+cas — incohérent et inutilement coûteux.
 
 ---
 

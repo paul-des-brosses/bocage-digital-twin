@@ -82,9 +82,14 @@ Quand Claude Code demande une action manuelle, il doit :
 
 ## 4. Workflow Git
 
-L'utilisateur gère seul toutes les commandes Git. Claude Code ne fait
-**aucun** commit, push, branch ou merge. Claude Code propose des messages
-de commit au format Conventional Commits aux moments opportuns :
+**Révisé le 2026-04-25** : Claude Code exécute lui-même les commandes
+Git (`git add`, `git commit`, `git push`) aux moments opportuns, au
+format Conventional Commits. L'utilisateur garde un pouvoir
+d'intervention permanent (stop, amend, revert, no-push). Les
+opérations risquées (force push, `reset --hard`, rewrite d'historique
+poussé) restent à valider explicitement avec lui.
+
+Moments opportuns pour un commit :
 
 - Fin de palier de la roadmap.
 - Refactor cohérent terminé.
