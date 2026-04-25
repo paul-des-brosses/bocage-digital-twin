@@ -30,7 +30,16 @@ public static class CIBuilder
             return;
         }
 
+        // Force WebGL build flags from code so the CI build does not depend on
+        // the active Build Profile (Build Profile overrides are ignored when
+        // BuildPipeline.BuildPlayer is invoked without setting the profile
+        // active). Brotli + decompression fallback is required for GitHub
+        // Pages, which cannot send the Content-Encoding: br header.
+        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
+        PlayerSettings.WebGL.decompressionFallback = true;
+
         Console.WriteLine($"[CIBuilder] Building WebGL: {scenes.Length} scene(s) -> {buildPath}");
+        Console.WriteLine($"[CIBuilder] compressionFormat={PlayerSettings.WebGL.compressionFormat} decompressionFallback={PlayerSettings.WebGL.decompressionFallback}");
 
         BuildReport report = BuildPipeline.BuildPlayer(
             scenes,

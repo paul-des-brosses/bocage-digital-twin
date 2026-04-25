@@ -264,3 +264,60 @@ build, scène cassée visuellement.
 Aucun magenta toléré.
 
 **Notes terrain** : (à remplir si rencontré)
+
+---
+
+## 12. Brotli incompatible avec GitHub Pages (host non-configurable)
+
+**Cause** : Unity WebGL avec compression Brotli active produit des
+fichiers `.br` (loader, framework, wasm, data). Pour qu'ils
+fonctionnent côté navigateur, le serveur doit envoyer le header
+`Content-Encoding: br` à la requête. **GitHub Pages n'envoie pas ce
+header** pour les `.br` et ne permet pas de configurer les headers
+HTTP. Résultat : le navigateur télécharge le `.br` brut, tente de le
+parser comme JavaScript, et échoue avec une `SyntaxError: Invalid or
+unexpected token` — la page reste bloquée sur le splash Unity avec un
+encadré rouge.
+
+**Solution**
+
+- Activer **Decompression Fallback** dans les Player Settings WebGL
+  (Web Build Profile > Player Settings > Publishing Settings).
+- Unity ajoute alors un petit décodeur Brotli en JS dans le loader,
+  qui décompresse les `.br` côté client sans dépendre des headers
+  serveur.
+- Coût : ~1.5 MB ajouté au build (acceptable, on reste sous 30 MB).
+- Alternative non retenue : passer à compression Gzip — GitHub Pages
+  sait servir les `.gz` correctement, mais Brotli compresse mieux et
+  on garde l'option DF activée pour ne pas dépendre de la config
+  serveur.
+
+**Impact si non résolu** : la démo portfolio est inaccessible sur
+GitHub Pages (page bloquée sur splash + erreur). Travail à zéro
+côté UX.
+
+**Comment vérifier** : ouvrir l'URL Pages déployée, F12 → Console →
+chercher l'erreur `Unable to parse Build/...framework.js.br`. Si
+présente, Decompression Fallback est désactivé.
+
+**Notes terrain** : rencontré le 2026-04-25. Première tentative de
+fix (cocher la case Decompression Fallback dans le Build Profile
+`Web.asset`) **inopérante en CI** : Unity 6 sauvegarde l'override
+dans `Assets/Settings/Build Profiles/Web.asset`, mais
+`BuildPipeline.BuildPlayer(...)` appelé sans activer le profil
+utilise les `PlayerSettings` globaux (`ProjectSettings.asset`), où
+`webGLDecompressionFallback` était toujours à 0. Build CI sortait
+toujours sans fallback, page Pages bloquée sur splash.
+
+Résolu le 2026-04-26 par :
+1. `CIBuilder.BuildWebGL` force désormais en code
+   `PlayerSettings.WebGL.decompressionFallback = true` et
+   `compressionFormat = Brotli` avant le `BuildPlayer`. Garantie
+   indépendante de la config locale.
+2. Alignement de `ProjectSettings.asset`
+   (`webGLDecompressionFallback: 0 → 1`) pour que les builds locaux
+   suivent la même règle.
+
+Leçon : un override de Build Profile Unity 6 ne s'applique **pas**
+aux appels `BuildPipeline.BuildPlayer` sans activation explicite du
+profil. Pour le CI, toujours forcer les flags critiques en code.
