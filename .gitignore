@@ -6,6 +6,10 @@
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+[Aa]ssets/[Aa]ssetStoreTools*
+[Aa]ssets/[Aa]ssetStoreTools*.meta
 *.csproj
 *.unityproj
 *.sln
@@ -20,11 +24,16 @@
 *.mdb
 *.opendb
 *.VC.db
+*.idb
+*.iobj
+*.ipdb
+*.ipch
 sysinfo.txt
 *.apk
 *.aab
 *.unitypackage
 *.app
+crashlytics-build.properties
 
 # OS
 .DS_Store
@@ -34,6 +43,9 @@ desktop.ini
 # Editor
 .vscode/
 .idea/
+
+# Claude Code (local agent state)
+.claude/
 
 # Project specific
 /Builds/
