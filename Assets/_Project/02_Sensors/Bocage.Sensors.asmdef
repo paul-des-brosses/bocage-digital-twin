@@ -1,0 +1,16 @@
+{
+    "name": "Bocage.Sensors",
+    "rootNamespace": "Bocage.Sensors",
+    "references": [
+        "Bocage.SimulationCore"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
