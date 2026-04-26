@@ -18,11 +18,15 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `hedge_low_01.png` | Nanobanana | à générer | Haie basse, variante 1. |
-| `hedge_low_02.png` | Nanobanana | à générer | Haie basse, variante 2 (variation visuelle). |
-| `hedge_high_pollard_01.png` | Nanobanana | à générer | Haie haute avec arbre têtard, variante 1. |
-| `hedge_high_pollard_02.png` | Nanobanana | à générer | Haie haute avec arbre têtard, variante 2. |
-| `hedge_thin_sparse.png` | Nanobanana | à générer | Haie clairsemée, pour variation visuelle (état dégradé). |
+| `hedge_low_01.png` | Nanobanana | généré (pipeline en attente) | Haie basse, variante 1. Source détourée prête. |
+| `hedge_low_02.png` | Nanobanana | généré (pipeline en attente) | Haie basse, variante 2 (variation visuelle). Source détourée prête. |
+| `hedge_low_03.png` | Nanobanana | généré (pipeline en attente) | **Variante DA ajoutée** (vs liste initiale qui n'en prévoyait que 2) pour enrichir la diversité visuelle quand le sprite sera tilé en scène. |
+| `hedge_high_pollard_01.png` | Nanobanana | généré (pipeline en attente) | Haie haute avec arbre têtard, variante 1. Source détourée prête. |
+| `hedge_high_pollard_02.png` | Nanobanana | généré (pipeline en attente) | Haie haute avec arbre têtard, variante 2. Source détourée prête. |
+| `hedge_high_no_tree.png` | Nanobanana | généré (pipeline en attente) | **Sprite ajouté DA** (non prévu liste initiale). Comble le linéaire de haie haute entre deux pollards (en bocage réel, pollards espacés tous les 8-15 m — éviter l'effet « pollard tous les 2 m » irréaliste lors du tiling). |
+| `hedge_thin_sparse_01.png` | Nanobanana | généré (pipeline en attente) | Haie en état **modérément dégradé** (haie encore continue, ~30 % moins dense que la saine, 1-2 troncs nus visibles), variante 1. Générée avec `hedge_low_01` comme seconde image de référence ip-adapter pour préserver la cohérence « même haie en moins bon état ». **Note sémantique** : malgré le nom de fichier `sparse`, ce n'est pas une dégradation extrême (premiers essais générant 3-5 fragments séparés ont été rejetés et archivés ailleurs). |
+| `hedge_thin_sparse_02.png` | Nanobanana | généré (pipeline en attente) | Idem variante 2 (alignée sur `hedge_low_02`). |
+| `hedge_thin_sparse_03.png` | Nanobanana | généré (pipeline en attente) | Idem variante 3 (alignée sur `hedge_low_03`). |
 
 ### Foreground
 
@@ -188,16 +192,30 @@ caractères latins étendus (accents français, €).
 Définie dans `tools/palette_perche.json`. Statut : **`v0.1-provisional`**
 au 2026-04-26.
 
-Composition : 24 couleurs extraites par k-means sur l'image-ancre
-(scène crépusculaire dominée par dusk-blues, olive et bronze) + 6
-couleurs d'accent ajoutées manuellement pour couvrir les gaps connus
-(crème ventre fauna, olive vif haies saines, ocre chaud accents
-soleil, bleu-gris nuage, etc.). Total 30 couleurs.
+Composition actuelle : 24 couleurs extraites par k-means sur
+l'image-ancre (scène crépusculaire dominée par dusk-blues, olive et
+bronze) + 6 couleurs d'accent ajoutées manuellement pour couvrir les
+gaps connus (crème ventre fauna, olive vif haies saines, ocre chaud
+accents soleil, bleu-gris nuage, etc.). Total 30 couleurs.
 
-Protocole de validation : sera figée comme `v1.0` une fois validée
-sur 3 sprites stylistiquement différents — (1) hirondelle ✅, (2)
-`hedge_low_01` ⏳, (3) `pond.png` ⏳. Un éventuel ton bleu-eau
-supplémentaire sera évalué au stade `pond.png`.
+**Stratégie de promotion révisée par DA (2026-04-26)** : la validation
+sprite-par-sprite (qui prévoyait de promouvoir à `v1.0` après hirondelle
++ hedge + pond) est abandonnée. La palette `v0.1-provisional` ne sera
+pas patchée incrémentalement. Elle sera **reconstruite depuis le corpus
+complet** une fois tous les sprites bruts détourés disponibles
+(midground + foreground + faune + capteurs + background). À ce moment,
+la nouvelle palette `v1.0` sera dérivée d'une extraction k-means sur
+l'ensemble du corpus, en gardant la `v0.1-provisional` comme point de
+départ pour les tons sombres dusk.
+
+Tant que cette reconstruction n'a pas eu lieu, **le pipeline Python ne
+tourne pas** sur les sprites au-delà de l'hirondelle. Les sources
+détourées s'accumulent dans `Sprites/Source/` en attendant le feu vert
+DA final.
+
+Sprite déjà passé sur la palette `v0.1-provisional` : `swallow.png`
+(intégré). Sera potentiellement re-quantizé une fois la `v1.0`
+disponible si la migration est jugée nécessaire.
 
 ---
 
