@@ -36,7 +36,7 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `bird_swallow_flight.png` | Nanobanana | à générer | Hirondelle en vol, sprite simple animable. |
+| `bird_swallow_flight.png` | Nanobanana | intégré | Hirondelle en vol, sprite simple animable. Validation DA 2026-04-26 (option 1 — palette `v0.1-provisional` retenue sans rééquilibrage). Sprite final : `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/swallow.png` (256×121). |
 | `bird_owl_flight.png` | Nanobanana | à générer | Chouette chevêche en vol. |
 | `bird_harrier_flight.png` | Nanobanana | à générer | Busard en vol. |
 | `heron_static.png` | Nanobanana | à générer | Héron au bord de la mare, statique. |
@@ -165,25 +165,39 @@ caractères latins étendus (accents français, €).
 
 ### Étapes pour chaque sprite
 
-1. Génération sur Nanobanana avec ip-adapter pointant sur
-   `style_reference.png`.
-2. Sortie brute archivée dans
-   `Assets/_Project/05_Presentation/Scene/Sprites/Source/`.
-3. Post-traitement Python :
-   - Palette quantization sur la palette Perche (à définir, ~16-24
-     couleurs).
-   - Alpha cleanup (suppression des halos blancs résiduels).
-   - Normalisation des dimensions selon la catégorie (background plus
-     large que foreground).
-4. Export final dans le sous-dossier thématique
+1. Génération sur Nanobanana avec ip-adapter pointant sur l'image-ancre
+   stylistique (`Sprites/Source/01_anchor_full_scene.png`).
+2. Sortie brute archivée dans `Sprites/Source/<name>_v<n>.png`
+   (hors `Assets/`, racine du repo, pour ne pas alourdir l'import
+   Unity ni le hash de cache CI).
+3. Détourage manuel par l'utilisateur (Photoshop / GIMP) ; sortie
+   archivée à côté avec suffixe `_detoured.png`.
+4. Post-traitement automatique via `python tools/postprocess.py
+   <source>_detoured.png <destination>.png` :
+   - Alpha cleanup (snap < 30 → 0, > 230 → 255, conserve les bords
+     anti-aliasés).
+   - Palette quantization sur la palette Perche (`tools/palette_perche.json`).
+   - Crop au bounding box alpha + resize au longest-side cible
+     (`--max-size`, défaut 512 px).
+5. Export dans le sous-dossier thématique
    (`Background/`, `Midground/`, `Foreground/`, `Fauna/`, `Sensors/`).
-5. Validation visuelle utilisateur avant intégration.
+6. Validation visuelle DA avant intégration.
 
 ### Palette Perche
 
-Définie dans `Assets/_Project/Data/Palette/`. Inspirée de la palette
-ocre-brun-vert sourd des colombages percherons. À fixer en début
-d'étape 9 et à appliquer cohéremment via le post-traitement Python.
+Définie dans `tools/palette_perche.json`. Statut : **`v0.1-provisional`**
+au 2026-04-26.
+
+Composition : 24 couleurs extraites par k-means sur l'image-ancre
+(scène crépusculaire dominée par dusk-blues, olive et bronze) + 6
+couleurs d'accent ajoutées manuellement pour couvrir les gaps connus
+(crème ventre fauna, olive vif haies saines, ocre chaud accents
+soleil, bleu-gris nuage, etc.). Total 30 couleurs.
+
+Protocole de validation : sera figée comme `v1.0` une fois validée
+sur 3 sprites stylistiquement différents — (1) hirondelle ✅, (2)
+`hedge_low_01` ⏳, (3) `pond.png` ⏳. Un éventuel ton bleu-eau
+supplémentaire sera évalué au stade `pond.png`.
 
 ---
 
