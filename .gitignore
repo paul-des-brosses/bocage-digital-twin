@@ -10,6 +10,12 @@
 [Rr]ecordings/
 [Aa]ssets/[Aa]ssetStoreTools*
 [Aa]ssets/[Aa]ssetStoreTools*.meta
+
+# Asset .meta files MUST be tracked alongside their assets (otherwise GUIDs
+# diverge between developers and CI, breaking references). This negation
+# rule is defensive: even if some pattern above accidentally matches a
+# .meta inside Assets/, this line re-includes it.
+!/[Aa]ssets/**/*.meta
 *.csproj
 *.unityproj
 *.sln
