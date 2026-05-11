@@ -32,16 +32,16 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `pollard_ash_main.png` | Nanobanana | à générer | Arbre têtard de frêne, élément iconique, premier plan. |
-| `pond.png` | Nanobanana | à générer | Mare avec bords, sprite avec zone d'eau modulable par shader. |
-| `grass_border.png` | Nanobanana | à générer | Bordure de prairie premier plan. |
+| `pollard_ash_main.png` | Nanobanana | généré (pipeline en attente) | Arbre têtard de frêne, élément iconique, premier plan. Source détourée prête. **Note résolution** : sortie en 1024×651, sensiblement plus petite que les autres sprites foreground (~2.5-2.8 K de large). Pas bloquant — `postprocess.py` resize au longest-side cible — mais à confirmer côté DA si le détail est suffisant à l'échelle scène finale. |
+| `pond.png` | Nanobanana | généré (pipeline en attente) | Mare avec bords, sprite avec zone d'eau modulable par shader. Source détourée prête (2816×1536, alpha 32 bits). |
+| `grass_border.png` | Nanobanana | généré (pipeline en attente) | Bordure de prairie premier plan. Source détourée prête (2568×1632, alpha 32 bits). |
 
 ### Fauna
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
 | `bird_swallow_flight.png` | Nanobanana | intégré | Hirondelle en vol, sprite simple animable. Validation DA 2026-04-26 (option 1 — palette `v0.1-provisional` retenue sans rééquilibrage). Sprite final : `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/swallow.png` (256×121). |
-| `bird_owl_flight.png` | Nanobanana | à générer | Chouette chevêche en vol. |
+| `bird_owl_flight.png` | Nanobanana | généré (pipeline en attente) | Chouette chevêche en vol. Source détourée prête (2848×1490, alpha 32 bits). |
 | `bird_harrier_flight.png` | Nanobanana | à générer | Busard en vol. |
 | `heron_static.png` | Nanobanana | à générer | Héron au bord de la mare, statique. |
 | `amphibian_small.png` | Nanobanana | à générer | Sprite amphibien (grenouille / triton), optionnel — coupable en cas de dépassement. |
