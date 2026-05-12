@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 66fff2bcd9fc7704e8efb8a00dc29c5e
+guid: 2b2b12c08f768344d8bc4c06dc0d7a2d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2903121822691053484
-    second: swallow_0
+      213: 403363450406317551
+    second: weather_station_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,30 +96,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: swallow_0
+      name: weather_station_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 256
-        height: 121
+        width: 74
+        height: 256
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 450b0da651a06b7d0800000000000000
-      internalID: -2903121822691053484
+      spriteID: fed28d8cbe8099500800000000000000
+      internalID: 403363450406317551
       vertices: []
       indices: 
       edges: []
@@ -148,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      swallow_0: -2903121822691053484
+      weather_station_0: 403363450406317551
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

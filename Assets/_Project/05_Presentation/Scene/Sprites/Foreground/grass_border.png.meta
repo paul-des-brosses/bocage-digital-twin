@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 66fff2bcd9fc7704e8efb8a00dc29c5e
+guid: 070f4fea6695cb240a83b3917421e94a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2903121822691053484
-    second: swallow_0
+      213: 6325905927082861420
+    second: grass_border_0
+  - first:
+      213: 465450655817492444
+    second: grass_border_1
+  - first:
+      213: -6760790794932688726
+    second: grass_border_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,30 +102,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: swallow_0
+      name: grass_border_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 256
-        height: 121
+        width: 768
+        height: 353
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +121,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 450b0da651a06b7d0800000000000000
-      internalID: -2903121822691053484
+      spriteID: c63ef42bce12ac750800000000000000
+      internalID: 6325905927082861420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: grass_border_1
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 343
+        width: 21
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd76978c7ec957600800000000000000
+      internalID: 465450655817492444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: grass_border_2
+      rect:
+        serializedVersion: 2
+        x: 519
+        y: 337
+        width: 26
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa86e4b9798dc22a0800000000000000
+      internalID: -6760790794932688726
       vertices: []
       indices: 
       edges: []
@@ -148,7 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      swallow_0: -2903121822691053484
+      grass_border_0: 6325905927082861420
+      grass_border_1: 465450655817492444
+      grass_border_2: -6760790794932688726
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
