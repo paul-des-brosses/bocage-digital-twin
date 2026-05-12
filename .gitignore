@@ -56,3 +56,8 @@ desktop.ini
 # Project specific
 /Builds/
 *.log
+
+# Sprite post-processing test artifacts (not part of the final pipeline
+# output — only inspected locally for DA validation between palette
+# changes and bulk runs).
+/Sprites/Source/_test_*/
