@@ -12,49 +12,49 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `hills_perche.png` | Nanobanana | généré (pipeline en attente) | Paysage de collines vallonnées du Perche, 5 couches d'atmospheric perspective. Source détourée prête (3168×1344, alpha 32 bits). **Surveillance quantization** : préserver l'ordre tonal des crêtes (plus pâle au lointain, plus saturé au proche), une inversion ferait s'effondrer la profondeur. |
+| `hills_perche.png` | Nanobanana | post-traité | Paysage de collines vallonnées du Perche, 5 couches d'atmospheric perspective. Source détourée prête (3168×1344, alpha 32 bits). **Surveillance quantization** : préserver l'ordre tonal des crêtes (plus pâle au lointain, plus saturé au proche), une inversion ferait s'effondrer la profondeur. |
 
 ### Midground
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `hedge_low_01.png` | Nanobanana | généré (pipeline en attente) | Haie basse, variante 1. Source détourée prête. |
-| `hedge_low_02.png` | Nanobanana | généré (pipeline en attente) | Haie basse, variante 2 (variation visuelle). Source détourée prête. |
-| `hedge_low_03.png` | Nanobanana | généré (pipeline en attente) | **Variante DA ajoutée** (vs liste initiale qui n'en prévoyait que 2) pour enrichir la diversité visuelle quand le sprite sera tilé en scène. |
-| `hedge_high_pollard_01.png` | Nanobanana | généré (pipeline en attente) | Haie haute avec arbre têtard, variante 1. Source détourée prête. |
-| `hedge_high_pollard_02.png` | Nanobanana | généré (pipeline en attente) | Haie haute avec arbre têtard, variante 2. Source détourée prête. |
-| `hedge_high_no_tree.png` | Nanobanana | généré (pipeline en attente) | **Sprite ajouté DA** (non prévu liste initiale). Comble le linéaire de haie haute entre deux pollards (en bocage réel, pollards espacés tous les 8-15 m — éviter l'effet « pollard tous les 2 m » irréaliste lors du tiling). |
-| `hedge_thin_sparse_01.png` | Nanobanana | généré (pipeline en attente) | Haie en état **modérément dégradé** (haie encore continue, ~30 % moins dense que la saine, 1-2 troncs nus visibles), variante 1. Générée avec `hedge_low_01` comme seconde image de référence ip-adapter pour préserver la cohérence « même haie en moins bon état ». **Note sémantique** : malgré le nom de fichier `sparse`, ce n'est pas une dégradation extrême (premiers essais générant 3-5 fragments séparés ont été rejetés et archivés ailleurs). |
-| `hedge_thin_sparse_02.png` | Nanobanana | généré (pipeline en attente) | Idem variante 2 (alignée sur `hedge_low_02`). |
-| `hedge_thin_sparse_03.png` | Nanobanana | généré (pipeline en attente) | Idem variante 3 (alignée sur `hedge_low_03`). |
+| `hedge_low_01.png` | Nanobanana | post-traité | Haie basse, variante 1. Source détourée prête. |
+| `hedge_low_02.png` | Nanobanana | post-traité | Haie basse, variante 2 (variation visuelle). Source détourée prête. |
+| `hedge_low_03.png` | Nanobanana | post-traité | **Variante DA ajoutée** (vs liste initiale qui n'en prévoyait que 2) pour enrichir la diversité visuelle quand le sprite sera tilé en scène. |
+| `hedge_high_pollard_01.png` | Nanobanana | post-traité | Haie haute avec arbre têtard, variante 1. Source détourée prête. |
+| `hedge_high_pollard_02.png` | Nanobanana | post-traité | Haie haute avec arbre têtard, variante 2. Source détourée prête. |
+| `hedge_high_no_tree.png` | Nanobanana | post-traité | **Sprite ajouté DA** (non prévu liste initiale). Comble le linéaire de haie haute entre deux pollards (en bocage réel, pollards espacés tous les 8-15 m — éviter l'effet « pollard tous les 2 m » irréaliste lors du tiling). |
+| `hedge_thin_sparse_01.png` | Nanobanana | post-traité | Haie en état **modérément dégradé** (haie encore continue, ~30 % moins dense que la saine, 1-2 troncs nus visibles), variante 1. Générée avec `hedge_low_01` comme seconde image de référence ip-adapter pour préserver la cohérence « même haie en moins bon état ». **Note sémantique** : malgré le nom de fichier `sparse`, ce n'est pas une dégradation extrême (premiers essais générant 3-5 fragments séparés ont été rejetés et archivés ailleurs). |
+| `hedge_thin_sparse_02.png` | Nanobanana | post-traité | Idem variante 2 (alignée sur `hedge_low_02`). |
+| `hedge_thin_sparse_03.png` | Nanobanana | post-traité | Idem variante 3 (alignée sur `hedge_low_03`). |
 
 ### Foreground
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `pollard_ash_main.png` | Nanobanana | généré (pipeline en attente) | Arbre têtard de frêne, élément iconique, premier plan. Source détourée prête. **Note résolution** : sortie en 1024×651, sensiblement plus petite que les autres sprites foreground (~2.5-2.8 K de large). Pas bloquant — `postprocess.py` resize au longest-side cible — mais à confirmer côté DA si le détail est suffisant à l'échelle scène finale. |
-| `pond.png` | Nanobanana | généré (pipeline en attente) | Mare avec bords, sprite avec zone d'eau modulable par shader. Source détourée prête (2816×1536, alpha 32 bits). |
-| `grass_border.png` | Nanobanana | généré (pipeline en attente) | Bordure de prairie premier plan. Source détourée prête (2568×1632, alpha 32 bits). |
+| `pollard_ash_main.png` | Nanobanana | post-traité | Arbre têtard de frêne, élément iconique, premier plan. Source détourée prête. **Note résolution** : sortie en 1024×651, sensiblement plus petite que les autres sprites foreground (~2.5-2.8 K de large). Pas bloquant — `postprocess.py` resize au longest-side cible — mais à confirmer côté DA si le détail est suffisant à l'échelle scène finale. |
+| `pond.png` | Nanobanana | post-traité | Mare avec bords, sprite avec zone d'eau modulable par shader. Source détourée prête (2816×1536, alpha 32 bits). |
+| `grass_border.png` | Nanobanana | post-traité | Bordure de prairie premier plan. Source détourée prête (2568×1632, alpha 32 bits). |
 
 ### Fauna
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
 | `bird_swallow_flight.png` | Nanobanana | intégré | Hirondelle en vol, sprite simple animable. Validation DA 2026-04-26 (option 1 — palette `v0.1-provisional` retenue sans rééquilibrage). Sprite final : `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/swallow.png` (256×121). |
-| `bird_owl_flight.png` | Nanobanana | généré (pipeline en attente) | Chouette chevêche en vol. Source détourée prête (2848×1490, alpha 32 bits). |
-| `bird_harrier_flight.png` | Nanobanana | généré (pipeline en attente) | Busard Saint-Martin en glide. Source détourée prête (2568×1632, alpha 32 bits). Introduit un gris-bleu pâle dans la palette corpus. |
-| `heron_static.png` | Nanobanana | généré (pipeline en attente) | Héron cendré au bord de la mare, pose de chasse statique. Source détourée prête (2568×1632, alpha 32 bits). Introduit un gris-bleu froid moyen et un ocre chaud (pattes) dans la palette corpus. |
+| `bird_owl_flight.png` | Nanobanana | post-traité | Chouette chevêche en vol. Source détourée prête (2848×1490, alpha 32 bits). |
+| `bird_harrier_flight.png` | Nanobanana | post-traité | Busard Saint-Martin en glide. Source détourée prête (2568×1632, alpha 32 bits). Introduit un gris-bleu pâle dans la palette corpus. |
+| `heron_static.png` | Nanobanana | post-traité | Héron cendré au bord de la mare, pose de chasse statique. Source détourée prête (2568×1632, alpha 32 bits). Introduit un gris-bleu froid moyen et un ocre chaud (pattes) dans la palette corpus. |
 | `amphibian_small.png` | Nanobanana | **non produit, écarté** | Sacrifié comme prévu (statut optionnel/coupable). La lecture biodiversité est portée par les 4 autres sprites faune (hirondelle, chouette, busard, héron). Décision DA 2026-05-12. |
 
 ### Sensors (visibles dans la scène)
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `weather_station.png` | Nanobanana | généré (pipeline en attente) | Station météo, mât avec capteurs. Source détourée prête (2568×1632, alpha 32 bits). Bouclier solaire en blanc cassé pâle. |
-| `piezometer.png` | Nanobanana | généré (pipeline en attente) | Piézomètre, tube de mesure de nappe. Source détourée prête (2572×1632, alpha 32 bits). **Surveillance quantization** : léger modelé 3D résiduel sur le tube ; la quantization doit l'écraser. Si elle ne le fait pas et que le modelé persiste de façon visible, retouche manuelle. |
-| `acoustic_sensor.png` | Nanobanana | généré (pipeline en attente) | Capteur acoustique, micro directionnel. Source détourée prête (1023×651, alpha 32 bits). **Note résolution** : sortie en 1023×651, sensiblement plus petite que les autres capteurs (~2.5 K de large). Cf. note `pollard_ash_main`. |
-| `photo_trap.png` | Nanobanana | généré (pipeline en attente) | Piège photo, **sprite standalone sans support** (écart vs. spec initiale « boîtier sur tronc »). Choix DA assumé pour : (a) éviter conflit visuel avec troncs existants, (b) flexibilité de placement à l'intégration, (c) cohérence avec les autres capteurs standalone. À l'intégration Unity, positionner sur un élément porteur (tronc de pollard ou piquet implicite). Source détourée prête (2043×1644 après crop manuel, alpha 32 bits). Rendu en perspective axonométrique 3/4 face (3 tons de brun), unique parmi les capteurs en silhouette frontale. **Surveillance quantization** : la palette devrait réduire la boîte à 2 tons (base + ombre) pour atténuer l'effet 3D. |
-| `eddy_covariance_tower.png` | Nanobanana | **généré, détourage à refaire** | Tour eddy covariance, treillis ouvert. Source détourée présente (2572×1632, alpha 32 bits) mais **contamination magenta résiduelle dans le treillis** (~20% des pixels opaques en halos rose-magenta `#9D5083`-ish, soit ~26 700 px sur 133 K). Le détourage manuel n'a pas utilisé une tolérance baguette assez élevée (cible 70-80) pour absorber l'anti-aliasing du treillis. Action DA : retourer le détourage avant intégration. La tour est exclue de l'extraction palette `v1.0` jusqu'à correction (sinon le centroïde rose-magenta pollue la palette). |
+| `weather_station.png` | Nanobanana | post-traité | Station météo, mât avec capteurs. Source détourée prête (2568×1632, alpha 32 bits). Bouclier solaire en blanc cassé pâle. |
+| `piezometer.png` | Nanobanana | post-traité | Piézomètre, tube de mesure de nappe. Source détourée prête (2572×1632, alpha 32 bits). **Surveillance quantization** : léger modelé 3D résiduel sur le tube ; la quantization doit l'écraser. Si elle ne le fait pas et que le modelé persiste de façon visible, retouche manuelle. |
+| `acoustic_sensor.png` | Nanobanana | post-traité | Capteur acoustique, micro directionnel. Source détourée prête (1023×651, alpha 32 bits). **Note résolution** : sortie en 1023×651, sensiblement plus petite que les autres capteurs (~2.5 K de large). Cf. note `pollard_ash_main`. |
+| `photo_trap.png` | Nanobanana | post-traité | Piège photo, **sprite standalone sans support** (écart vs. spec initiale « boîtier sur tronc »). Choix DA assumé pour : (a) éviter conflit visuel avec troncs existants, (b) flexibilité de placement à l'intégration, (c) cohérence avec les autres capteurs standalone. À l'intégration Unity, positionner sur un élément porteur (tronc de pollard ou piquet implicite). Source détourée prête (2043×1644 après crop manuel, alpha 32 bits). Rendu en perspective axonométrique 3/4 face (3 tons de brun), unique parmi les capteurs en silhouette frontale. **Surveillance quantization** : la palette devrait réduire la boîte à 2 tons (base + ombre) pour atténuer l'effet 3D. |
+| `eddy_covariance_tower.png` | Nanobanana | **post-traité (MVP : détourage à refaire en v2)** | Tour eddy covariance, treillis ouvert. Source détourée présente (2572×1632, alpha 32 bits) mais **contamination magenta résiduelle dans le treillis** (~20% des pixels opaques en halos rose-magenta `#9D5083`-ish, soit ~26 700 px sur 133 K). Le détourage manuel n'a pas utilisé une tolérance baguette assez élevée (cible 70-80). **Décision DA 2026-05-12** : accepter en l'état pour le MVP — la quantization écrase les halos sur un gris-rosé palette qui reste lisible. Re-détourage planifié post-MVP. La tour reste exclue de l'extraction palette `v1.0` (sinon le centroïde rose-magenta pollue la palette). |
 
 ---
 
@@ -193,6 +193,11 @@ caractères latins étendus (accents français, €).
      (`--max-size`, défaut 512 px).
 5. Export dans le sous-dossier thématique
    (`Background/`, `Midground/`, `Foreground/`, `Fauna/`, `Sensors/`).
+   Pour un run multi-sprites, utiliser `python tools/bulk_quantize.py`
+   qui orchestre l'appel à `postprocess.py` pour chaque sprite avec sa
+   destination canonique et son `--max-size` catégoriel. Le mapping
+   complet (source → destination → taille cible) est la source de
+   vérité dans la table `SPRITES` de ce script.
 6. Validation visuelle DA avant intégration.
 
 ### Palette Perche
@@ -225,25 +230,23 @@ python tools/extract_palette.py --sources-glob "Sprites/Source/*_detoured.png" \
    détourage à tolérance baguette insuffisante. À ré-intégrer dans la
    palette après re-détourage côté DA.
 
-**Concerns connus à arbitrer en validation DA** :
+**Arbitrages DA 2026-05-12 (acceptés pour le MVP)** :
 
 - **Joncs autour de la mare en vert saturé** (`pond_v1_detoured.png`) :
-  ~58 K pixels en `#347C2F`-ish. La spec DA demande à ce que la
-  quantization les ramène à l'olive sourd des haies, mais ils sont
-  numériquement assez denses pour former leur propre centroïde
-  (~954 px dans la palette finale, soit la couleur la moins
-  populée mais quand même présente). Trois options DA :
-  (a) accepter — les joncs restent dans leur teinte saturée ;
-  (b) supprimer manuellement la couleur du JSON et re-quantizer — les
-  joncs se mappent sur l'olive voisin ;
-  (c) ajouter un filtre de saturation au sampling pour exclure ces
-  pixels — palette régénérée sans ce centroïde.
+  ~58 K pixels en `#347C2F`-ish forment un centroïde palette (~954 px,
+  la couleur la moins populée mais présente). La spec initiale demandait
+  une fusion sur l'olive sourd des haies. **Décision DA : accepter
+  (Option A)** — les joncs conservent leur teinte saturée. À
+  re-évaluer post-MVP si nécessaire.
 - **Absence du cream-ivoire chaud** (`#E8DDC4`) : la palette `v1.0`
   contient `#DFE1DF` (cool white) et `#C9A27D` (warm beige) mais pas
   exactement le ton ambré débattu en DA pour le ventre d'hirondelle.
-  Impact limité : `swallow.png` est déjà intégré avec la
+  **Décision DA : accepter** — `swallow.png` est déjà intégré avec la
   `v0.1-provisional` et conserve son ton ; aucun autre sprite du corpus
-  n'a clairement besoin de cette nuance.
+  n'a clairement besoin de cette nuance pour le MVP.
+- **Tour eddy covariance** : halos rose-magenta dans le treillis acceptés
+  en l'état pour le MVP (re-détourage post-MVP). Cf. ligne dédiée table
+  Sensors.
 
 **Sprite déjà passé sur la palette `v0.1-provisional`** : `swallow.png`
 (intégré). Peut être re-quantizé sur la `v1.0` après validation, mais
