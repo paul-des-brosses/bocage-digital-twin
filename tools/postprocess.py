@@ -3,16 +3,25 @@ Post-process a single sprite for use in the Bocage Digital Twin Unity
 project. The user delivers a pre-detoured PNG (transparent background
 already removed, even if imperfect) and this script:
 
-1. Cleans up the alpha channel: snaps near-transparent and near-opaque
-   pixels to 0 / 255, preserves anti-aliased gradients in between.
-2. Quantizes every visible pixel's RGB to the nearest colour in the
+1. Chroma cleanup: any pixel that is still pure-magenta (R>240, G<30,
+   B>240) or pure-green (R<30, G>240, B<30) — typical chroma-key
+   backgrounds — has its alpha forced to 0. Safety net for sprites
+   where manual detouring missed isolated chroma pixels (e.g.
+   open-lattice subjects like the eddy covariance tower). Does NOT
+   rescue anti-aliasing halos tinted pink-brown by semi-transparent
+   chroma — those must be handled at detour-time with a higher
+   wand-tolerance, the palette quantization step (3) below will
+   absorb minor residue.
+2. Alpha cleanup: snaps near-transparent and near-opaque pixels to
+   0 / 255, preserves anti-aliased gradients in between.
+3. Quantizes every visible pixel's RGB to the nearest colour in the
    project palette (palette_perche.json) so all sprites share the same
    chromatic vocabulary regardless of which Nanobanana run produced them.
-3. Crops to the bounding box of non-transparent content (drops empty
+4. Crops to the bounding box of non-transparent content (drops empty
    margins).
-4. Resizes so the longest side fits within --max-size, preserving
+5. Resizes so the longest side fits within --max-size, preserving
    aspect ratio. Defaults to 512 px.
-5. Saves to the destination path.
+6. Saves to the destination path.
 
 Usage:
     python tools/postprocess.py Sprites/Source/bird_swallow_v1_detoured.png \\
@@ -42,6 +51,30 @@ def load_palette(path: Path) -> np.ndarray:
         dtype=np.float64,
     )
     return rgb
+
+
+def chroma_key_removal(arr: np.ndarray) -> tuple[np.ndarray, int]:
+    """Force alpha to 0 on pixels that are still saturated pure magenta
+    or pure green — common chroma-key backgrounds left over from
+    imperfect manual detouring.
+
+    Thresholds are deliberately strict so that legitimate cool / warm
+    pinks and saturated greens in the sprite itself (e.g. a bright leaf
+    or a sunset glow) are not affected:
+
+      magenta : R > 240 and G < 30  and B > 240
+      green   : R < 30  and G > 240 and B < 30
+
+    Returns (cleaned_array, count_of_pixels_zeroed).
+    """
+    out = arr.copy()
+    R, G, B = out[..., 0], out[..., 1], out[..., 2]
+    is_magenta = (R > 240) & (G < 30) & (B > 240)
+    is_green = (R < 30) & (G > 240) & (B < 30)
+    mask = is_magenta | is_green
+    count = int(mask.sum())
+    out[..., 3] = np.where(mask, 0, out[..., 3])
+    return out, count
 
 
 def alpha_cleanup(arr: np.ndarray, lower: int, upper: int) -> np.ndarray:
@@ -116,6 +149,10 @@ def main() -> int:
     arr = np.array(img, dtype=np.uint8)
     h0, w0 = arr.shape[:2]
     print(f"[postprocess] Source size {w0}x{h0}, mode RGBA")
+
+    print("[postprocess] Chroma cleanup (force alpha=0 on pure magenta / pure green)")
+    arr, chroma_count = chroma_key_removal(arr)
+    print(f"[postprocess]   zeroed {chroma_count:,} chroma pixels")
 
     print(f"[postprocess] Alpha cleanup (snap < {args.alpha_lower} -> 0, > {args.alpha_upper} -> 255)")
     arr = alpha_cleanup(arr, args.alpha_lower, args.alpha_upper)
