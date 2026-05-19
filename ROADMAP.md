@@ -3,7 +3,9 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : à faire (projet en bootstrap).
+**Statut global** : en cours — étapes 1 à 3 livrées + pipeline assets
+opérationnel ; étape 4 en cours (composition scène data-driven, shader
+ciel).
 
 ---
 
@@ -25,7 +27,7 @@ peut être un point de coupe propre si le scope déborde.
 
 **Estimation** : 0.5 jour.
 
-**Statut** : à faire.
+**Statut** : ✅ livré.
 
 ---
 
@@ -54,7 +56,7 @@ scène `Main` avec 7 racines préfixées, bootstrap minimal.
 
 **Estimation** : 1 jour.
 
-**Statut** : à faire.
+**Statut** : ✅ livré.
 
 ---
 
@@ -84,7 +86,9 @@ minimal et quelques règles biophysiques. Tests unitaires en place.
 
 **Estimation** : 1.5 jour.
 
-**Statut** : à faire.
+**Statut** : ✅ livré (SimulationEngine, EcosystemModel, 4 règles
+biophysiques, SeededRandom, ScenarioContext, TransitioningParameter,
+6 fichiers de tests EditMode).
 
 ---
 
@@ -102,6 +106,12 @@ Perche.
 - Caméra orthographique fixe configurée.
 - Composition validée en Play Mode.
 
+**Note d'architecture** (cf DECISIONS.md #36, #37, #38) : composition
+data-driven via `SceneCompositionDefinition` (ScriptableObject) lu par
+`SceneAssembler` au boot ; tous les shaders runtime sont des Shader
+Graph (`SG_Sky` à l'Étape 4, puis `SG_Hedgerow`, `SG_Pond`, `SG_Meadow`
+à l'Étape 5+) ; 7 sorting layers déclarés (Sky → FX).
+
 **Critère de validation**
 
 - Scène lisible, esthétiquement cohérente avec la direction artistique.
@@ -109,7 +119,8 @@ Perche.
 
 **Estimation** : 1.5 jour.
 
-**Statut** : à faire.
+**Statut** : 🟡 en cours (code Presentation + sorting layers livrés ;
+Shader Graph et assemblage scène à finaliser dans l'éditeur Unity).
 
 ---
 

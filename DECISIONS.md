@@ -554,6 +554,77 @@ livrer 80 % de couches sans démo fonctionnelle.
 
 ---
 
+### 36. Composition de scène data-driven via ScriptableObject
+
+**Contexte** : à l'Étape 4, choix entre composer la scène à la main dans
+l'éditeur Unity (drag & drop des sprites) ou la générer depuis un
+ScriptableObject lu au boot.
+
+**Décision** : composition data-driven. `SceneCompositionDefinition`
+(ScriptableObject) liste les `ScenicElement` (sprite, position, scale,
+sorting layer, ordre). `SceneAssembler` (MonoBehaviour) instancie tout
+sous `_Scene_Visual` au Awake.
+
+**Raison** : signal portfolio fort (séparation data/présentation,
+reproductibilité), permet plus tard des variantes de composition
+(preset été/hiver/sécheresse) sans toucher la scène, aligné avec la
+thèse digital twin (la scène est une lecture de données, pas une mise
+en scène). Coût supplémentaire ~2× le code, jugé raisonnable pour une
+dizaine d'éléments de décor.
+
+**Alternative écartée** : composition manuelle dans la scène Unity —
+plus rapide mais sans valeur architecturale, et impose de modifier la
+scène à chaque variation.
+
+---
+
+### 37. Shaders : Shader Graph pour tous les shaders runtime
+
+**Contexte** : choix entre HLSL pur (`.shader`) et Shader Graph
+(`.shadergraph`) pour les shaders du projet (ciel, prairie, haies,
+mare).
+
+**Décision** : Shader Graph pour l'ensemble des shaders runtime
+(`SG_Sky`, `SG_Hedgerow`, `SG_Pond`, `SG_Meadow` à venir).
+
+**Raison** : preview live dans l'éditeur (itération visuelle x10 plus
+rapide quand l'effet n'est pas trivial), maintenabilité par un
+non-spécialiste graphique sur la durée du portfolio, absorption de la
+plomberie URP 2D version-spécifique. Pour le ciel seul l'argument est
+marginal, mais l'uniformité du pipeline shaders vaut mieux que
+l'optimum local.
+
+**Conséquence opérationnelle** : Claude Code scaffolde les Shader
+Graphs en spécifiant le contrat (nom des propriétés exposées,
+structure du graphe). L'utilisateur câble les nœuds dans l'éditeur
+Unity à partir des instructions pas-à-pas — un fichier
+`.shadergraph` étant du YAML auto-généré avec GUIDs, son authoring
+hors-éditeur n'est pas fiable.
+
+**Alternative écartée** : HLSL pur — gain négligeable sur les shaders
+simples, perte sur les shaders complexes.
+
+---
+
+### 38. Sorting layers de la scène 2D
+
+**Contexte** : ordre de rendu des sprites dans la scène 2D.
+
+**Décision** : 7 sorting layers déclarés dans `ProjectSettings/TagManager.asset`,
+du fond vers l'avant : `Sky`, `Background`, `Midground`, `Foreground`,
+`Sensors`, `Fauna`, `FX`. Le layer `Default` est conservé pour les
+objets non visuels.
+
+**Raison** : alignement direct sur la sémantique de la scène
+(catégories Charles Harper / A Short Hike), élimine les conflits d'ordre
+Z intra-catégorie, simplifie l'authoring des `ScenicElement` dans le
+`SceneCompositionDefinition`.
+
+**Alternative écartée** : un seul layer `Default` avec gestion fine
+par `sortingOrder` int — fragile et illisible.
+
+---
+
 ### 35. Pas d'audio, pas de mobile, pas de modal intrusif
 
 **Contexte** : éléments à exclure explicitement du scope.

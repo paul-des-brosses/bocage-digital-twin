@@ -8,36 +8,57 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  -
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
+  -
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Sky
+    uniqueID: 1100
+    locked: 0
+  - name: Background
+    uniqueID: 1200
+    locked: 0
+  - name: Midground
+    uniqueID: 1300
+    locked: 0
+  - name: Foreground
+    uniqueID: 1400
+    locked: 0
+  - name: Sensors
+    uniqueID: 1500
+    locked: 0
+  - name: Fauna
+    uniqueID: 1600
+    locked: 0
+  - name: FX
+    uniqueID: 1700
     locked: 0
