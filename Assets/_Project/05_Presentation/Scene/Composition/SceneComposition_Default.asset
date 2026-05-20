@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87ba14278b0af5d4f8e03311348888d2, type: 3}
+  m_Name: SceneComposition_Default
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Composition.SceneCompositionDefinition
+  elements:
+  - id: hills
+    sprite: {fileID: -6812745699520685309, guid: a99a0af76853db74687fdc6633436729, type: 3}
+    worldPosition: {x: 0.07, y: -0.29}
+    scale: {x: 2.430389, y: 3.2005186}
+    sortingLayerName: Background
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: hedge_high_pollard_01
+    sprite: {fileID: -9196545426586316322, guid: 93f222032f9eb444ea582a12e33d0279, type: 3}
+    worldPosition: {x: -7.36, y: -0.34}
+    scale: {x: 0.64609003, y: 0.64609003}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: hedge_high_no_tree
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: 6.44, y: -0.04}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+  - id: hedge_high_no_tree (1)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: 0.91, y: -0.61}
+    scale: {x: 0.466378, y: 0.466378}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+  - id: hedge_low_01
+    sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
+    worldPosition: {x: -7.25, y: -2.71}
+    scale: {x: 0.86742, y: 0.86742}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 2
+    flipX: 0
+  - id: hedge_low_01 (1)
+    sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
+    worldPosition: {x: -3.75, y: -2.71}
+    scale: {x: 0.86742, y: 0.86742}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 2
+    flipX: 0
+  - id: pond
+    sprite: {fileID: 5817799449637031085, guid: c992feff00e192e49a5a2037e77aabda, type: 3}
+    worldPosition: {x: 2.5, y: -2.93}
+    scale: {x: 1.0795, y: 1.0795}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: pollard_ash_main
+    sprite: {fileID: -5224188169631845903, guid: 6f800de9eb741e84e900357892af6ad0, type: 3}
+    worldPosition: {x: -2.85, y: -0.5}
+    scale: {x: 1.1237, y: 1.1237}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 1
+    flipX: 0
+  - id: grass_border
+    sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
+    worldPosition: {x: -1.37, y: -4.09}
+    scale: {x: 1, y: 1}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 2
+    flipX: 0
+  - id: grass_border (2)
+    sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
+    worldPosition: {x: -8.34, y: -4.24}
+    scale: {x: 1, y: 1}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 2
+    flipX: 0
+  - id: grass_border (1)
+    sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
+    worldPosition: {x: 5.78, y: -3.94}
+    scale: {x: 1, y: 1}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 2
+    flipX: 0
+  - id: Sky
+    sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+    worldPosition: {x: 0, y: -1.3}
+    scale: {x: 40, y: 25}
+    sortingLayerName: Sky
+    sortingOrderInLayer: 0
+    flipX: 0

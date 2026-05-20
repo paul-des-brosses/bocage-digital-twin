@@ -40,6 +40,27 @@ namespace Bocage.Presentation.Scene.Composition
             SimLogger.DebugLog("[SceneAssembler] composed " + spawned + " elements from " + composition.name);
         }
 
+#if UNITY_EDITOR
+        /// <summary>
+        /// Editor-only rebuild used by the custom inspector's "Rebuild Now"
+        /// button. Lets the artist iterate on the composition asset without
+        /// entering Play Mode.
+        /// </summary>
+        public void RebuildInEditor()
+        {
+            if (composition == null)
+            {
+                SimLogger.DebugLog("[SceneAssembler] no composition assigned, skipping editor rebuild");
+                return;
+            }
+
+            var parent = spawnRoot != null ? spawnRoot : transform;
+            ClearChildren(parent);
+            int spawned = BuildFrom(composition, parent);
+            SimLogger.DebugLog("[SceneAssembler] (editor) rebuilt " + spawned + " elements from " + composition.name);
+        }
+#endif
+
         private static void ClearChildren(Transform parent)
         {
             for (int i = parent.childCount - 1; i >= 0; i--)
@@ -74,8 +95,9 @@ namespace Bocage.Presentation.Scene.Composition
                 go.transform.SetParent(parent, worldPositionStays: false);
                 go.transform.localPosition = new Vector3(element.worldPosition.x, element.worldPosition.y, 0f);
 
-                float scale = element.scale <= 0f ? 1f : element.scale;
-                go.transform.localScale = new Vector3(element.flipX ? -scale : scale, scale, 1f);
+                float scaleX = element.scale.x <= 0f ? 1f : element.scale.x;
+                float scaleY = element.scale.y <= 0f ? 1f : element.scale.y;
+                go.transform.localScale = new Vector3(element.flipX ? -scaleX : scaleX, scaleY, 1f);
 
                 var renderer = go.AddComponent<SpriteRenderer>();
                 renderer.sprite = element.sprite;

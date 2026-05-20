@@ -48,8 +48,8 @@ namespace Bocage.Presentation.Scene.Composition
         [Tooltip("World-space position in scene units. Z is forced to 0.")]
         public Vector2 worldPosition;
 
-        [Tooltip("Uniform scale. 0 or negative is clamped to 1.")]
-        public float scale;
+        [Tooltip("Non-uniform scale (X = horizontal stretch, Y = vertical stretch). 0 or negative components are clamped to 1. Use (1,1) for the sprite's native size; use uneven X/Y to fit assets like full-width grass borders without distorting other elements.")]
+        public Vector2 scale;
 
         [Tooltip("Sorting layer name. Must exist in Tags & Layers. Empty falls back to Default.")]
         public string sortingLayerName;

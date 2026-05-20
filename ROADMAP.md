@@ -119,8 +119,21 @@ Graph (`SG_Sky` à l'Étape 4, puis `SG_Hedgerow`, `SG_Pond`, `SG_Meadow`
 
 **Estimation** : 1.5 jour.
 
-**Statut** : 🟡 en cours (code Presentation + sorting layers livrés ;
-Shader Graph et assemblage scène à finaliser dans l'éditeur Unity).
+**Statut** : ✅ livré.
+
+**Ajouts d'architecture en cours de route** :
+- `Camera.rect` viewport pour scène centrée + marges UI sur les 4 côtés
+  (à remplir à l'Étape 6) ; appliqué en Edit Mode via `[ExecuteAlways]`
+  pour parité Edit/Play du cadrage.
+- Workflow `Rebuild from Composition` ↔ `Capture Scene → Composition`
+  via inspector custom : l'artiste manipule les sprites dans la Scene
+  view (W = move, R = scale) et capture les transforms vers le
+  ScriptableObject. Source de vérité = l'asset.
+- Sous-dossier `_Scene_Visual/Composition` pour les sprites spawnés ;
+  le `Sky` (sprite + Shader Graph) reste sibling de `Composition` pour
+  ne pas se faire nettoyer au boot.
+- `ScenicElement.scale` est `Vector2` (non-uniforme) pour gérer les
+  sprites bandeaux type `grass_border` sans déformer les autres.
 
 ---
 

@@ -19,6 +19,7 @@
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -56,6 +57,10 @@ desktop.ini
 # Project specific
 /Builds/
 *.log
+
+# Unity auto-recovery folder (created if the editor crashes mid-edit)
+/[Aa]ssets/_[Rr]ecovery/
+/[Aa]ssets/_[Rr]ecovery.meta
 
 # Sprite post-processing test artifacts (not part of the final pipeline
 # output — only inspected locally for DA validation between palette
