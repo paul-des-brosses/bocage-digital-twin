@@ -22,35 +22,56 @@ MonoBehaviour:
     flipX: 0
   - id: hedge_high_pollard_01
     sprite: {fileID: -9196545426586316322, guid: 93f222032f9eb444ea582a12e33d0279, type: 3}
-    worldPosition: {x: -7.36, y: -0.34}
+    worldPosition: {x: 8.74, y: -0.8}
     scale: {x: 0.64609003, y: 0.64609003}
     sortingLayerName: Midground
     sortingOrderInLayer: 0
     flipX: 0
   - id: hedge_high_no_tree
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
-    worldPosition: {x: 6.44, y: -0.04}
+    worldPosition: {x: -5.37, y: -0.96}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+  - id: hedge_high_no_tree (2)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -4.38, y: -1.06}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+  - id: hedge_high_no_tree (3)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -7.92, y: -0.79}
     scale: {x: 0.24536254, y: 0.24536254}
     sortingLayerName: Midground
     sortingOrderInLayer: 1
     flipX: 0
   - id: hedge_high_no_tree (1)
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
-    worldPosition: {x: 0.91, y: -0.61}
-    scale: {x: 0.466378, y: 0.466378}
+    worldPosition: {x: -6.63, y: -0.83}
+    scale: {x: 0.27675337, y: 0.27675337}
     sortingLayerName: Midground
     sortingOrderInLayer: 1
     flipX: 0
   - id: hedge_low_01
     sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
-    worldPosition: {x: -7.25, y: -2.71}
+    worldPosition: {x: -7.25, y: -2.42}
     scale: {x: 0.86742, y: 0.86742}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 2
+    flipX: 0
+  - id: hedge_low_01 (2)
+    sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
+    worldPosition: {x: 6.51, y: -1.26}
+    scale: {x: 0.47640446, y: 0.47640446}
     sortingLayerName: Midground
     sortingOrderInLayer: 2
     flipX: 0
   - id: hedge_low_01 (1)
     sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
-    worldPosition: {x: -3.75, y: -2.71}
+    worldPosition: {x: -3.75, y: -2.47}
     scale: {x: 0.86742, y: 0.86742}
     sortingLayerName: Midground
     sortingOrderInLayer: 2
@@ -64,8 +85,15 @@ MonoBehaviour:
     flipX: 0
   - id: pollard_ash_main
     sprite: {fileID: -5224188169631845903, guid: 6f800de9eb741e84e900357892af6ad0, type: 3}
-    worldPosition: {x: -2.85, y: -0.5}
+    worldPosition: {x: -2.85, y: -0.69}
     scale: {x: 1.1237, y: 1.1237}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 1
+    flipX: 0
+  - id: pollard_ash_main (1)
+    sprite: {fileID: -5224188169631845903, guid: 6f800de9eb741e84e900357892af6ad0, type: 3}
+    worldPosition: {x: 5.53, y: 0.88}
+    scale: {x: 0.25959718, y: 0.25959718}
     sortingLayerName: Foreground
     sortingOrderInLayer: 1
     flipX: 0
