@@ -1274,6 +1274,7 @@ GameObject:
   - component: {fileID: 1463489823}
   - component: {fileID: 1463489825}
   - component: {fileID: 1463489824}
+  - component: {fileID: 1463489826}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -1333,6 +1334,20 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &1463489826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa2b44dfb21c50438fe544c3f4184e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.WaterTableLabelBinding
+  container: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
+  labelName: water-table-value
 --- !u!1 &1563126419
 GameObject:
   m_ObjectHideFlags: 0
@@ -2088,6 +2103,7 @@ MonoBehaviour:
   ticksPerSecond: 1
   autoStart: 1
   hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
+  waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
