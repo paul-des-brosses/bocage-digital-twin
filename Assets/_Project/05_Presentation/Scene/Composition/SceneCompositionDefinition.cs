@@ -59,5 +59,8 @@ namespace Bocage.Presentation.Scene.Composition
 
         [Tooltip("Mirror the sprite horizontally (useful for variant reuse).")]
         public bool flipX;
+
+        [Tooltip("Optional custom material applied to the spawned SpriteRenderer. Leave null to use Unity's default sprite material. Required for shader-driven elements like the hedges (M_Hedgerow).")]
+        public Material material;
     }
 }

@@ -3,9 +3,9 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 3 livrées + pipeline assets
-opérationnel ; étape 4 en cours (composition scène data-driven, shader
-ciel).
+**Statut global** : en cours — étapes 1 à 5 livrées (simulation core,
+scène visuelle data-driven, 1er Hero KPI bouclé de la simu au shader).
+Prochaine étape : 6 (UI complète + 5 Hero KPIs).
 
 ---
 
@@ -159,7 +159,26 @@ Graph (`SG_Sky` à l'Étape 4, puis `SG_Hedgerow`, `SG_Pond`, `SG_Meadow`
 
 **Estimation** : 1 jour.
 
-**Statut** : à faire.
+**Statut** : ✅ livré (`HedgerowDensityIndicator` Couche 4, SO observable
+`RC_HedgerowDensity` avec asmdef dédié `Bocage.Data.RuntimeContainers`,
+`SimulationRunner` coroutine de tick, UI Toolkit Dashboard avec
+`HedgerowDensityLabelBinding`, Shader Graph `SG_Hedgerow` (Lerp +
+Multiply pour conserver le détail texture), `HedgerowShaderBinding`
+data-driven via scan par préfixe de nom sous le spawnRoot, 6 tests
+EditMode supplémentaires).
+
+**Ajouts d'architecture en cours de route** :
+- Nouvel asmdef `Bocage.Data.RuntimeContainers` dans
+  `Assets/_Project/Data/RuntimeContainers/` pour isoler les
+  ScriptableObjects observables. Référencé par Presentation.
+- `ScenicElement.material` (champ `Material` optionnel) ajouté à la
+  composition data-driven et capturé par l'inspector custom. Sans ça,
+  le SceneAssembler respawnait les sprites avec Sprite-Default à chaque
+  Play, écrasant les matériaux assignés manuellement.
+- `HedgerowShaderBinding` ne référence plus les `SpriteRenderer` un à
+  un (fragile : refs détruites au respawn). Il prend un transform
+  spawnRoot + un tableau de préfixes de nom (`hedge_`, `pollard_`),
+  scanne à `Start` après que SceneAssembler a fini.
 
 ---
 

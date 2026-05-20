@@ -1,0 +1,63 @@
+/*
+ * Dashboard stylesheet — Étape 5.
+ *
+ * Dark mode palette per CLAUDE.md §11. Only one Hero KPI is shown at
+ * this stage (hedgerow density). Étape 6 will add the four others and
+ * the three Level-B panels.
+ *
+ * Fonts: the Garamond / JetBrains Mono pairing will be wired at
+ * Étape 6 once the .ttf assets are imported and a Font asset is
+ * generated. For now we rely on Unity's default font so the build
+ * compiles without missing asset references.
+ */
+
+.dashboard-root {
+    flex-grow: 1;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0); /* transparent — scene shows through */
+}
+
+.hero-strip {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px 16px 12px 16px;
+    background-color: rgba(20, 22, 26, 0.92);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.kpi-card {
+    flex-direction: column;
+    min-width: 200px;
+    padding: 8px 14px 10px 14px;
+    margin-right: 10px;
+    background-color: rgba(28, 31, 36, 0.94);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+.kpi-label {
+    font-size: 12px;
+    color: rgba(220, 214, 198, 0.75);    /* crème désaturée */
+    -unity-font-style: italic;
+    margin-bottom: 4px;
+}
+
+.kpi-value-row {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.kpi-value {
+    font-size: 26px;
+    color: rgba(238, 232, 217, 1);       /* ivoire */
+    -unity-font-style: bold;
+    margin-right: 6px;
+}
+
+.kpi-unit {
+    font-size: 12px;
+    color: rgba(170, 162, 145, 0.85);    /* ocre désaturé */
+    padding-bottom: 4px;                  /* aligne sur la baseline du chiffre */
+}

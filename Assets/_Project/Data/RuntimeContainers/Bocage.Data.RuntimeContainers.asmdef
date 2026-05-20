@@ -1,13 +1,7 @@
 {
-    "name": "Bocage.Presentation",
-    "rootNamespace": "Bocage.Presentation",
-    "references": [
-        "Bocage.SimulationCore",
-        "Bocage.Sensors",
-        "Bocage.Decision",
-        "Bocage.Indicators",
-        "Bocage.Data.RuntimeContainers"
-    ],
+    "name": "Bocage.Data.RuntimeContainers",
+    "rootNamespace": "Bocage.Data.RuntimeContainers",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

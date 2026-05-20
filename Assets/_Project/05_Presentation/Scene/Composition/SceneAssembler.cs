@@ -101,6 +101,14 @@ namespace Bocage.Presentation.Scene.Composition
 
                 var renderer = go.AddComponent<SpriteRenderer>();
                 renderer.sprite = element.sprite;
+                if (element.material != null)
+                {
+                    // sharedMaterial avoids instantiating a per-renderer copy;
+                    // per-element shader values are pushed at runtime via
+                    // MaterialPropertyBlock by the relevant binding (cf
+                    // HedgerowShaderBinding for the hedges).
+                    renderer.sharedMaterial = element.material;
+                }
                 if (!string.IsNullOrEmpty(element.sortingLayerName))
                 {
                     renderer.sortingLayerName = element.sortingLayerName;

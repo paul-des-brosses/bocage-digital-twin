@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="Dashboard.uss" />
+    <ui:VisualElement name="dashboard-root" class="dashboard-root">
+
+        <!-- Top strip: Hero KPI placeholder (Étape 5 only displays one KPI). -->
+        <ui:VisualElement name="hero-strip" class="hero-strip">
+            <ui:VisualElement name="kpi-hedgerow-density" class="kpi-card">
+                <ui:Label name="hedgerow-density-label" text="Densité de haies" class="kpi-label" />
+                <ui:VisualElement class="kpi-value-row">
+                    <ui:Label name="hedgerow-density-value" text="—" class="kpi-value" />
+                    <ui:Label name="hedgerow-density-unit" text="m/ha" class="kpi-unit" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

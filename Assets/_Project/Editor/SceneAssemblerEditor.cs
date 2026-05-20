@@ -136,6 +136,14 @@ namespace Bocage.Editor.Presentation
                 {
                     elementProp.FindPropertyRelative("sortingLayerName").stringValue = sr.sortingLayerName;
                     elementProp.FindPropertyRelative("sortingOrderInLayer").intValue = sr.sortingOrder;
+
+                    // sharedMaterial is what an artist assigns via the
+                    // Inspector. We don't try to detect "default sprite
+                    // material" vs custom — Unity returns the canonical
+                    // default-sprite material reference in either case, which
+                    // is harmless to store: SceneAssembler treats only a
+                    // null material as "use default".
+                    elementProp.FindPropertyRelative("material").objectReferenceValue = sr.sharedMaterial;
                 }
 
                 captured++;
