@@ -1,23 +1,42 @@
 /*
- * Dashboard stylesheet — Étape 5.
+ * Dashboard stylesheet — sub-étape 6b.
  *
- * Dark mode palette per CLAUDE.md §11. Only one Hero KPI is shown at
- * this stage (hedgerow density). Étape 6 will add the four others and
- * the three Level-B panels.
+ * Dark mode palette per CLAUDE.md §11:
+ *   bg general : gris-anthracite chaud
+ *   text       : crème / ivoire
+ *   accents    : désaturés (vert bouteille, ocre, rouge terre)
  *
- * Fonts: the Garamond / JetBrains Mono pairing will be wired at
- * Étape 6 once the .ttf assets are imported and a Font asset is
- * generated. For now we rely on Unity's default font so the build
- * compiles without missing asset references.
+ * Layout philosophy (cf DECISIONS.md #6 viewport architecture):
+ *   - The scene render lives in a centred Camera.rect viewport.
+ *   - The UI overlay reserves four UI margins (top, bottom, left, right)
+ *     plus a bottom-right minimap. The dashboard root therefore uses
+ *     absolute positioning to anchor its panels to the four edges,
+ *     leaving the scene visible in the central window.
+ *
+ * Fonts (Garamond + JetBrains Mono per CLAUDE.md §11): not yet imported
+ * as Unity Font Definition assets. When that lands (small dedicated
+ * step), we'll add `-unity-font-definition: url(...)` to .panel-title,
+ * .kpi-label, .kpi-value, etc. without touching the structure.
  */
+
+/* =========================================================================
+ *  Root layout
+ * ========================================================================= */
 
 .dashboard-root {
     flex-grow: 1;
-    flex-direction: column;
     background-color: rgba(0, 0, 0, 0); /* transparent — scene shows through */
 }
 
+/* =========================================================================
+ *  Hero strip — 5 KPI cards anchored top
+ * ========================================================================= */
+
 .hero-strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     flex-direction: row;
     justify-content: flex-start;
     padding: 12px 16px 12px 16px;
@@ -35,6 +54,17 @@
     border-radius: 6px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.04);
+}
+
+/*
+ * Deferred KPI cards (Biodiversité, Rentabilité, Delta tech at 6b).
+ * Slightly muted background and dashed border so the user instantly
+ * recognises a non-honest card vs an honest one — same "à venir"
+ * literacy pattern used in the Niveau B panels.
+ */
+.kpi-card--deferred {
+    background-color: rgba(28, 31, 36, 0.70);
+    border-color: rgba(170, 162, 145, 0.22);
 }
 
 .kpi-label {
@@ -56,8 +86,157 @@
     margin-right: 6px;
 }
 
+/* Em dash + reduced contrast for deferred KPIs. */
+.kpi-value--deferred {
+    color: rgba(170, 162, 145, 0.55);
+}
+
 .kpi-unit {
     font-size: 12px;
     color: rgba(170, 162, 145, 0.85);    /* ocre désaturé */
     padding-bottom: 4px;                  /* aligne sur la baseline du chiffre */
+}
+
+/*
+ * Small italic chip below the em dash on a deferred card, telling the
+ * reader *when* the KPI becomes honest.
+ */
+.kpi-deferred-tag {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.65);
+    -unity-font-style: italic;
+    margin-top: 2px;
+}
+
+/* =========================================================================
+ *  Body row — Level-B panels
+ * ========================================================================= */
+
+/*
+ * Anchored bottom-left, leaving the bottom-right corner for the minimap.
+ * Three columns side-by-side, equal width via flex-grow.
+ */
+.body-row {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    right: 280px;                          /* minimap reserves the right gutter */
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.level-b-panel {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: 10px;
+    padding: 10px 14px 12px 14px;
+    background-color: rgba(28, 31, 36, 0.94);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+.panel-title {
+    font-size: 14px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-bottom: 6px;
+}
+
+.panel-placeholder {
+    font-size: 11px;
+    color: rgba(170, 162, 145, 0.55);
+    -unity-font-style: italic;
+    white-space: normal;                   /* allow wrap */
+}
+
+/* Honest sub-indicator row inside a Level-B panel. */
+.panel-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+.panel-row-label {
+    font-size: 12px;
+    color: rgba(220, 214, 198, 0.80);
+}
+
+.panel-row-value-group {
+    flex-direction: row;
+    align-items: flex-end;   /* UI Toolkit USS does not support 'baseline'; flex-end aligns the unit suffix on the digit baseline closely enough. */
+}
+
+.panel-row-value {
+    font-size: 16px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-right: 4px;
+}
+
+.panel-row-unit {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.80);
+}
+
+/* =========================================================================
+ *  Minimap — placeholder rectangle bottom-right (6c will fill it)
+ * ========================================================================= */
+
+.minimap-container {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    width: 256px;
+    height: 192px;
+    padding: 10px 12px 10px 12px;
+    background-color: rgba(28, 31, 36, 0.94);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.minimap-title {
+    font-size: 12px;
+    color: rgba(220, 214, 198, 0.75);
+    -unity-font-style: italic;
+    margin-bottom: 6px;
+}
+
+.minimap-placeholder {
+    font-size: 11px;
+    color: rgba(170, 162, 145, 0.55);
+    -unity-font-style: italic;
+    white-space: normal;
+}
+
+/* =========================================================================
+ *  Viewport warning banner — appears under 1280 px width
+ * ========================================================================= */
+
+.viewport-warning {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 16px 8px 16px;
+    background-color: rgba(112, 56, 38, 0.92);  /* terre brûlée désaturée */
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.viewport-warning-text {
+    font-size: 12px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: italic;
+    white-space: normal;
+}
+
+/* Utility class toggled by ViewportWarningBinding. */
+.hidden {
+    display: none;
 }

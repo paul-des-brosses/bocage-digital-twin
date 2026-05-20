@@ -2,15 +2,112 @@
     <Style src="Dashboard.uss" />
     <ui:VisualElement name="dashboard-root" class="dashboard-root">
 
-        <!-- Top strip: Hero KPI placeholder (Étape 5 only displays one KPI). -->
+        <!--
+        Hero strip — 5 Hero KPI cards in the order locked by
+        DECISIONS.md #39 (pyramide cause → effet):
+            Haies → Nappe → Biodiversité → Rentabilité → Delta tech
+
+        Honesty status:
+        - Haies and Nappe are wired to real model variables and update each tick.
+        - Biodiversité, Rentabilité, Delta tech are placeholders until their
+          state variables exist (cf DECISIONS.md #40). They render the card
+          shell with an em dash and an italic deferral label.
+        -->
         <ui:VisualElement name="hero-strip" class="hero-strip">
-            <ui:VisualElement name="kpi-hedgerow-density" class="kpi-card">
+
+            <ui:VisualElement name="kpi-hedgerow-density" class="kpi-card" tooltip="Densité linéaire de haies par hectare. Source : variable d'état du modèle, lecture directe.">
                 <ui:Label name="hedgerow-density-label" text="Densité de haies" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
                     <ui:Label name="hedgerow-density-value" text="—" class="kpi-value" />
                     <ui:Label name="hedgerow-density-unit" text="m/ha" class="kpi-unit" />
                 </ui:VisualElement>
             </ui:VisualElement>
+
+            <ui:VisualElement name="kpi-water-table" class="kpi-card" tooltip="Profondeur de la nappe phréatique sous la surface. Source : variable d'état du modèle, lecture directe. Convention : valeur faible = nappe haute = sain.">
+                <ui:Label name="water-table-label" text="Nappe phréatique" class="kpi-label" />
+                <ui:VisualElement class="kpi-value-row">
+                    <ui:Label name="water-table-value" text="—" class="kpi-value" />
+                    <ui:Label name="water-table-unit" text="m" class="kpi-unit" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="kpi-biodiversity" class="kpi-card kpi-card--deferred" tooltip="Score composite de biodiversité. Câblage honnête prévu à l'Étape 8 (ajout de FaunaPopulation au modèle).">
+                <ui:Label text="Biodiversité" class="kpi-label" />
+                <ui:VisualElement class="kpi-value-row">
+                    <ui:Label text="—" class="kpi-value kpi-value--deferred" />
+                </ui:VisualElement>
+                <ui:Label text="à venir Étape 8" class="kpi-deferred-tag" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="kpi-profitability" class="kpi-card kpi-card--deferred" tooltip="Rentabilité intégrée en euros par hectare et par an. Câblage honnête prévu à l'Étape 7 (ajout des variables économiques au modèle).">
+                <ui:Label text="Rentabilité intégrée" class="kpi-label" />
+                <ui:VisualElement class="kpi-value-row">
+                    <ui:Label text="—" class="kpi-value kpi-value--deferred" />
+                </ui:VisualElement>
+                <ui:Label text="à venir Étape 7" class="kpi-deferred-tag" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="kpi-tech-delta" class="kpi-card kpi-card--deferred" tooltip="Écart en pourcentage entre la run réelle (avec capteurs et décisions algorithmiques) et la run fantôme (sans technologie). Câblage prévu à l'Étape 8 (shadow run).">
+                <ui:Label text="Delta tech" class="kpi-label" />
+                <ui:VisualElement class="kpi-value-row">
+                    <ui:Label text="—" class="kpi-value kpi-value--deferred" />
+                </ui:VisualElement>
+                <ui:Label text="à venir Étape 8" class="kpi-deferred-tag" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!--
+        Body — Level-B panels. Each panel is a column shell with title and
+        a placeholder paragraph. At sub-étape 6b only the structure exists;
+        honest sub-indicators land at Étapes 7 (économie) and 8 (faune).
+        -->
+        <ui:VisualElement name="body-row" class="body-row">
+
+            <ui:VisualElement name="panel-biodiversity" class="level-b-panel">
+                <ui:Label text="Biodiversité" class="panel-title" />
+                <ui:Label text="Sous-indicateurs détaillés (richesse spécifique faune, indice de diversité végétale, qualité des lisières). Câblage honnête à l'Étape 8."
+                          class="panel-placeholder" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="panel-climate-resources" class="level-b-panel">
+                <ui:Label text="Climat &amp; ressources" class="panel-title" />
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Nappe phréatique" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="water-table-detail-value" text="—" class="panel-row-value" />
+                        <ui:Label text="m" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label text="Sous-indicateurs détaillés (température moyenne, précipitations cumulées, stress hydrique). Câblage progressif aux étapes suivantes."
+                          class="panel-placeholder" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="panel-economy" class="level-b-panel">
+                <ui:Label text="Économie" class="panel-title" />
+                <ui:Label text="Sous-indicateurs détaillés (rendement cultures, coûts d'intrants, paiements pour services environnementaux). Câblage honnête à l'Étape 7."
+                          class="panel-placeholder" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!--
+        Minimap placeholder — sub-étape 6c will replace this rectangle with
+        a vector plan of the bocage and sensor markers.
+        -->
+        <ui:VisualElement name="minimap-container" class="minimap-container">
+            <ui:Label text="Minimap" class="minimap-title" />
+            <ui:Label text="Plan vectoriel et capteurs à venir (Étape 6c)" class="minimap-placeholder" />
+        </ui:VisualElement>
+
+        <!--
+        Viewport warning banner — hidden by default, made visible by
+        ViewportWarningBinding when Screen.width is below the recommended
+        threshold (1280 px per CLAUDE.md §12, desktop only).
+        -->
+        <ui:VisualElement name="viewport-warning" class="viewport-warning hidden">
+            <ui:Label text="Cette expérience est optimisée pour un affichage de 1280 pixels de large ou plus. Agrandissez la fenêtre pour une meilleure lecture du tableau de bord."
+                      class="viewport-warning-text" />
         </ui:VisualElement>
 
     </ui:VisualElement>
