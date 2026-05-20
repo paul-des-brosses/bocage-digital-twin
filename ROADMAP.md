@@ -3,9 +3,10 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 5 livrées (simulation core,
-scène visuelle data-driven, 1er Hero KPI bouclé de la simu au shader).
-Prochaine étape : 6 (UI complète + 5 Hero KPIs).
+**Statut global** : en cours — étapes 1 à 5 livrées, sous-étape 6a
+livrée (2 Hero KPIs honnêtes câblés bout en bout, refus des stubs
+dérivés cf DECISIONS.md #40). Prochaine étape : 6b (dashboard UI
+Toolkit étoffé avec 5 cartouches dont 3 placeholders "à venir").
 
 ---
 
@@ -182,34 +183,60 @@ EditMode supplémentaires).
 
 ---
 
-## Étape 6 — UI complète et 5 Hero KPIs
+## Étape 6 — UI complète et Hero KPIs
 
-**Objectif** : tableau de bord complet en place avec les 5 Hero KPIs et
-les 3 panneaux Niveau B.
+**Objectif** : tableau de bord complet en place avec les Hero KPIs
+honnêtes câblés et l'architecture UI prête à accueillir les KPIs
+reportés (cf DECISIONS.md #40).
 
-**Livrables**
+**Sous-étape 6a — Backend KPIs honnêtes** : ✅ livré.
+- Indicateur Couche 4 `WaterTableIndicator` (lecture directe de
+  `EcosystemModel.WaterTableDepth`, normalisation inversée).
+- Container `RC_WaterTableDepth` (pattern observable).
+- Extension `SimulationRunner` (2 slots de publication, 1 par KPI
+  honnête).
+- Binding `WaterTableLabelBinding` (UI Toolkit, fail-soft tant que le
+  label UXML n'existe pas).
+- 6 tests EditMode sur l'indicateur.
 
+**Sous-étape 6b — Dashboard étoffé** :
 - Layout dark mode complet (Garamond + JetBrains Mono).
-- 5 Hero KPIs : densité haies, biodiversité composite, nappe
-  phréatique, rentabilité intégrée, delta tech (encore à 0 à ce stade).
-- 3 panneaux Niveau B (Biodiversité, Climat & ressources, Économie)
-  avec sous-indicateurs.
+- Hero strip à 5 cartouches dans l'ordre fixé par DECISIONS.md #39 :
+  `Haies → Nappe → Biodiversité → Rentabilité → Delta tech`. Les 2
+  premières affichent les valeurs honnêtes ; les 3 dernières sont des
+  placeholders "à venir" libellés avec l'étape d'arrivée (7 ou 8).
+- 3 panneaux Niveau B (Biodiversité, Climat & ressources, Économie).
+  Les colonnes affichent uniquement les sous-indicateurs honnêtes
+  câblables aujourd'hui (la valeur Nappe ré-utilisée dans Climat &
+  ressources). Les autres lignes sont placeholders "à venir".
+- Tooltips Garamond italique sur hover des cartouches.
+- Bandeau d'avertissement si fenêtre < 1280 px.
+
+**Sous-étape 6c — Capteurs et minimap** :
 - Capteurs visibles dans la scène avec sprites.
 - Minimap vectorielle avec capteurs positionnés.
 - Hover synchronisé minimap ↔ scène (highlight visuel).
-- Tooltips Garamond italique sur hover.
-- Bandeau d'avertissement si fenêtre < 1280 px.
 
 **Critère de validation**
 
 - Toute l'UI est en place et lisible.
 - Build WebGL < 30 MB toujours respecté.
-- Démo : 5 KPIs bougent, les 3 panneaux affichent leurs
-  sous-indicateurs.
+- Démo : 2 KPIs honnêtes bougent au tick, 3 placeholders affichent
+  proprement "à venir Étape 7" / "à venir Étape 8".
+- Aucun chiffre inventé à l'écran (cf principe de primauté du
+  capteur, CLAUDE.md §9).
 
-**Estimation** : 1.5 jour.
+**KPIs reportés et leurs étapes d'arrivée** (cf DECISIONS.md #40) :
+- `IntegratedProfitability` → arrive à l'Étape 7 quand le modèle
+  expose `CropYield`, `InputCost`, `MaintenanceCost`.
+- `BiodiversityComposite` → arrive à l'Étape 8 quand le modèle
+  expose `FaunaPopulation` (et idéalement diversité végétale).
+- `TechDelta` → arrive à l'Étape 8 quand la shadow run est câblée.
 
-**Statut** : à faire.
+**Estimation** : 6a livré (0.5 j) + 6b restant (0.5-1 j) + 6c restant
+(0.5 j). Total 1.5-2 jours.
+
+**Statut** : 6a ✅ livré, 6b et 6c à faire.
 
 ---
 
@@ -226,14 +253,25 @@ les 3 panneaux Niveau B.
   7-14 jours simulés).
 - Persistance PlayerPrefs de la dernière configuration de presets.
 - Boutons play/pause/x1/x10/skip-to-end fonctionnels.
+- **Variables d'état économiques** ajoutées à `EcosystemModel` :
+  `CropYield`, `InputCost`, `MaintenanceCost`. Règles biophysiques /
+  économiques associées (rendement modulé par densité haies et nappe,
+  coûts intrants modulés par pression agricole).
+- **Hero KPI `IntegratedProfitability`** câblé honnêtement : indicateur
+  Couche 4 + container `RC_IntegratedProfitability` + binding label
+  remplaçant le placeholder "à venir Étape 7" du hero strip.
+- Tests EditMode sur les nouvelles règles économiques et l'indicateur.
 
 **Critère de validation**
 
 - Démo : modification d'un curseur → transition douce visible dans la
   scène et les KPIs.
 - Pause / reprise / vitesses fonctionnent.
+- Le 4ème cartouche du hero strip (Rentabilité) affiche désormais une
+  valeur honnête en €/ha/an dérivée de l'état modèle.
 
-**Estimation** : 1 jour.
+**Estimation** : 1.5 jour (était 1 j, +0.5 j pour le KPI économique
+honnête reporté depuis l'Étape 6).
 
 **Statut** : à faire.
 
@@ -255,8 +293,19 @@ arbitrables par l'utilisateur, comparaison shadow run fonctionnelle.
 - `AutoActions` appliquées en real run.
 - `DecisionJournal` append-only.
 - Decision panel UI avec recommandations à arbitrer (accepter / rejeter).
-- `ShadowSimulationRunner` opérationnel.
-- Hero KPI "delta tech" calculé et affiché.
+- `ShadowSimulationRunner` opérationnel (run parallèle, mêmes seeds,
+  `applyTechActions = false`).
+- **Variable d'état `FaunaPopulation`** ajoutée à `EcosystemModel`
+  (avec couplage haie/proie/prédateur minimal). Règles de dynamique
+  associées. Tests EditMode dédiés.
+- **Hero KPI `BiodiversityComposite`** câblé honnêtement : indicateur
+  Couche 4 agrégeant `HedgerowDensity`, `WaterTableDepth` et
+  `FaunaPopulation`, container `RC_BiodiversityComposite`, binding
+  label remplaçant le placeholder "à venir Étape 8" du hero strip.
+- **Hero KPI `TechDelta`** câblé honnêtement : différence en % entre
+  l'agrégat de bien-être écosystémique de la real run et de la
+  shadow run. Container `RC_TechDelta`, binding label remplaçant le
+  placeholder "à venir Étape 8" du hero strip.
 - Vue de comparaison real vs shadow.
 
 **Critère de validation**

@@ -636,3 +636,72 @@ de modal intrusif (intro, tutoriel, dialogue bloquant).
 d'observation silencieuse.
 
 **Alternative écartée** : "on verra plus tard" — amène scope creep.
+
+---
+
+### 39. Ordre des Hero KPIs dans le hero strip (pyramide cause → effet)
+
+**Contexte** : 5 Hero KPIs sont prévus dans le dashboard
+(`HedgerowDensity`, `WaterTable`, `BiodiversityComposite`,
+`IntegratedProfitability`, `TechDelta`). L'ordre d'affichage de
+gauche à droite raconte une histoire au lecteur.
+
+**Décision** : ordre adopté `Haies → Nappe → Biodiversité →
+Rentabilité → Delta tech`. Substrat physique (haies, eau) à gauche,
+intégrateur écologique au centre, valorisation économique à droite,
+arbitrage méta tout à droite.
+
+**Raison** : lecture pédagogique d'un digital twin agro-écologique.
+On lit la chaîne causale du concret au méta : structure du paysage →
+ressource physique → effet écosystémique → effet économique →
+"est-ce que la tech aide ?". Cohérent avec la thèse du projet
+(test honnête de la convergence éco/écolo, cf §1 CLAUDE.md).
+
+**Alternatives écartées** :
+- *Honnêtes à gauche, stubs à droite* (Haies / Nappe / Rentabilité /
+  Biodiv / Delta tech) : sépare arbitrairement biodiv et nappe qui
+  sont conceptuellement liées.
+- *Par poids dans le récit* (Delta tech en premier) : afficher en
+  pole position un KPI qui vaut 0 jusqu'à l'Étape 8 est un mauvais
+  signal visuel pour le portfolio.
+
+---
+
+### 40. Refus des Hero KPIs en stub — différer jusqu'à existence des variables d'état
+
+**Contexte** : à la sous-étape 6a, 3 des 5 Hero KPIs prévus
+(`Biodiversity`, `Profitability`, `TechDelta`) n'ont pas de variable
+d'état correspondante dans `EcosystemModel`. Tentation initiale :
+les implémenter comme formules dérivées des 2 variables existantes
+(`HedgerowDensity`, `WaterTableDepth`) pour "câbler le pattern".
+
+**Décision** : refus des stubs dérivés. Les 3 indicateurs et leurs
+containers `RC_*` ne sont **pas** créés tant que les variables
+sous-jacentes n'existent pas. À 6b les 3 cartouches correspondantes
+afficheront un placeholder visuel "à venir" avec un libellé qui
+indique l'étape où le KPI sera branché honnêtement.
+
+**Raison** : le principe de primauté du capteur (CLAUDE.md §9) exige
+que toute valeur affichée soit traçable jusqu'à une variable du
+modèle. Une formule arbitraire `0.65 × hedgerowNorm + 0.35 ×
+waterNorm` qu'on appellerait "biodiversité composite" *est* de la
+donnée inventée, même si elle est déterministe. Un portfolio sur la
+thèse "test honnête de la convergence éco/écolo" ne peut pas
+afficher des chiffres de biodiversité, rentabilité et delta tech qui
+ne reposent sur rien.
+
+**Conséquence sur la roadmap** :
+- `BiodiversityComposite` → arrive à l'Étape 8 (faune & shadow run :
+  l'ajout de `FaunaPopulation` au modèle débloque un agrégat
+  honnête).
+- `IntegratedProfitability` → arrive à l'Étape 7 (économie : ajout
+  de `CropYield`, `InputCost`, `MaintenanceCost`).
+- `TechDelta` → arrive à l'Étape 8 (shadow run câblée, l'agrégat
+  est calculable sur (real − shadow)).
+
+**Alternatives écartées** :
+- *Stubs câblés mais signalés visuellement* : compromis tentant
+  mais on aurait quand même affiché des chiffres faux. Le badge
+  "stub" sur la cartouche aurait été un cache-misère.
+- *Étendre EcosystemModel maintenant* : gonfle l'Étape 6 de
+  ~30-50 % et empiète sur les Étapes 7-8 prévues pour ce travail.
