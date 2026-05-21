@@ -3,10 +3,12 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 6 livrées (simulation core,
-scène data-driven, 2 Hero KPIs honnêtes + 3 placeholders, dashboard
-UI Toolkit complet, capteurs visibles avec hover sync scène ↔ liste).
-Prochaine étape : 7 (presets + scénario + KPI rentabilité honnête).
+**Statut global** : en cours — étapes 1 à 7 livrées (simulation core,
+scène data-driven, 3 Hero KPIs honnêtes + 2 placeholders, dashboard
+UI Toolkit complet, capteurs visibles avec hover sync scène ↔ liste,
+panneau scénario avec presets sourcés et contrôles de vitesse).
+Prochaine étape : 8 (décisions + biodiversité + shadow run +
+panneau Conditions initiales).
 
 ---
 
@@ -285,7 +287,14 @@ livrés.
 **Estimation** : 1.5 jour (était 1 j, +0.5 j pour le KPI économique
 honnête reporté depuis l'Étape 6).
 
-**Statut** : à faire.
+**Statut** : ✅ livré (sub-étapes 7a + 7b + 7c.1 + 7c.2 + 7c.3).
+Variables d'état économiques et règles biophysiques livrées en 7a,
+Hero KPI Rentabilité câblé honnêtement en 7b, refactor des inputs
+scénario en 6 paramètres physiques + calibration sourcée en 7c.1,
+système de presets avec 4 scénarios calibrés en 7c.2, contrôles de
+vitesse (pause / ×1 / ×5 / ×10 / ×20 / skip-to-end) et compteur de
+jours en 7c.3. Le panneau Scénario expose maintenant 6 sliders
+physiques avec saisie numérique précise.
 
 ---
 
