@@ -27,6 +27,11 @@ namespace Bocage.SimulationCore
                 new WaterTableDynamicsRule(),
                 new HedgerowGrowthRule(),
                 new AgriculturalPressureImpactRule(),
+                // Economic rules applied after hedge stock is updated so the
+                // maintenance cost reads the latest hedgerow density.
+                new CropYieldDynamicsRule(),
+                new InputCostDynamicsRule(),
+                new MaintenanceCostDynamicsRule(),
             };
 
             return new SimulationEngine(masterSeed, model, scenario, rules);
