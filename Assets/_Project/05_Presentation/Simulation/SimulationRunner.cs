@@ -55,7 +55,17 @@ namespace Bocage.Presentation.Simulation
         private Coroutine _tickRoutine;
 
         public EcosystemModel Model => _engine?.Model;
+        public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
         public bool IsRunning => _tickRoutine != null;
+
+        /// <summary>
+        /// Fired after every Tick + PublishIndicators pass. Used by
+        /// diagnostic recorders (cf. <c>SimulationTraceRecorder</c>) to
+        /// snapshot model and scenario state without re-running the
+        /// simulation. Also useful for any future binding that needs a
+        /// reliable "post-tick" hook rather than polling Update().
+        /// </summary>
+        public event System.Action TickCompleted;
 
         private void Awake()
         {
@@ -107,6 +117,7 @@ namespace Bocage.Presentation.Simulation
 
                 _engine.Tick();
                 PublishIndicators();
+                TickCompleted?.Invoke();
             }
         }
 
@@ -130,7 +141,7 @@ namespace Bocage.Presentation.Simulation
 
             if (profitabilityContainer != null)
             {
-                double raw = IntegratedProfitabilityIndicator.Compute(model);
+                double raw = IntegratedProfitabilityIndicator.Compute(model, _engine.Scenario);
                 double normalized = IntegratedProfitabilityIndicator.Normalize(raw);
                 profitabilityContainer.Set((float)raw, (float)normalized);
             }

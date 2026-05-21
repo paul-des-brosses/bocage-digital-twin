@@ -69,6 +69,14 @@ MonoBehaviour:
     sortingOrderInLayer: 1
     flipX: 0
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
+  - id: hedge_high_no_tree (8)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -10.94, y: -0.93}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: hedge_high_no_tree (2)
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
     worldPosition: {x: -4.38, y: -1.06}
@@ -151,7 +159,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: grass_border
     sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
-    worldPosition: {x: -0.13, y: -4.09}
+    worldPosition: {x: 0.64, y: -4.09}
     scale: {x: 1, y: 1}
     sortingLayerName: Foreground
     sortingOrderInLayer: 2
@@ -159,7 +167,15 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   - id: grass_border (2)
     sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
-    worldPosition: {x: -7.79, y: -4.24}
+    worldPosition: {x: -6.81, y: -4.24}
+    scale: {x: 1, y: 1}
+    sortingLayerName: Foreground
+    sortingOrderInLayer: 2
+    flipX: 0
+    material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - id: grass_border (3)
+    sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
+    worldPosition: {x: -11.75, y: -4.24}
     scale: {x: 1, y: 1}
     sortingLayerName: Foreground
     sortingOrderInLayer: 2
@@ -167,7 +183,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   - id: grass_border (1)
     sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
-    worldPosition: {x: 7.57, y: -3.94}
+    worldPosition: {x: 8.29, y: -4.25}
     scale: {x: 1, y: 1}
     sortingLayerName: Foreground
     sortingOrderInLayer: 2

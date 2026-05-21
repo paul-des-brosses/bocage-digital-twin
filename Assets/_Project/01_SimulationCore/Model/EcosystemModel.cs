@@ -8,8 +8,9 @@ namespace Bocage.SimulationCore.Model
     /// day counter. State is constrained at the setters so invariants
     /// (non-negative depth, non-negative density, ...) cannot be broken.
     /// Defaults are centred on Perche bocage realistic ranges (annual
-    /// average temperature ≈ 12 °C, hedgerow density 60-130 m/ha,
-    /// mixed cereal/oilseed yield ≈ 5 t/ha, input cost ≈ 400 €/ha/yr).
+    /// average temperature ≈ 12 °C, hedgerow density 60-110 m/ha,
+    /// mixed cereal/oilseed yield ≈ 5.5 t/ha Eure-et-Loir/Orne,
+    /// input cost ≈ 1200 €/ha/yr CIVAM grandes cultures).
     /// </summary>
     public sealed class EcosystemModel
     {
@@ -26,30 +27,26 @@ namespace Bocage.SimulationCore.Model
         /// <summary>
         /// Current estimate of the crop yield at harvest, in tonnes per
         /// hectare. Evolves daily under the influence of the windbreak
-        /// effect of hedgerows, the water table depth, climate stress and
-        /// agricultural pressure (cf. CropYieldDynamicsRule).
-        /// Source range: 2 to 8 t/ha for a Perche mixed cereal/oilseed
-        /// farm (Agreste Centre-Val-de-Loire 2022).
+        /// effect of hedgerows, the water table depth, climate stress
+        /// and agricultural pressure (cf. CropYieldDynamicsRule).
+        /// Calibration source: weighted average of Eure-et-Loir wheat
+        /// (7 t/ha) and rapeseed (3 t/ha) yields per Agreste 2015-2024.
         /// </summary>
         public double CropYield { get; private set; }
 
         /// <summary>
         /// Annualised cost of inputs (fertilisers, pesticides, fuel,
-        /// seeds), in € per hectare per year. Evolves daily toward a
-        /// target driven by agricultural pressure, regulatory
-        /// constraints and climate stress. Range observed in mixed
-        /// bocage farms: 100 to 1200 €/ha/yr (réseau CIVAM, fermes
-        /// mixtes bocagères Perche).
+        /// seeds), in € per hectare per year. Calibration source:
+        /// CIVAM and AFPF range 1100-2000 €/ha/yr for grandes cultures
+        /// annuelles. Default 1200 = median conventional Perche mix.
         /// </summary>
         public double InputCost { get; private set; }
 
         /// <summary>
         /// Annualised cost of maintaining the bocage features (hedge
         /// trimming, replanting, pond clearance), in € per hectare per
-        /// year. Directly proportional to <see cref="HedgerowDensity"/>;
-        /// computed each tick by the MaintenanceCostDynamicsRule using a
-        /// unit rate of about 0.30 €/m/yr (MAEC linéaire "entretien de
-        /// haies", PNR du Perche).
+        /// year. Linear in HedgerowDensity at 1.0 €/m/yr (cf.
+        /// MaintenanceCostDynamicsRule sources).
         /// </summary>
         public double MaintenanceCost { get; private set; }
 
@@ -58,9 +55,9 @@ namespace Bocage.SimulationCore.Model
             Weather initialWeather = default,
             double initialWaterTableDepth = 2.0,
             double initialHedgerowDensity = 90.0,
-            double initialCropYield = 5.0,
-            double initialInputCost = 400.0,
-            double initialMaintenanceCost = 27.0)
+            double initialCropYield = 5.5,
+            double initialInputCost = 1200.0,
+            double initialMaintenanceCost = 90.0)
         {
             CurrentDay = initialDay;
             CurrentWeather = initialWeather;

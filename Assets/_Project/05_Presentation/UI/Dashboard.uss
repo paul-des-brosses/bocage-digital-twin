@@ -119,10 +119,124 @@
 .body-row {
     position: absolute;
     bottom: 12px;
-    left: 16px;
-    right: 280px;                          /* minimap reserves the right gutter */
+    left: 290px;                           /* scenario-panel reserves the left gutter */
+    right: 280px;                          /* sensor list reserves the right gutter */
     flex-direction: row;
     align-items: stretch;
+}
+
+/* =========================================================================
+ *  Scenario panel — sub-étape 7c.1 (left side, full vertical span)
+ * ========================================================================= */
+
+.scenario-panel {
+    position: absolute;
+    top: 130px;                           /* clears the full hero-strip height */
+    bottom: 16px;
+    left: 16px;
+    width: 260px;
+    padding: 10px 14px 12px 14px;
+    background-color: rgba(28, 31, 36, 0.94);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.scenario-panel-title {
+    font-size: 14px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-bottom: 6px;
+}
+
+.scenario-section-title {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding-top: 4px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.scenario-control {
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.scenario-control-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.scenario-control-label {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.85);
+}
+
+.scenario-control-unit {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+}
+
+/*
+ * .scenario-slider — Slider or SliderInt with the dark theme.
+ * UI Toolkit's default slider has a beige editor chrome; we override
+ * the standard DOM classes (.unity-base-slider*) to match the panel.
+ * Hide the auto-generated label (we have our own header row).
+ */
+.scenario-slider {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    min-height: 18px;
+}
+
+/* Hide the auto inline label of the slider. */
+.scenario-slider > .unity-base-field__label,
+.scenario-slider > .unity-base-slider__label {
+    display: none;
+    min-width: 0;
+    width: 0;
+}
+
+/* The track behind the slider. */
+.scenario-slider .unity-base-slider__tracker {
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.20);
+    border-radius: 3px;
+}
+
+/* The filled portion of the slider track (between low-value and current). */
+.scenario-slider .unity-base-slider__dragger-border {
+    border-color: rgba(0, 0, 0, 0);
+}
+
+/* The draggable thumb. */
+.scenario-slider .unity-base-slider__dragger {
+    background-color: rgba(124, 168, 100, 1); /* vert pâle d'accent */
+    border-color: rgba(0, 0, 0, 0.6);
+    border-width: 1px;
+    border-radius: 4px;
+    width: 12px;
+    height: 12px;
+}
+
+.scenario-slider:hover .unity-base-slider__dragger {
+    background-color: rgba(150, 190, 124, 1);
+}
+
+.scenario-control-hint {
+    font-size: 9px;
+    color: rgba(170, 162, 145, 0.55);
+    -unity-font-style: italic;
+    white-space: normal;
 }
 
 .level-b-panel {

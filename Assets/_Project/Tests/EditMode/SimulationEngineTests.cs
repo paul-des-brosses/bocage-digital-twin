@@ -113,13 +113,13 @@ namespace Bocage.Tests.EditMode
         public void ScenarioTransitionsAdvanceWithEngine()
         {
             var ctx = new ScenarioContext();
-            ctx.AgriculturalPressure.SetTarget(1.0, durationInDays: 10);
+            ctx.HedgeRemovalRate.SetTarget(5.0, durationInDays: 10);
             var engine = DefaultSimulation.Build(masterSeed: 1UL, scenario: ctx);
 
             for (int i = 0; i < 10; i++) engine.Tick();
 
-            Assert.AreEqual(1.0, ctx.AgriculturalPressure.Current, 1e-9);
-            Assert.IsFalse(ctx.AgriculturalPressure.IsTransitioning);
+            Assert.AreEqual(5.0, ctx.HedgeRemovalRate.Current, 1e-9);
+            Assert.IsFalse(ctx.HedgeRemovalRate.IsTransitioning);
         }
     }
 }

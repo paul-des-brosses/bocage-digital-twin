@@ -23,11 +23,11 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-water-table" class="kpi-card" tooltip="Profondeur de la nappe phréatique sous la surface. Source : variable d'état du modèle, lecture directe. Convention : valeur faible = nappe haute = sain.">
-                <ui:Label name="water-table-label" text="Nappe phréatique" class="kpi-label" />
+            <ui:VisualElement name="kpi-water-table" class="kpi-card" tooltip="Profondeur du toit de la nappe phréatique sous la surface. Source : variable d'état du modèle, lecture directe. Convention : valeur faible = nappe haute = sain. Valeur élevée = sécheresse.">
+                <ui:Label name="water-table-label" text="Nappe (profondeur)" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
                     <ui:Label name="water-table-value" text="—" class="kpi-value" />
-                    <ui:Label name="water-table-unit" text="m" class="kpi-unit" />
+                    <ui:Label name="water-table-unit" text="m sous sol" class="kpi-unit" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
@@ -53,6 +53,92 @@
                     <ui:Label text="—" class="kpi-value kpi-value--deferred" />
                 </ui:VisualElement>
                 <ui:Label text="à venir Étape 8" class="kpi-deferred-tag" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!--
+        Scenario panel (left side) — 6 physical inputs + horizon,
+        organised in three sections: Climat, Agriculture, Politique.
+        Replaces the abstract [0,1] sliders from the first iteration of
+        7c.1. Each input has a real unit (°C, %, m/ha/an, €/m/an, etc.)
+        and is bound to a ScenarioContext field by ScenarioControlsBinding.
+        Continuous params transition over 10 simulated days
+        (CLAUDE.md §15); horizon is applied directly (it's a deadline,
+        not a smoothed setpoint).
+        -->
+        <ui:VisualElement name="scenario-panel" class="scenario-panel">
+            <ui:Label text="Scénario" class="scenario-panel-title" />
+
+            <ui:Label text="Climat" class="scenario-section-title" />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Anomalie T° moyenne" class="scenario-control-label" />
+                    <ui:Label name="temperature-anomaly-value" text="0.0 °C" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="temperature-anomaly-slider" low-value="-2" high-value="5" value="0" class="scenario-slider" />
+                <ui:Label text="−2 °C (refroidissement) à +5 °C (RCP8.5 horizon 2100). Affecte météo, nappe, rendement, intrants." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Anomalie précipitations" class="scenario-control-label" />
+                    <ui:Label name="precipitation-anomaly-value" text="0 %" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="precipitation-anomaly-slider" low-value="-60" high-value="20" value="0" class="scenario-slider" />
+                <ui:Label text="−60 % (sécheresse extrême) à +20 % (excès humidité). Référence Perche ≈ 730 mm/an." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:Label text="Agriculture" class="scenario-section-title" />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Taux d'arrachage de haies" class="scenario-control-label" />
+                    <ui:Label name="hedge-removal-value" text="0.0 m/ha/an" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="hedge-removal-slider" low-value="0" high-value="10" value="0" class="scenario-slider" />
+                <ui:Label text="0 = aucune destruction. 5 = remembrement agressif (Perche 1970-90)." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Intensité d'intrants" class="scenario-control-label" />
+                    <ui:Label name="input-intensity-value" text="1.0× réf." class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="input-intensity-slider" low-value="0.5" high-value="2" value="1" class="scenario-slider" />
+                <ui:Label text="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:Label text="Politique" class="scenario-section-title" />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Couverture MAEC" class="scenario-control-label" />
+                    <ui:Label name="maec-coverage-value" text="0 %" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="maec-coverage-slider" low-value="0" high-value="100" value="0" class="scenario-slider" />
+                <ui:Label text="Part de la ferme sous contrat MAEC (% SAU). Réduit le coût d'intrants jusqu'à −30 % à 100 %." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Taux PSE" class="scenario-control-label" />
+                    <ui:Label name="pse-rate-value" text="0.00 €/m/an" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="pse-rate-slider" low-value="0" high-value="1" value="0" class="scenario-slider" />
+                <ui:Label text="Paiement pour Services Environnementaux par mètre de haie. 0.30 à 0.80 selon contrat MAEC linéaire + PNR Perche." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:Label text="Horizon" class="scenario-section-title" />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Durée du run" class="scenario-control-label" />
+                    <ui:Label name="horizon-value" text="365 j" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:SliderInt name="horizon-slider" low-value="30" high-value="1825" value="365" class="scenario-slider" />
+                <ui:Label text="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end (7c.3)." class="scenario-control-hint" />
             </ui:VisualElement>
 
         </ui:VisualElement>

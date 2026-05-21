@@ -1,63 +1,82 @@
 using Bocage.SimulationCore.Model;
+using Bocage.SimulationCore.Scenario;
 
 namespace Bocage.Indicators.Hero
 {
     /// <summary>
-    /// Hero KPI: integrated farm profitability in € per hectare per year,
-    /// computed honestly from four model state variables introduced at
-    /// sub-étape 7a:
-    /// <list type="bullet">
-    ///   <item><see cref="EcosystemModel.CropYield"/> × <see cref="CropPriceEurosPerTonne"/> — gross revenue</item>
-    ///   <item>− <see cref="EcosystemModel.InputCost"/></item>
-    ///   <item>− <see cref="EcosystemModel.MaintenanceCost"/></item>
-    ///   <item>+ <see cref="EcosystemModel.HedgerowDensity"/> × <see cref="HedgerowPseRate"/> — PSE (paiement pour services environnementaux)</item>
-    /// </list>
-    /// Stateless, allocation-free, deterministic — pure C# function of
-    /// the model snapshot. No invented data: every input is a model
-    /// state variable evolved by an explicit biophysical or economic
-    /// rule (CLAUDE.md §9 sensor primacy).
+    /// Hero KPI: integrated farm profitability in € per hectare per year.
+    /// Honest composite read from four model state variables and the
+    /// PSE subsidy rate exposed by the scenario:
     /// <para>
-    /// <b>Pricing constants</b>:
-    /// <list type="bullet">
-    ///   <item><c>CropPriceEurosPerTonne = 250</c> — averaged 2022 farm-gate
-    ///         price for a mixed cereal/oilseed Perche farm.</item>
-    ///   <item><c>HedgerowPseRate = 0.50 €/m/year</c> — order of
-    ///         magnitude of MAEC linéaire and PNR du Perche bocage
-    ///         maintenance contracts.</item>
-    /// </list>
-    /// Both treated as constants at this stage; future étapes may move
-    /// them under scenario control if we expose price/policy presets.
+    ///   <c>profit = CropYield × CropPrice</c><br/>
+    ///   <c>       − InputCost</c><br/>
+    ///   <c>       − MaintenanceCost</c><br/>
+    ///   <c>       + HedgerowDensity × scenario.PseSubsidyRate</c><br/>
+    ///   <c>       + PacHedgeBonus × hectare (forfait PAC 2025)</c>
     /// </para>
     /// <para>
-    /// <b>Display bounds</b>: <c>[0, 2000] €/ha/yr</c> for the
-    /// normalization channel. The raw label can go below 0 (struggling
-    /// farm); the label binding shows the real number, only the
-    /// gauge/normalized representation clamps.
+    /// <b>Pricing constants (revision 2026-05-21)</b>
+    /// <list type="bullet">
+    ///   <item><c>CropPriceEurosPerTonne = 250</c> : prix farm-gate
+    ///         pondéré blé/colza Eure-et-Loir 2022 (blé 230-270 €/t,
+    ///         colza 400-550 €/t en année moyenne, mix 70/30).</item>
+    ///   <item><c>PacHedgeBonusEurosPerHectare = 20</c> : Bonus haie PAC
+    ///         2025 (Chambre Agriculture Pays de la Loire),
+    ///         indépendant de la densité linéaire. Forfait par hectare
+    ///         de SAU si haies présentes.</item>
+    /// </list>
+    /// <b>Note honnêteté</b> : le baseline yield (5.5 t/ha) inclut déjà
+    /// l'effet brise-vent moyen du bocage. La bell curve dans
+    /// CropYieldDynamicsRule pénalise les écarts à la densité optimale,
+    /// elle ne booste plus le pic. Évite double-comptage.
+    /// </para>
+    /// <para>
+    /// <b>Display bounds</b>: <c>[-500, 1000] €/ha/yr</c>. Le profit
+    /// peut être négatif (ferme déficitaire sous mauvaises conditions
+    /// et intrants chers), atteindre +500-800 sous conditions
+    /// optimales avec PSE et MAEC actifs. Marges réelles fermes
+    /// grandes cultures Perche : 100-400 €/ha/yr en année moyenne.
     /// </para>
     /// </summary>
     public static class IntegratedProfitabilityIndicator
     {
-        public const double MinEurosPerHectare = 0.0;
-        public const double MaxEurosPerHectare = 2000.0;
+        public const double MinEurosPerHectare = -500.0;
+        public const double MaxEurosPerHectare = 1500.0;
 
         public const double CropPriceEurosPerTonne = 250.0;
-        public const double HedgerowPseRate = 0.50;
+        public const double PacHedgeBonusEurosPerHectare = 20.0;
+
+        /// <summary>
+        /// CAP base support: DPB (Droit Paiement de Base) + paiement vert
+        /// + écorégime. National average 2025 per Ministère Agriculture:
+        /// DPB ≈ 128 €/ha, paiement vert ≈ 40, écorégime ≈ 60.
+        /// Total ≈ 230 €/ha/yr forfaitaire indépendant des conditions de
+        /// production. C'est l'amortisseur principal du revenu agricole
+        /// français — sans lui une majorité de fermes céréalières
+        /// seraient déficitaires (cf. RICA 2024).
+        /// </summary>
+        public const double BasicCapPaymentEurosPerHectare = 230.0;
 
         /// <summary>
         /// Returns the integrated profitability in € / hectare / year.
-        /// Can be negative under bad conditions.
+        /// Includes production margin + CAP basic payment + PAC hedge
+        /// bonus + PSE. Can be negative under severe stress combined
+        /// with high inputs and absence of subsidies.
         /// </summary>
-        public static double Compute(EcosystemModel model)
+        public static double Compute(EcosystemModel model, ScenarioContext scenario)
         {
+            double pseRate = scenario != null ? scenario.PseSubsidyRate.Current : 0.0;
             double revenue = model.CropYield * CropPriceEurosPerTonne;
-            double pse = model.HedgerowDensity * HedgerowPseRate;
-            return revenue - model.InputCost - model.MaintenanceCost + pse;
+            double pse = model.HedgerowDensity * pseRate;
+            double pacBonus = model.HedgerowDensity > 0.0 ? PacHedgeBonusEurosPerHectare : 0.0;
+            return revenue - model.InputCost - model.MaintenanceCost
+                   + pse + pacBonus + BasicCapPaymentEurosPerHectare;
         }
 
         /// <summary>
-        /// Returns the normalized profitability in <c>[0,1]</c>, clamping
-        /// values below <see cref="MinEurosPerHectare"/> to 0 and above
-        /// <see cref="MaxEurosPerHectare"/> to 1.
+        /// Returns the normalized profitability in <c>[0,1]</c>, mapping
+        /// the display range [Min, Max] linearly. Centred so 0.5
+        /// corresponds to break-even profit ≈ 250 €/ha/yr.
         /// </summary>
         public static double Normalize(double eurosPerHectare)
         {

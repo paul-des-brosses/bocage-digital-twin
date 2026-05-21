@@ -25,15 +25,15 @@ namespace Bocage.Tests.EditMode
             }
             double mean = sum / n;
             Assert.That(mean, Is.EqualTo(12.0).Within(0.5),
-                "Mean daily temperature should converge to ~12 °C at neutral climate stress.");
+                "Mean daily temperature should converge to ~12 °C at zero anomaly.");
         }
 
         [Test]
-        public void HighClimateStressShiftsTemperatureUpward()
+        public void PositiveTemperatureAnomalyShiftsMeanUpward()
         {
             var rule = new WeatherUpdateRule();
             var model = new EcosystemModel();
-            var ctx = new ScenarioContext(initialClimateStress: 1.0);
+            var ctx = new ScenarioContext(initialTemperatureAnomalyC: 5.0);
             var rng = new SeededRandom(2UL).DeriveSubStream(rule.SubStreamId);
 
             double sum = 0.0;
@@ -45,7 +45,27 @@ namespace Bocage.Tests.EditMode
             }
             double mean = sum / n;
             Assert.That(mean, Is.EqualTo(17.0).Within(0.5),
-                "Climate stress = 1 should add ~5 °C to the mean.");
+                "A +5°C anomaly should add exactly 5°C to the mean.");
+        }
+
+        [Test]
+        public void NegativePrecipitationAnomalyReducesMean()
+        {
+            var rule = new WeatherUpdateRule();
+            var model = new EcosystemModel();
+            var ctx = new ScenarioContext(initialPrecipitationAnomalyPercent: -50.0);
+            var rng = new SeededRandom(3UL).DeriveSubStream(rule.SubStreamId);
+
+            double sum = 0.0;
+            const int n = 2000;
+            for (int i = 0; i < n; i++)
+            {
+                rule.Apply(model, ctx, rng);
+                sum += model.CurrentWeather.PrecipitationMillimeters;
+            }
+            double mean = sum / n;
+            // Expected mean is 2 × 0.5 = 1.0 mm but truncation at 0 biases upward slightly.
+            Assert.That(mean, Is.EqualTo(1.0).Within(0.5));
         }
 
         [Test]
@@ -136,11 +156,11 @@ namespace Bocage.Tests.EditMode
     public sealed class AgriculturalPressureImpactRuleTests
     {
         [Test]
-        public void NoPressureNoLoss()
+        public void NoRemovalNoLoss()
         {
             var rule = new AgriculturalPressureImpactRule();
             var model = new EcosystemModel(initialHedgerowDensity: 100.0);
-            var ctx = new ScenarioContext(initialAgriculturalPressure: 0.0);
+            var ctx = new ScenarioContext(initialHedgeRemovalRate: 0.0);
             var rng = new SeededRandom(0UL);
 
             for (int i = 0; i < 365; i++) rule.Apply(model, ctx, rng);
@@ -149,11 +169,13 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void FullPressureRemovesAboutFiveMetersPerHectarePerYear()
+        public void FiveMperHaPerYearRemovalCloses100To95()
         {
+            // The rate is expressed directly in m/ha/yr, no more arbitrary
+            // [0,1] mapping. 5 m/ha/yr × 365 days = 5 m/ha lost over a year.
             var rule = new AgriculturalPressureImpactRule();
             var model = new EcosystemModel(initialHedgerowDensity: 100.0);
-            var ctx = new ScenarioContext(initialAgriculturalPressure: 1.0);
+            var ctx = new ScenarioContext(initialHedgeRemovalRate: 5.0);
             var rng = new SeededRandom(0UL);
 
             for (int i = 0; i < 365; i++) rule.Apply(model, ctx, rng);
