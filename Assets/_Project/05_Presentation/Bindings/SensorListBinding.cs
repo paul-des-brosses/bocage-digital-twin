@@ -1,0 +1,191 @@
+using System.Collections.Generic;
+using Bocage.Presentation.Scene.Sensors;
+using Bocage.SimulationCore.Logging;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace Bocage.Presentation.Bindings
+{
+    /// <summary>
+    /// Builds the "Capteurs déployés" list in the dashboard's bottom-right
+    /// panel by scanning the children of <see cref="sensorRoot"/> for
+    /// <see cref="SensorMetadataTag"/> components and creating one row per
+    /// sensor. Replaces the spatial minimap originally planned for
+    /// sub-étape 6c.2 — a list panel carries more information per pixel
+    /// and exposes online/deferred status more clearly than dots over a
+    /// dummy background.
+    /// <para>
+    /// Each row is a small visual element with a status dot (green for
+    /// Online, ocre for Deferred), a sensor name and a subtitle showing
+    /// either the observed model variable (Online) or the deferred-until
+    /// step (Deferred). The row also caches the source
+    /// <see cref="SensorMetadataTag"/> so the bidirectional hover sync at
+    /// 6c.3 can iterate <see cref="RowsByDisplayName"/> without
+    /// re-querying the scene.
+    /// </para>
+    /// <para>
+    /// Scan happens at Start (same reasoning as the earlier dot binding
+    /// and as <c>HedgerowShaderBinding</c>): the SensorVisualPlacer
+    /// destroys and respawns children at Awake (execution order -9000),
+    /// so any reference captured in Edit Mode would be stale at Play.
+    /// </para>
+    /// </summary>
+    [RequireComponent(typeof(UIDocument))]
+    public sealed class SensorListBinding : MonoBehaviour
+    {
+        [SerializeField, Tooltip("Parent transform whose children carry SensorMetadataTag. Typically '_Scene_Visual/Sensors'.")]
+        private Transform sensorRoot;
+
+        [SerializeField, Tooltip("Name of the VisualElement in the UXML that receives the dynamically-created rows.")]
+        private string rowsContainerName = "sensor-list-rows";
+
+        [SerializeField, Tooltip("USS class for each row.")]
+        private string rowClass = "sensor-list-row";
+
+        [SerializeField, Tooltip("Base USS class for the status dot.")]
+        private string statusDotClass = "sensor-status-dot";
+
+        [SerializeField, Tooltip("USS class for an Online sensor's status dot.")]
+        private string onlineModifierClass = "sensor-status-dot--online";
+
+        [SerializeField, Tooltip("USS class for a Deferred sensor's status dot.")]
+        private string deferredModifierClass = "sensor-status-dot--deferred";
+
+        [SerializeField, Tooltip("USS class for the row's text-block container.")]
+        private string textBlockClass = "sensor-row-text";
+
+        [SerializeField, Tooltip("USS class for the sensor name label.")]
+        private string nameLabelClass = "sensor-row-name";
+
+        [SerializeField, Tooltip("USS class for the subtitle label (variable or deferred-until).")]
+        private string subtitleLabelClass = "sensor-row-subtitle";
+
+        private UIDocument _document;
+        private VisualElement _rowsContainer;
+        private readonly Dictionary<string, VisualElement> _rowsByDisplayName = new Dictionary<string, VisualElement>(8);
+        private readonly Dictionary<string, SensorMetadataTag> _tagsByDisplayName = new Dictionary<string, SensorMetadataTag>(8);
+
+        /// <summary>
+        /// Read-only access to (key → row) used by 6c.3 hover sync.
+        /// The key is the sensor display name (falling back to id when
+        /// empty), unique across the dashboard.
+        /// </summary>
+        public IReadOnlyDictionary<string, VisualElement> RowsByDisplayName => _rowsByDisplayName;
+        public IReadOnlyDictionary<string, SensorMetadataTag> TagsByDisplayName => _tagsByDisplayName;
+
+        private void Awake()
+        {
+            _document = GetComponent<UIDocument>();
+        }
+
+        private void Start()
+        {
+            ResolveContainer();
+            BuildRows();
+        }
+
+        private void OnDestroy()
+        {
+            ClearRows();
+        }
+
+        private void ResolveContainer()
+        {
+            if (_document == null || _document.rootVisualElement == null) return;
+            _rowsContainer = _document.rootVisualElement.Q<VisualElement>(rowsContainerName);
+            if (_rowsContainer == null)
+            {
+                SimLogger.DebugLog("[SensorListBinding] rows container '" + rowsContainerName + "' not found in UXML root");
+            }
+        }
+
+        private void BuildRows()
+        {
+            ClearRows();
+            if (_rowsContainer == null) return;
+            if (sensorRoot == null)
+            {
+                SimLogger.DebugLog("[SensorListBinding] sensorRoot not assigned, no rows will be created");
+                return;
+            }
+
+            int created = 0;
+            for (int i = 0; i < sensorRoot.childCount; i++)
+            {
+                var child = sensorRoot.GetChild(i);
+                var meta = child.GetComponent<SensorMetadataTag>();
+                if (meta == null) continue;
+
+                string key = string.IsNullOrEmpty(meta.DisplayName) ? meta.SensorId : meta.DisplayName;
+                if (_rowsByDisplayName.ContainsKey(key))
+                {
+                    // Defensive: two sensors with the same display name would
+                    // collide in the hover sync map. Log and skip the second.
+                    SimLogger.DebugLog("[SensorListBinding] duplicate sensor key '" + key + "', second occurrence skipped");
+                    continue;
+                }
+
+                var row = BuildRow(meta);
+                _rowsContainer.Add(row);
+                _rowsByDisplayName[key] = row;
+                _tagsByDisplayName[key] = meta;
+                created++;
+            }
+
+            SimLogger.DebugLog("[SensorListBinding] populated " + created + " sensor rows from " + sensorRoot.name);
+        }
+
+        private VisualElement BuildRow(SensorMetadataTag meta)
+        {
+            var row = new VisualElement();
+            row.AddToClassList(rowClass);
+
+            var dot = new VisualElement();
+            dot.AddToClassList(statusDotClass);
+            dot.AddToClassList(meta.OnlineStatus == SensorOnlineStatus.Online
+                ? onlineModifierClass
+                : deferredModifierClass);
+            row.Add(dot);
+
+            var textBlock = new VisualElement();
+            textBlock.AddToClassList(textBlockClass);
+
+            var nameLabel = new Label(string.IsNullOrEmpty(meta.DisplayName) ? meta.SensorId : meta.DisplayName);
+            nameLabel.AddToClassList(nameLabelClass);
+            textBlock.Add(nameLabel);
+
+            var subtitleLabel = new Label(BuildSubtitle(meta));
+            subtitleLabel.AddToClassList(subtitleLabelClass);
+            textBlock.Add(subtitleLabel);
+
+            row.Add(textBlock);
+            return row;
+        }
+
+        private static string BuildSubtitle(SensorMetadataTag meta)
+        {
+            string typeLabel = meta.Type.ToString();
+            if (meta.OnlineStatus == SensorOnlineStatus.Online)
+            {
+                string variable = string.IsNullOrEmpty(meta.ObservedModelVariable) ? "—" : meta.ObservedModelVariable;
+                return typeLabel + " — mesure " + variable;
+            }
+            string deferred = string.IsNullOrEmpty(meta.DeferredUntilStep) ? "étape ultérieure" : meta.DeferredUntilStep;
+            return typeLabel + " — en attente " + deferred;
+        }
+
+        private void ClearRows()
+        {
+            if (_rowsContainer != null)
+            {
+                foreach (var kv in _rowsByDisplayName)
+                {
+                    var row = kv.Value;
+                    if (row != null && row.parent != null) row.parent.Remove(row);
+                }
+            }
+            _rowsByDisplayName.Clear();
+            _tagsByDisplayName.Clear();
+        }
+    }
+}

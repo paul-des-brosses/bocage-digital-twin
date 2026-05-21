@@ -92,12 +92,27 @@
         </ui:VisualElement>
 
         <!--
-        Minimap placeholder — sub-étape 6c will replace this rectangle with
-        a vector plan of the bocage and sensor markers.
+        Sensor list — replaces the minimap that was originally planned
+        at sub-étape 6c.2. A spatial map duplicated information already
+        visible in the scene behind the UI; a structured list of
+        deployed sensors with status, type and observed/deferred tag
+        gives more density and prepares the hover sync of 6c.3.
+        Rows are spawned dynamically by SensorListBinding from the
+        SensorMetadataTag of each scene sensor.
         -->
-        <ui:VisualElement name="minimap-container" class="minimap-container">
-            <ui:Label text="Minimap" class="minimap-title" />
-            <ui:Label text="Plan vectoriel et capteurs à venir (Étape 6c)" class="minimap-placeholder" />
+        <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
+            <ui:Label text="Capteurs déployés" class="sensor-list-title" />
+            <ui:VisualElement name="sensor-list-rows" class="sensor-list-rows" />
+            <ui:VisualElement class="sensor-list-legend">
+                <ui:VisualElement class="sensor-list-legend-row">
+                    <ui:VisualElement class="sensor-status-dot sensor-status-dot--online" />
+                    <ui:Label text="branché" class="sensor-list-legend-text" />
+                </ui:VisualElement>
+                <ui:VisualElement class="sensor-list-legend-row">
+                    <ui:VisualElement class="sensor-status-dot sensor-status-dot--deferred" />
+                    <ui:Label text="en attente" class="sensor-list-legend-text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!--

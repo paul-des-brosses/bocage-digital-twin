@@ -185,12 +185,15 @@
  *  Minimap — placeholder rectangle bottom-right (6c will fill it)
  * ========================================================================= */
 
-.minimap-container {
+/* =========================================================================
+ *  Sensor list — replaces the minimap (sub-étape 6c.2 decision)
+ * ========================================================================= */
+
+.sensor-list-container {
     position: absolute;
     bottom: 12px;
     right: 16px;
     width: 256px;
-    height: 192px;
     padding: 10px 12px 10px 12px;
     background-color: rgba(28, 31, 36, 0.94);
     border-radius: 6px;
@@ -200,18 +203,90 @@
     justify-content: flex-start;
 }
 
-.minimap-title {
+.sensor-list-title {
     font-size: 12px;
     color: rgba(220, 214, 198, 0.75);
     -unity-font-style: italic;
     margin-bottom: 6px;
 }
 
-.minimap-placeholder {
-    font-size: 11px;
-    color: rgba(170, 162, 145, 0.55);
+.sensor-list-rows {
+    flex-direction: column;
+}
+
+/*
+ * One row per sensor. Created at runtime by SensorListBinding from the
+ * scene's SensorMetadataTag components. The .sensor-row-status-dot
+ * (online/deferred) sits at the left, with a two-line text block at
+ * the right.
+ */
+.sensor-list-row {
+    flex-direction: row;
+    align-items: flex-start;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.03);
+}
+
+.sensor-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 3px;
+    margin-right: 8px;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.55);
+    flex-shrink: 0;
+}
+
+.sensor-status-dot--online {
+    background-color: rgba(124, 168, 100, 1);    /* vert pâle, branché */
+}
+
+.sensor-status-dot--deferred {
+    background-color: rgba(170, 162, 145, 0.55);  /* ocre désaturé, en attente */
+}
+
+.sensor-row-text {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.sensor-row-name {
+    font-size: 12px;
+    color: rgba(238, 232, 217, 1);                /* ivoire */
+}
+
+.sensor-row-subtitle {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.75);             /* ocre désaturé */
     -unity-font-style: italic;
     white-space: normal;
+}
+
+.sensor-list-legend {
+    margin-top: 8px;
+    flex-direction: column;
+}
+
+.sensor-list-legend-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.sensor-list-legend .sensor-status-dot {
+    margin-top: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+}
+
+.sensor-list-legend-text {
+    font-size: 10px;
+    color: rgba(220, 214, 198, 0.70);
+    -unity-font-style: italic;
 }
 
 /* =========================================================================

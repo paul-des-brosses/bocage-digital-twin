@@ -15,7 +15,7 @@ MonoBehaviour:
   elements:
   - id: hills
     sprite: {fileID: -6812745699520685309, guid: a99a0af76853db74687fdc6633436729, type: 3}
-    worldPosition: {x: 0.07, y: -0.29}
+    worldPosition: {x: 0.06999999, y: -0.29}
     scale: {x: 2.430389, y: 3.2005186}
     sortingLayerName: Background
     sortingOrderInLayer: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: hedge_high_no_tree (3)
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
-    worldPosition: {x: -7.92, y: -0.79}
+    worldPosition: {x: -7.9199996, y: -0.79}
     scale: {x: 0.24536254, y: 0.24536254}
     sortingLayerName: Midground
     sortingOrderInLayer: 1
@@ -87,7 +87,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: pond
     sprite: {fileID: 5817799449637031085, guid: c992feff00e192e49a5a2037e77aabda, type: 3}
-    worldPosition: {x: 2.5, y: -2.93}
+    worldPosition: {x: 2.5, y: -2.9299998}
     scale: {x: 1.0795, y: 1.0795}
     sortingLayerName: Foreground
     sortingOrderInLayer: 0
@@ -100,7 +100,7 @@ MonoBehaviour:
     sortingLayerName: Foreground
     sortingOrderInLayer: 1
     flipX: 0
-    material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: pollard_ash_main (1)
     sprite: {fileID: -5224188169631845903, guid: 6f800de9eb741e84e900357892af6ad0, type: 3}
     worldPosition: {x: 5.53, y: 0.88}
@@ -108,10 +108,10 @@ MonoBehaviour:
     sortingLayerName: Foreground
     sortingOrderInLayer: 1
     flipX: 0
-    material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: grass_border
     sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
-    worldPosition: {x: -1.37, y: -4.09}
+    worldPosition: {x: -0.13, y: -4.09}
     scale: {x: 1, y: 1}
     sortingLayerName: Foreground
     sortingOrderInLayer: 2
@@ -119,7 +119,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   - id: grass_border (2)
     sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
-    worldPosition: {x: -8.34, y: -4.24}
+    worldPosition: {x: -7.79, y: -4.24}
     scale: {x: 1, y: 1}
     sortingLayerName: Foreground
     sortingOrderInLayer: 2
@@ -127,17 +127,9 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   - id: grass_border (1)
     sprite: {fileID: 6325905927082861420, guid: 070f4fea6695cb240a83b3917421e94a, type: 3}
-    worldPosition: {x: 5.78, y: -3.94}
+    worldPosition: {x: 7.57, y: -3.94}
     scale: {x: 1, y: 1}
     sortingLayerName: Foreground
     sortingOrderInLayer: 2
     flipX: 0
     material: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  - id: Sky
-    sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-    worldPosition: {x: 0, y: -1.3}
-    scale: {x: 40, y: 25}
-    sortingLayerName: Sky
-    sortingOrderInLayer: 0
-    flipX: 0
-    material: {fileID: 2100000, guid: ca49d2e53d9be2a47bfc67866c01c0bb, type: 2}
