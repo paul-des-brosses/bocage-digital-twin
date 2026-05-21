@@ -53,10 +53,30 @@ namespace Bocage.Presentation.Simulation
 
         private SimulationEngine _engine;
         private Coroutine _tickRoutine;
+        private int _currentDay;
 
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
         public bool IsRunning => _tickRoutine != null;
+
+        /// <summary>
+        /// Number of simulated days that have elapsed since startup. Used
+        /// by the speed-control UI (sub-étape 7c.3) to render the
+        /// "skip-to-end" stop condition and by any future "session report"
+        /// to know how long the run lasted.
+        /// </summary>
+        public int CurrentDay => _currentDay;
+
+        /// <summary>
+        /// Tick cadence in simulated days per real-time second. Mutable at
+        /// runtime by the speed controls. Clamped to ]0, 200] to keep the
+        /// coroutine's WaitForSecondsRealtime sane.
+        /// </summary>
+        public float TicksPerSecond
+        {
+            get => ticksPerSecond;
+            set => ticksPerSecond = Mathf.Clamp(value, 0.01f, 200f);
+        }
 
         /// <summary>
         /// Fired after every Tick + PublishIndicators pass. Used by
@@ -116,9 +136,44 @@ namespace Bocage.Presentation.Simulation
                 yield return new WaitForSecondsRealtime(interval);
 
                 _engine.Tick();
+                _currentDay++;
                 PublishIndicators();
                 TickCompleted?.Invoke();
             }
+        }
+
+        /// <summary>
+        /// Synchronously ticks the engine until <see cref="CurrentDay"/>
+        /// reaches <paramref name="targetDay"/> (or already past it, in
+        /// which case it does nothing). The coroutine is stopped before
+        /// the loop so no concurrent tick fires, then restarted is up to
+        /// the caller (typically the speed controls leave the runner in
+        /// the paused state after a skip-to-end). The publishing pass is
+        /// done at the end only to avoid 1825 binding updates for a 5-year
+        /// skip; we still fire <see cref="TickCompleted"/> per tick so
+        /// diagnostic recorders capture every day.
+        /// </summary>
+        public void FastForwardTo(int targetDay)
+        {
+            int safetyCap = 100000; // ≈ 273 years sim, hard ceiling.
+            int budget = Mathf.Min(safetyCap, Mathf.Max(0, targetDay - _currentDay));
+            if (budget == 0) return;
+
+            bool wasRunning = IsRunning;
+            StopTicking();
+
+            for (int i = 0; i < budget; i++)
+            {
+                _engine.Tick();
+                _currentDay++;
+                TickCompleted?.Invoke();
+            }
+            PublishIndicators();
+            SimLogger.SimulationLog(
+                "[SimulationRunner] fast-forward done, " + budget + " ticks, now day=" + _currentDay);
+            // We intentionally do NOT restart ticking — sub-étape 7c.3
+            // skip-to-end ends in a paused state so the user can inspect.
+            // The caller is free to call StartTicking() again if needed.
         }
 
         private void PublishIndicators()

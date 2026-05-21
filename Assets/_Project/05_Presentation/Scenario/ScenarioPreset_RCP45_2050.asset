@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ac0727e4587e94390b6b11e3fbe34f, type: 3}
+  m_Name: ScenarioPreset_RCP45_2050
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
+  id: rcp45
+  displayName: Trajectoire RCP4.5
+  description: "Horizon 2050, +2 \xB0C et \u221220 % pr\xE9cipitations (sc\xE9nario
+    IPCC AR6 RCP4.5)."
+  temperatureAnomalyC: 2
+  precipitationAnomalyPercent: -20
+  hedgeRemovalRate: 0
+  inputIntensityFactor: 1
+  maecCoveragePercent: 0
+  pseSubsidyRate: 0
+  horizonInDays: 1825

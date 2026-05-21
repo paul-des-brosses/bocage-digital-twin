@@ -319,6 +319,20 @@ arbitrables par l'utilisateur, comparaison shadow run fonctionnelle.
   shadow run. Container `RC_TechDelta`, binding label remplaçant le
   placeholder "à venir Étape 8" du hero strip.
 - Vue de comparaison real vs shadow.
+- **Panneau "Conditions initiales"** : section UI dédiée pour
+  paramétrer l'état du bocage AVANT le démarrage du run :
+  `HedgerowDensity` (m/ha), `WaterTableDepth` (m), `FaunaPopulation`
+  (densité agrégée). Édition autorisée uniquement quand
+  `SimulationRunner.CurrentDay == 0` ; gelée dès le premier tick. Un
+  bouton "Réinitialiser le bocage" reconstruit `EcosystemModel` avec
+  les valeurs courantes du panneau (et remet le compteur de jours à
+  0). Cohérence visuelle : la modification de `HedgerowDensity` doit
+  recomposer le placement des sprites de haies via
+  `SceneCompositionDefinition` pour respecter le principe de
+  primauté du capteur (CLAUDE.md §9) — choix à arbitrer à
+  l'implémentation entre (a) regénérer la liste de sprites, (b)
+  modifier l'opacité du shader haies, (c) garder la composition fixe
+  et ne permettre que de petites variations numériques.
 
 **Critère de validation**
 
@@ -326,8 +340,13 @@ arbitrables par l'utilisateur, comparaison shadow run fonctionnelle.
   l'utilisateur arbitre, l'effet sur les KPIs diverge entre real et
   shadow.
 - Outcomes projetés visibles avec barres d'incertitude.
+- Démo : changement de la densité de haies dans le panneau "Conditions
+  initiales" + clic "Réinitialiser le bocage" → la scène et les KPIs
+  reflètent le nouvel état de départ. Tentative d'édition après day=1
+  → champs grisés, message explicatif.
 
-**Estimation** : 2 jours.
+**Estimation** : 2.5 jours (était 2 j, +0.5 j pour le panneau
+Conditions initiales).
 
 **Statut** : à faire.
 

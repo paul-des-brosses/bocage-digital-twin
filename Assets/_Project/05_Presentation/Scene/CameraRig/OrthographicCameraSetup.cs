@@ -35,8 +35,8 @@ namespace Bocage.Presentation.Scene.CameraRig
         [SerializeField, Tooltip("Fixed camera position. Z must be negative for a 2D scene.")]
         private Vector3 cameraPosition = new Vector3(0f, 0f, -10f);
 
-        [SerializeField, Tooltip("Normalized viewport rect (x, y, width, height in 0..1, origin bottom-left). Defines the on-screen scene window inside the dashboard.")]
-        private Rect viewportRect = new Rect(0.1458f, 0.2222f, 0.7083f, 0.7037f);
+        [SerializeField, Tooltip("Normalized viewport rect (x, y, width, height in 0..1, origin bottom-left). Defines the on-screen scene window inside the dashboard. Y reduced from 0.2222 to 0.15 on 2026-05-21 to slide the scene render down so it no longer butts up against the bottom edge of the hero-strip.")]
+        private Rect viewportRect = new Rect(0.1458f, 0.15f, 0.7083f, 0.7037f);
 
         private void OnEnable() => Apply(log: Application.isPlaying);
         private void OnValidate() => Apply(log: false);

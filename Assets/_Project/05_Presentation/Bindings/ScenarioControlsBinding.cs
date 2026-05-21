@@ -199,6 +199,32 @@ namespace Bocage.Presentation.Bindings
             runner.Scenario.HorizonInDays = evt.newValue;
         }
 
+        /// <summary>
+        /// Snaps every slider and value label to the supplied target values
+        /// without triggering the per-slider callbacks (so this method
+        /// alone does NOT push anything to the ScenarioContext). Used by
+        /// <see cref="ScenarioPresetsBinding"/> after it has applied a
+        /// preset to the scenario: the sliders jump visually to the new
+        /// target while the model interpolates over the transition window.
+        /// </summary>
+        public void SnapToPresetValues(
+            double temperatureAnomalyC,
+            double precipitationAnomalyPercent,
+            double hedgeRemovalRate,
+            double inputIntensityFactor,
+            double maecCoveragePercent,
+            double pseSubsidyRate,
+            int horizonInDays)
+        {
+            SetSlider(_tempSlider, _tempLabel, (float)temperatureAnomalyC, FormatTemperature);
+            SetSlider(_precipSlider, _precipLabel, (float)precipitationAnomalyPercent, FormatPercentSigned);
+            SetSlider(_hedgeRemovalSlider, _hedgeRemovalLabel, (float)hedgeRemovalRate, FormatHedgeRemoval);
+            SetSlider(_inputIntensitySlider, _inputIntensityLabel, (float)inputIntensityFactor, FormatIntensity);
+            SetSlider(_maecSlider, _maecLabel, (float)maecCoveragePercent, FormatPercent);
+            SetSlider(_pseSlider, _pseLabel, (float)pseSubsidyRate, FormatPseRate);
+            SetSliderInt(_horizonSlider, _horizonLabel, horizonInDays, FormatHorizon);
+        }
+
         // ---- Formatting (InvariantCulture so decimal sep is locale-stable) ----
 
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;

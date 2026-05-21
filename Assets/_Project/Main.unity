@@ -1875,7 +1875,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1088573110}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74f50dc5e66f4974885edce9cdc5828f, type: 3}
   m_Name: 
@@ -3519,7 +3519,7 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0.1458
-    y: 0.2222
+    y: 0.15
     width: 0.7083
     height: 0.7037
   near clip plane: 0.3
@@ -3575,7 +3575,7 @@ MonoBehaviour:
   viewportRect:
     serializedVersion: 2
     x: 0.1458
-    y: 0.2222
+    y: 0.15
     width: 0.7083
     height: 0.7037
 --- !u!1 &1904786266

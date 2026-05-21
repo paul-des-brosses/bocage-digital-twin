@@ -29,12 +29,67 @@
 }
 
 /* =========================================================================
+ *  Speed bar (sub-étape 7c.3) — top-centre, above the hero strip
+ * ========================================================================= */
+
+/*
+ * Anchored top-centre, positioned at z above the hero strip via a small
+ * negative top + transparent background. Four buttons in a row + a day
+ * counter label. Active play-speed gets the green accent border via
+ * .speed-button--active (mirrors .scenario-preset-button--active).
+ */
+.speed-bar {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    translate: -50% 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 8px 4px 8px;
+    background-color: rgba(20, 22, 26, 0.85);
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.speed-button {
+    margin: 0 2px 0 2px;
+    padding: 2px 8px 2px 8px;
+    min-height: 22px;
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.20);
+    border-radius: 3px;
+    color: rgba(220, 214, 198, 0.85);
+    font-size: 11px;
+}
+
+.speed-button:hover {
+    background-color: rgba(28, 31, 36, 1);
+    border-color: rgba(170, 162, 145, 0.45);
+    color: rgba(238, 232, 217, 1);
+}
+
+.speed-button--active {
+    border-color: rgba(124, 168, 100, 0.85);
+    background-color: rgba(28, 38, 28, 0.85);
+    color: rgba(238, 232, 217, 1);
+}
+
+.speed-day-counter {
+    margin-left: 10px;
+    font-size: 11px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+}
+
+/* =========================================================================
  *  Hero strip — 5 KPI cards anchored top
  * ========================================================================= */
 
 .hero-strip {
     position: absolute;
-    top: 0;
+    top: 36px;                            /* leaves room for the speed-bar above */
     left: 0;
     right: 0;
     flex-direction: row;
@@ -131,7 +186,7 @@
 
 .scenario-panel {
     position: absolute;
-    top: 130px;                           /* clears the full hero-strip height */
+    top: 166px;                           /* clears speed-bar (36px) + hero-strip height */
     bottom: 16px;
     left: 16px;
     width: 260px;
@@ -160,6 +215,44 @@
     padding-top: 4px;
     border-top-width: 1px;
     border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+/*
+ * Preset row (sub-étape 7c.2) — wraps onto multiple lines when the
+ * scenario-panel is narrow. Buttons are styled to match the dark dashboard
+ * palette; the active preset wears the accent green border.
+ */
+.scenario-presets-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.scenario-preset-button {
+    flex-grow: 1;
+    flex-basis: 45%;
+    margin: 2px;
+    padding: 4px 6px 4px 6px;
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.20);
+    border-radius: 3px;
+    color: rgba(220, 214, 198, 0.85);
+    font-size: 10px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.scenario-preset-button:hover {
+    background-color: rgba(28, 31, 36, 1);
+    border-color: rgba(170, 162, 145, 0.45);
+    color: rgba(238, 232, 217, 1);
+}
+
+.scenario-preset-button--active {
+    border-color: rgba(124, 168, 100, 0.85);
+    color: rgba(238, 232, 217, 1);
+    background-color: rgba(28, 38, 28, 0.85);
 }
 
 .scenario-control {
@@ -230,6 +323,50 @@
 
 .scenario-slider:hover .unity-base-slider__dragger {
     background-color: rgba(150, 190, 124, 1);
+}
+
+/*
+ * Numeric input field on the right of each slider (show-input-field=true).
+ * Added 2026-05-21 to give users precise typed input on top of the drag
+ * gesture (e.g. typing "+2.3" exactly instead of nudging the dragger).
+ * The default chrome is beige editor-style; we restyle to match the dark
+ * dashboard palette.
+ */
+.scenario-slider .unity-base-slider__text-field {
+    min-width: 48px;
+    margin-left: 6px;
+    margin-right: 2px;
+}
+
+.scenario-slider .unity-base-slider__text-field .unity-base-field__input {
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.30);
+    border-radius: 3px;
+    padding: 1px 4px 1px 4px;
+    color: rgba(238, 232, 217, 1);
+    font-size: 11px;
+    -unity-text-align: middle-right;
+}
+
+.scenario-slider .unity-base-slider__text-field:hover .unity-base-field__input,
+.scenario-slider .unity-base-slider__text-field:focus .unity-base-field__input {
+    border-color: rgba(124, 168, 100, 0.85);
+    background-color: rgba(20, 24, 22, 1);
+}
+
+/*
+ * Lay the slider out horizontally so the dragger track and the text-field
+ * sit side-by-side rather than the default vertical stack.
+ */
+.scenario-slider {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* The track + dragger zone should fill remaining width to the left of the input field. */
+.scenario-slider > .unity-base-slider__input {
+    flex-grow: 1;
 }
 
 .scenario-control-hint {

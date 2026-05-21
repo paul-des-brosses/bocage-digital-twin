@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ac0727e4587e94390b6b11e3fbe34f, type: 3}
+  m_Name: ScenarioPreset_Intensif
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
+  id: intensif
+  displayName: Intensif
+  description: "Arrachage soutenu 5 m/ha/an, intrants \xD72, aucune aide environnementale."
+  temperatureAnomalyC: 0
+  precipitationAnomalyPercent: 0
+  hedgeRemovalRate: 5
+  inputIntensityFactor: 2
+  maecCoveragePercent: 0
+  pseSubsidyRate: 0
+  horizonInDays: 1825
