@@ -51,7 +51,27 @@ namespace Bocage.SimulationCore
 
         public void Tick()
         {
-            Scenario.Tick();
+            TickInternal(advanceScenario: true);
+        }
+
+        /// <summary>
+        /// Same as <see cref="Tick"/> but does NOT advance the shared
+        /// <see cref="ScenarioContext"/>. Used by the shadow run so that
+        /// the scenario's <see cref="TransitioningParameter{T}"/> values
+        /// are only stepped once per simulated day — the real run owns
+        /// the canonical tick, the shadow just consumes the updated
+        /// scenario state. Without this guard, sharing a scenario by
+        /// reference across two engines would double-tick transitions
+        /// and shorten their durations by half.
+        /// </summary>
+        public void TickWithoutAdvancingScenario()
+        {
+            TickInternal(advanceScenario: false);
+        }
+
+        private void TickInternal(bool advanceScenario)
+        {
+            if (advanceScenario) Scenario.Tick();
 
             for (int i = 0; i < _rules.Count; i++)
             {

@@ -33,7 +33,8 @@ _Debug
 
 | GameObject enfant | Components | Références à brancher |
 |---|---|---|
-| `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | — (rien à brancher, alimente les RC_*) |
+| `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | RCs : HedgerowDensity, WaterTable, IntegratedProfitability, **BiodiversityComposite ✨**, **TechDelta ✨**. `Shadow Runner` → glisser le GO ci-dessous. |
+| `ShadowSimulationRunner` ✨ (sub-étape 8b) | `ShadowSimulationRunner` | `Real Runner` → le `SimulationRunner` ci-dessus (même GO ou autre, peu importe). |
 | `SimulationTraceRecorder` *(optionnel — diagnostic 7b)* | `SimulationTraceRecorder` | — (s'auto-abonne au TickCompleted du SimulationRunner) |
 
 ---
@@ -54,6 +55,8 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | `WaterTableLabelBinding` | (vérifier — voir source) |
 | `WaterTableDetailLabelBinding` | (vérifier — voir source) |
 | `IntegratedProfitabilityLabelBinding` | `Runner` → `_Bootstrap/SimulationRunner` |
+| **`BiodiversityLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_BiodiversityComposite.asset` |
+| **`TechDeltaLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_TechDelta.asset` |
 | `HedgerowShaderBinding` | (lié à la composition de scène) |
 | `SensorListBinding` | (lit les `SensorMetadataTag` posés dans la scène) |
 | `ViewportWarningBinding` | (auto, lit `Screen.width`) |
@@ -105,6 +108,8 @@ Localisation : `Assets/_Project/Data/RuntimeContainers/`
 | `RC_HedgerowDensity.asset` | `SimulationRunner` | `HedgerowDensityLabelBinding`, `HedgerowShaderBinding` |
 | `RC_WaterTableDepth.asset` | `SimulationRunner` | `WaterTableLabelBinding`, `WaterTableDetailLabelBinding` |
 | `RC_IntegratedProfitability.asset` | `SimulationRunner` | `IntegratedProfitabilityLabelBinding` |
+| `RC_BiodiversityComposite.asset` ✨ | `SimulationRunner` | `BiodiversityLabelBinding` |
+| `RC_TechDelta.asset` ✨ | `SimulationRunner` | `TechDeltaLabelBinding` |
 
 (à compléter au fil des étapes — Biodiversity et TechDelta arrivent à
 l'étape 8.)
@@ -125,6 +130,14 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-05-21** — Sub-étape 8b livrée :
+  `BiodiversityCompositeIndicator` (composite 50 % fauna + 30 % hedge +
+  20 % water inverse), `TechDeltaIndicator` (% delta rentabilité real vs
+  shadow), `ShadowSimulationRunner` (run parallèle avec le même seed et
+  scenario partagé), 2 RCs observables + 2 LabelBindings. Hero cards
+  Biodiversité et Delta tech débarrassées du tag `--deferred`. Les 5
+  Hero KPIs sont maintenant tous honnêtes.
 
 - **2026-05-21** — `OrthographicCameraSetup.viewportRect.y` passé de
   0.2222 à 0.15 pour décaler le rendu de scène vers le bas et laisser

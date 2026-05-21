@@ -2612,6 +2612,8 @@ GameObject:
   - component: {fileID: 1463489829}
   - component: {fileID: 1463489830}
   - component: {fileID: 1463489831}
+  - component: {fileID: 1463489833}
+  - component: {fileID: 1463489832}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -2778,6 +2780,34 @@ MonoBehaviour:
   maecCoverageValueLabelName: maec-coverage-value
   pseRateValueLabelName: pse-rate-value
   horizonValueLabelName: horizon-value
+--- !u!114 &1463489832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1840c48d32015d4ca9f62984ce03101, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.TechDeltaLabelBinding
+  container: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
+  labelName: tech-delta-value
+--- !u!114 &1463489833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eded4a53030451249aa6e20c84c2b42e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.BiodiversityLabelBinding
+  container: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
+  labelName: biodiversity-value
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0
@@ -3851,6 +3881,7 @@ GameObject:
   - component: {fileID: 2115294098}
   - component: {fileID: 2115294097}
   - component: {fileID: 2115294099}
+  - component: {fileID: 2115294100}
   m_Layer: 0
   m_Name: _Bootstrap
   m_TagString: Untagged
@@ -3903,6 +3934,22 @@ MonoBehaviour:
   hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
   waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
   profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
+  biodiversityContainer: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
+  techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
+  shadowRunner: {fileID: 2115294100}
+--- !u!114 &2115294100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115294096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1541686c89f21840a0c303b0d811165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Simulation.ShadowSimulationRunner
+  realRunner: {fileID: 2115294099}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

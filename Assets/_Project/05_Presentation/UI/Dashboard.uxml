@@ -49,12 +49,12 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-biodiversity" class="kpi-card kpi-card--deferred" tooltip="Score composite de biodiversité. Câblage honnête prévu à l'Étape 8 (ajout de FaunaPopulation au modèle).">
-                <ui:Label text="Biodiversité" class="kpi-label" />
+            <ui:VisualElement name="kpi-biodiversity" class="kpi-card" tooltip="Score composite de biodiversité (en %). Moyenne pondérée 50 % fauna abondance + 30 % densité haies + 20 % nappe (inversée). 100 % = état de référence Perche, 0 % = effondrement.">
+                <ui:Label name="biodiversity-label" text="Biodiversité" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
-                    <ui:Label text="—" class="kpi-value kpi-value--deferred" />
+                    <ui:Label name="biodiversity-value" text="—" class="kpi-value" />
+                    <ui:Label name="biodiversity-unit" text="%" class="kpi-unit" />
                 </ui:VisualElement>
-                <ui:Label text="à venir Étape 8" class="kpi-deferred-tag" />
             </ui:VisualElement>
 
             <ui:VisualElement name="kpi-profitability" class="kpi-card" tooltip="Rentabilité intégrée en euros par hectare et par an. Composite honnête : revenu cultures (CropYield × prix) − coûts intrants − coûts entretien + paiement pour services environnementaux haies. Toutes les variables sont des champs d'état d'EcosystemModel.">
@@ -65,12 +65,12 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-tech-delta" class="kpi-card kpi-card--deferred" tooltip="Écart en pourcentage entre la run réelle (avec capteurs et décisions algorithmiques) et la run fantôme (sans technologie). Câblage prévu à l'Étape 8 (shadow run).">
-                <ui:Label text="Delta tech" class="kpi-label" />
+            <ui:VisualElement name="kpi-tech-delta" class="kpi-card" tooltip="Avantage relatif (en %) de la run réelle sur la run fantôme, sur la rentabilité intégrée. À 8b la run fantôme est identique à la run réelle (pas encore de décisions tech) donc le delta est 0 par construction ; il se chargera quand les recommandations de l'étape 8c arrivent.">
+                <ui:Label name="tech-delta-label" text="Delta tech" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
-                    <ui:Label text="—" class="kpi-value kpi-value--deferred" />
+                    <ui:Label name="tech-delta-value" text="—" class="kpi-value" />
+                    <ui:Label name="tech-delta-unit" text="%" class="kpi-unit" />
                 </ui:VisualElement>
-                <ui:Label text="à venir Étape 8" class="kpi-deferred-tag" />
             </ui:VisualElement>
 
         </ui:VisualElement>

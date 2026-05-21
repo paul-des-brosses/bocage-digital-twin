@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f4ab1055a0997b409c33c134f37a1d0, type: 3}
+  m_Name: RC_TechDelta
+  m_EditorClassIdentifier: Bocage.Data.RuntimeContainers::Bocage.Data.RuntimeContainers.RC_TechDelta
+  deltaPercent: 0
+  normalized01: 0

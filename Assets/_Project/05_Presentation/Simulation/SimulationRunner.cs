@@ -45,11 +45,12 @@ namespace Bocage.Presentation.Simulation
         [SerializeField] private RC_HedgerowDensity hedgerowDensityContainer;
         [SerializeField] private RC_WaterTableDepth waterTableContainer;
         [SerializeField] private RC_IntegratedProfitability profitabilityContainer;
-        // Biodiversity and TechDelta Hero KPIs will be wired here at
-        // Étape 8, when FaunaPopulation lands in EcosystemModel and
-        // the shadow run is operational. Until then we only publish
-        // indicators whose value is a direct read of an existing model
-        // variable (CLAUDE.md §9, sensor primacy: no stub formulas).
+        [SerializeField] private RC_BiodiversityComposite biodiversityContainer;
+        [SerializeField] private RC_TechDelta techDeltaContainer;
+
+        [Header("Shadow run (sub-étape 8b)")]
+        [SerializeField, Tooltip("Optional. If assigned, the shadow runner provides the second EcosystemModel against which the real run is compared by TechDeltaIndicator. If left null, the tech-delta KPI is computed against the real run itself (delta = 0).")]
+        private ShadowSimulationRunner shadowRunner;
 
         private SimulationEngine _engine;
         private Coroutine _tickRoutine;
@@ -58,6 +59,14 @@ namespace Bocage.Presentation.Simulation
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
         public bool IsRunning => _tickRoutine != null;
+
+        /// <summary>
+        /// Master seed used to build the engine. Exposed so the shadow
+        /// runner can build its own engine with the SAME seed (and the
+        /// shared scenario reference) so the two trajectories only
+        /// diverge through tech actions, not through RNG.
+        /// </summary>
+        public ulong MasterSeed => masterSeed;
 
         /// <summary>
         /// Number of simulated days that have elapsed since startup. Used
@@ -199,6 +208,27 @@ namespace Bocage.Presentation.Simulation
                 double raw = IntegratedProfitabilityIndicator.Compute(model, _engine.Scenario);
                 double normalized = IntegratedProfitabilityIndicator.Normalize(raw);
                 profitabilityContainer.Set((float)raw, (float)normalized);
+            }
+
+            if (biodiversityContainer != null)
+            {
+                double raw = BiodiversityCompositeIndicator.Compute(model);
+                double normalized = BiodiversityCompositeIndicator.Normalize(raw);
+                biodiversityContainer.Set((float)raw, (float)normalized);
+            }
+
+            if (techDeltaContainer != null)
+            {
+                // If no shadow runner is wired, the comparison degenerates
+                // to "real vs real" → delta = 0. This is honest reporting:
+                // we publish the value that the indicator computes from
+                // whatever shadow model is available.
+                var shadowModel = shadowRunner != null && shadowRunner.ShadowModel != null
+                    ? shadowRunner.ShadowModel
+                    : model;
+                double raw = TechDeltaIndicator.Compute(model, shadowModel, _engine.Scenario);
+                double normalized = TechDeltaIndicator.Normalize(raw);
+                techDeltaContainer.Set((float)raw, (float)normalized);
             }
         }
     }
