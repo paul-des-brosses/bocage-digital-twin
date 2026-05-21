@@ -3,10 +3,10 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 5 livrées, sous-étape 6a
-livrée (2 Hero KPIs honnêtes câblés bout en bout, refus des stubs
-dérivés cf DECISIONS.md #40). Prochaine étape : 6b (dashboard UI
-Toolkit étoffé avec 5 cartouches dont 3 placeholders "à venir").
+**Statut global** : en cours — étapes 1 à 6 livrées (simulation core,
+scène data-driven, 2 Hero KPIs honnêtes + 3 placeholders, dashboard
+UI Toolkit complet, capteurs visibles avec hover sync scène ↔ liste).
+Prochaine étape : 7 (presets + scénario + KPI rentabilité honnête).
 
 ---
 
@@ -212,10 +212,22 @@ reportés (cf DECISIONS.md #40).
 - Tooltips Garamond italique sur hover des cartouches.
 - Bandeau d'avertissement si fenêtre < 1280 px.
 
-**Sous-étape 6c — Capteurs et minimap** :
-- Capteurs visibles dans la scène avec sprites.
-- Minimap vectorielle avec capteurs positionnés.
-- Hover synchronisé minimap ↔ scène (highlight visuel).
+**Sous-étape 6c — Capteurs et liste capteurs** : ✅ livré.
+- 5 sprites capteurs (piézomètre, station météo, tour de covariance,
+  acoustique, piège photo) intégrés dans la scène via le système
+  data-driven `SensorPlacementDefinition` SO + `SensorVisualPlacer`
+  (calqué sur le pattern composition/SceneAssembler).
+- 2 capteurs marqués Online (piézo → WaterTableDepth, météo →
+  CurrentWeather), 3 marqués Deferred (cf DECISIONS.md #40 — refus
+  d'inventer une variable mesurée).
+- La minimap vectorielle initialement prévue est remplacée par un
+  panneau "Capteurs déployés" listant chaque capteur avec dot statut,
+  nom, type et variable observée (ou étape d'arrivée pour Deferred).
+  Rationale : la scène étant visible derrière l'UI, une carte
+  spatiale dupliquait l'info ; une liste structurée est plus dense.
+- Hover sync bidirectionnel via `SensorHoverEventBus` statique
+  (CLAUDE.md §6) : pointer entre un sprite scène scale 1.0 → 1.15
+  et highlight la rangée correspondante, et inverse.
 
 **Critère de validation**
 
@@ -233,10 +245,10 @@ reportés (cf DECISIONS.md #40).
   expose `FaunaPopulation` (et idéalement diversité végétale).
 - `TechDelta` → arrive à l'Étape 8 quand la shadow run est câblée.
 
-**Estimation** : 6a livré (0.5 j) + 6b restant (0.5-1 j) + 6c restant
-(0.5 j). Total 1.5-2 jours.
+**Estimation** : 6a (0.5 j) + 6b (~0.5 j) + 6c (~0.5 j) = ~1.5 j
+livrés.
 
-**Statut** : 6a ✅ livré, 6b et 6c à faire.
+**Statut** : ✅ livré (6a, 6b et 6c).
 
 ---
 
