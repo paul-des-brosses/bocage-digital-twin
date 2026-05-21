@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7da20fe35ab3f694ea09e2de5e873ad5, type: 3}
+  m_Name: SensorPlacement_Default
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Sensors.SensorPlacementDefinition
+  sensors:
+  - id: sensor_piezometer_01
+    displayName: "Pi\xE8zom\xE8tre"
+    type: 0
+    onlineStatus: 0
+    observedModelVariable: WaterTableDepth
+    deferredUntilStep: 
+    sprite: {fileID: -6158720873577902434, guid: 9c7a2f091db13f9439d04974a5f2919f, type: 3}
+    worldPosition: {x: 5.25, y: -2.72}
+    scale: {x: 0.28406, y: 0.28406}
+    sortingLayerName: Sensors
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: sensor_weather_01
+    displayName: "Station m\xE9t\xE9o"
+    type: 1
+    onlineStatus: 0
+    observedModelVariable: CurrentWeather
+    deferredUntilStep: 
+    sprite: {fileID: 403363450406317551, guid: 2b2b12c08f768344d8bc4c06dc0d7a2d, type: 3}
+    worldPosition: {x: 0.28, y: -0.2}
+    scale: {x: 0.76920056, y: 0.76920056}
+    sortingLayerName: Sensors
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: sensor_eddy_tower_01
+    displayName: Tour de covariance
+    type: 2
+    onlineStatus: 1
+    observedModelVariable: 
+    deferredUntilStep: Etape 7-8
+    sprite: {fileID: -1735820185115143466, guid: 87c1a6cc2a46bf941a38444741df460e, type: 3}
+    worldPosition: {x: -7.09, y: 1.32}
+    scale: {x: 0.69064, y: 0.69064}
+    sortingLayerName: Sensors
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: sensor_acoustic01
+    displayName: Capteur acoustique
+    type: 3
+    onlineStatus: 1
+    observedModelVariable: 
+    deferredUntilStep: Etape 8
+    sprite: {fileID: 8567368235537765376, guid: e758268316c97d6409bf356ace099a58, type: 3}
+    worldPosition: {x: 8.37, y: -1.7}
+    scale: {x: 0.319144, y: 0.319144}
+    sortingLayerName: Sensors
+    sortingOrderInLayer: 0
+    flipX: 0
+  - id: sensor_camera_trap_01
+    displayName: "Pi\xE8ge photo"
+    type: 4
+    onlineStatus: 1
+    observedModelVariable: 
+    deferredUntilStep: Etape 8
+    sprite: {fileID: -2897591438096116089, guid: 79e6a67bc69c8fb4b888f82581865712, type: 3}
+    worldPosition: {x: -2.63, y: -2.68}
+    scale: {x: 0.18675248, y: 0.18675248}
+    sortingLayerName: Sensors
+    sortingOrderInLayer: 0
+    flipX: 0
