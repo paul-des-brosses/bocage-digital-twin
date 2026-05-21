@@ -37,6 +37,38 @@ MonoBehaviour:
     sortingOrderInLayer: 1
     flipX: 0
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
+  - id: hedge_high_no_tree (4)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -8.26, y: -0.8}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
+  - id: hedge_high_no_tree (5)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -8.94, y: -0.8}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
+  - id: hedge_high_no_tree (6)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -9.22, y: -0.9}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
+  - id: hedge_high_no_tree (7)
+    sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
+    worldPosition: {x: -10.27, y: -0.8}
+    scale: {x: 0.24536254, y: 0.24536254}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 1
+    flipX: 0
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: hedge_high_no_tree (2)
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
     worldPosition: {x: -4.38, y: -1.06}
@@ -47,7 +79,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: hedge_high_no_tree (3)
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
-    worldPosition: {x: -7.9199996, y: -0.79}
+    worldPosition: {x: -7.58, y: -0.87}
     scale: {x: 0.24536254, y: 0.24536254}
     sortingLayerName: Midground
     sortingOrderInLayer: 1
@@ -55,7 +87,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
   - id: hedge_high_no_tree (1)
     sprite: {fileID: -2487182530689658725, guid: 1d9b46739b2578a4b994aff48a23934e, type: 3}
-    worldPosition: {x: -6.63, y: -0.83}
+    worldPosition: {x: -6.47, y: -0.83}
     scale: {x: 0.27675337, y: 0.27675337}
     sortingLayerName: Midground
     sortingOrderInLayer: 1
@@ -72,6 +104,14 @@ MonoBehaviour:
   - id: hedge_low_01 (2)
     sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
     worldPosition: {x: 6.51, y: -1.26}
+    scale: {x: 0.47640446, y: 0.47640446}
+    sortingLayerName: Midground
+    sortingOrderInLayer: 2
+    flipX: 0
+    material: {fileID: 2100000, guid: c168a82bc0f28144791615e4798eae03, type: 2}
+  - id: hedge_low_01 (3)
+    sprite: {fileID: -7550130934082553333, guid: b76caff9fe180c342aede1cff6a90e4d, type: 3}
+    worldPosition: {x: 10.95, y: -1.26}
     scale: {x: 0.47640446, y: 0.47640446}
     sortingLayerName: Midground
     sortingOrderInLayer: 2
