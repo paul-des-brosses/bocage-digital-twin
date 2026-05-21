@@ -32,6 +32,10 @@ namespace Bocage.SimulationCore
                 new CropYieldDynamicsRule(),
                 new InputCostDynamicsRule(),
                 new MaintenanceCostDynamicsRule(),
+                // Fauna depends on the up-to-date habitat state (hedgerow
+                // density and water table) so it runs after both have been
+                // updated for the day.
+                new FaunaDynamicsRule(),
             };
 
             return new SimulationEngine(masterSeed, model, scenario, rules);

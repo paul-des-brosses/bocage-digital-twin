@@ -50,6 +50,23 @@ namespace Bocage.SimulationCore.Model
         /// </summary>
         public double MaintenanceCost { get; private set; }
 
+        /// <summary>
+        /// Composite fauna abundance index, dimensionless. 1.0 represents
+        /// the Perche bocage reference state (90 m/ha hedges, water table
+        /// at 2 m, conventional input intensity). Values above 1 indicate
+        /// richer fauna than reference (denser hedges, wetter, less
+        /// intensive), values below 1 indicate impoverished fauna
+        /// (intensification, drought, hedge removal).
+        /// <para>
+        /// Calibration sources: INRAE / OFB Vigie-Nature (−30 % oiseaux
+        /// des milieux agricoles depuis 1989), Réseau Haies / Solagro
+        /// (doublement des passereaux à 100+ m/ha), IPBES (−50 % insectes
+        /// en 30 ans sous pression pesticides). Dynamics with a ~1-year
+        /// time constant: fauna populations track habitat changes slowly.
+        /// </para>
+        /// </summary>
+        public double FaunaPopulation { get; private set; }
+
         public EcosystemModel(
             int initialDay = 0,
             Weather initialWeather = default,
@@ -57,7 +74,8 @@ namespace Bocage.SimulationCore.Model
             double initialHedgerowDensity = 90.0,
             double initialCropYield = 5.5,
             double initialInputCost = 1200.0,
-            double initialMaintenanceCost = 90.0)
+            double initialMaintenanceCost = 90.0,
+            double initialFaunaPopulation = 1.0)
         {
             CurrentDay = initialDay;
             CurrentWeather = initialWeather;
@@ -66,6 +84,7 @@ namespace Bocage.SimulationCore.Model
             CropYield = ClampNonNegative(initialCropYield);
             InputCost = ClampNonNegative(initialInputCost);
             MaintenanceCost = ClampNonNegative(initialMaintenanceCost);
+            FaunaPopulation = ClampNonNegative(initialFaunaPopulation);
         }
 
         public void AdvanceDay()
@@ -101,6 +120,11 @@ namespace Bocage.SimulationCore.Model
         public void SetMaintenanceCost(double eurosPerHectarePerYear)
         {
             MaintenanceCost = ClampNonNegative(eurosPerHectarePerYear);
+        }
+
+        public void SetFaunaPopulation(double index)
+        {
+            FaunaPopulation = ClampNonNegative(index);
         }
 
         private static double ClampNonNegative(double value)
