@@ -39,12 +39,12 @@
                 <ui:Label text="à venir Étape 8" class="kpi-deferred-tag" />
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-profitability" class="kpi-card kpi-card--deferred" tooltip="Rentabilité intégrée en euros par hectare et par an. Câblage honnête prévu à l'Étape 7 (ajout des variables économiques au modèle).">
-                <ui:Label text="Rentabilité intégrée" class="kpi-label" />
+            <ui:VisualElement name="kpi-profitability" class="kpi-card" tooltip="Rentabilité intégrée en euros par hectare et par an. Composite honnête : revenu cultures (CropYield × prix) − coûts intrants − coûts entretien + paiement pour services environnementaux haies. Toutes les variables sont des champs d'état d'EcosystemModel.">
+                <ui:Label name="profitability-label" text="Rentabilité intégrée" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
-                    <ui:Label text="—" class="kpi-value kpi-value--deferred" />
+                    <ui:Label name="profitability-value" text="—" class="kpi-value" />
+                    <ui:Label name="profitability-unit" text="€/ha/an" class="kpi-unit" />
                 </ui:VisualElement>
-                <ui:Label text="à venir Étape 7" class="kpi-deferred-tag" />
             </ui:VisualElement>
 
             <ui:VisualElement name="kpi-tech-delta" class="kpi-card kpi-card--deferred" tooltip="Écart en pourcentage entre la run réelle (avec capteurs et décisions algorithmiques) et la run fantôme (sans technologie). Câblage prévu à l'Étape 8 (shadow run).">

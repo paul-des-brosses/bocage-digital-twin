@@ -44,11 +44,12 @@ namespace Bocage.Presentation.Simulation
         [Header("Observable containers")]
         [SerializeField] private RC_HedgerowDensity hedgerowDensityContainer;
         [SerializeField] private RC_WaterTableDepth waterTableContainer;
-        // Other Hero KPIs (Biodiversity, Profitability, TechDelta) will be
-        // wired here when the EcosystemModel exposes the underlying state
-        // variables. Until then we only publish indicators whose value is
-        // a direct read of an existing model variable (CLAUDE.md §9,
-        // sensor primacy: no inventing of data via arbitrary formulas).
+        [SerializeField] private RC_IntegratedProfitability profitabilityContainer;
+        // Biodiversity and TechDelta Hero KPIs will be wired here at
+        // Étape 8, when FaunaPopulation lands in EcosystemModel and
+        // the shadow run is operational. Until then we only publish
+        // indicators whose value is a direct read of an existing model
+        // variable (CLAUDE.md §9, sensor primacy: no stub formulas).
 
         private SimulationEngine _engine;
         private Coroutine _tickRoutine;
@@ -125,6 +126,13 @@ namespace Bocage.Presentation.Simulation
                 double raw = WaterTableIndicator.Compute(model);
                 double normalized = WaterTableIndicator.Normalize(raw);
                 waterTableContainer.Set((float)raw, (float)normalized);
+            }
+
+            if (profitabilityContainer != null)
+            {
+                double raw = IntegratedProfitabilityIndicator.Compute(model);
+                double normalized = IntegratedProfitabilityIndicator.Normalize(raw);
+                profitabilityContainer.Set((float)raw, (float)normalized);
             }
         }
     }

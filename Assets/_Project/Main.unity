@@ -2406,6 +2406,7 @@ GameObject:
   - component: {fileID: 1463489828}
   - component: {fileID: 1463489827}
   - component: {fileID: 1463489829}
+  - component: {fileID: 1463489830}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -2530,6 +2531,20 @@ MonoBehaviour:
   nameLabelClass: sensor-row-name
   subtitleLabelClass: sensor-row-subtitle
   highlightedRowClass: sensor-list-row--highlighted
+--- !u!114 &1463489830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad47186016f0734b9e1df5a2bf1d9d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.IntegratedProfitabilityLabelBinding
+  container: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
+  labelName: profitability-value
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0
@@ -3654,6 +3669,7 @@ MonoBehaviour:
   autoStart: 1
   hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
   waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
+  profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
