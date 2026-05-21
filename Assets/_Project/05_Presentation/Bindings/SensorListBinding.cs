@@ -60,10 +60,17 @@ namespace Bocage.Presentation.Bindings
         [SerializeField, Tooltip("USS class for the subtitle label (variable or deferred-until).")]
         private string subtitleLabelClass = "sensor-row-subtitle";
 
+        [SerializeField, Tooltip("USS class applied to a row while it (or its scene sibling) is hovered.")]
+        private string highlightedRowClass = "sensor-list-row--highlighted";
+
         private UIDocument _document;
         private VisualElement _rowsContainer;
         private readonly Dictionary<string, VisualElement> _rowsByDisplayName = new Dictionary<string, VisualElement>(8);
         private readonly Dictionary<string, SensorMetadataTag> _tagsByDisplayName = new Dictionary<string, SensorMetadataTag>(8);
+        // Keyed by sensor id so the hover event bus (which uses sensor ids)
+        // can find the matching row directly.
+        private readonly Dictionary<string, VisualElement> _rowsBySensorId = new Dictionary<string, VisualElement>(8);
+        private bool _subscribedToBus;
 
         /// <summary>
         /// Read-only access to (key → row) used by 6c.3 hover sync.
@@ -82,11 +89,45 @@ namespace Bocage.Presentation.Bindings
         {
             ResolveContainer();
             BuildRows();
+            SubscribeToBus();
         }
 
         private void OnDestroy()
         {
+            UnsubscribeFromBus();
             ClearRows();
+        }
+
+        private void SubscribeToBus()
+        {
+            if (_subscribedToBus) return;
+            SensorHoverEventBus.SensorHoverEnter += HandleBusHoverEnter;
+            SensorHoverEventBus.SensorHoverExit += HandleBusHoverExit;
+            _subscribedToBus = true;
+        }
+
+        private void UnsubscribeFromBus()
+        {
+            if (!_subscribedToBus) return;
+            SensorHoverEventBus.SensorHoverEnter -= HandleBusHoverEnter;
+            SensorHoverEventBus.SensorHoverExit -= HandleBusHoverExit;
+            _subscribedToBus = false;
+        }
+
+        private void HandleBusHoverEnter(string sensorId)
+        {
+            if (_rowsBySensorId.TryGetValue(sensorId, out var row) && row != null)
+            {
+                row.AddToClassList(highlightedRowClass);
+            }
+        }
+
+        private void HandleBusHoverExit(string sensorId)
+        {
+            if (_rowsBySensorId.TryGetValue(sensorId, out var row) && row != null)
+            {
+                row.RemoveFromClassList(highlightedRowClass);
+            }
         }
 
         private void ResolveContainer()
@@ -126,9 +167,20 @@ namespace Bocage.Presentation.Bindings
                 }
 
                 var row = BuildRow(meta);
+                // Hook bidirectional hover: hovering this row raises bus
+                // events keyed by sensor id, which the scene side and the
+                // bus subscriber on this binding both react to.
+                string capturedSensorId = meta.SensorId;
+                row.RegisterCallback<PointerEnterEvent>(_ => SensorHoverEventBus.RaiseEnter(capturedSensorId));
+                row.RegisterCallback<PointerLeaveEvent>(_ => SensorHoverEventBus.RaiseExit(capturedSensorId));
+
                 _rowsContainer.Add(row);
                 _rowsByDisplayName[key] = row;
                 _tagsByDisplayName[key] = meta;
+                if (!string.IsNullOrEmpty(meta.SensorId))
+                {
+                    _rowsBySensorId[meta.SensorId] = row;
+                }
                 created++;
             }
 
@@ -186,6 +238,7 @@ namespace Bocage.Presentation.Bindings
             }
             _rowsByDisplayName.Clear();
             _tagsByDisplayName.Clear();
+            _rowsBySensorId.Clear();
         }
     }
 }

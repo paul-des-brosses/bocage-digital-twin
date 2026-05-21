@@ -20,8 +20,8 @@ MonoBehaviour:
     observedModelVariable: WaterTableDepth
     deferredUntilStep: 
     sprite: {fileID: -6158720873577902434, guid: 9c7a2f091db13f9439d04974a5f2919f, type: 3}
-    worldPosition: {x: 5.25, y: -2.72}
-    scale: {x: 0.28406, y: 0.28406}
+    worldPosition: {x: 4.7, y: -1.42}
+    scale: {x: 0.3418094, y: 0.3418094}
     sortingLayerName: Sensors
     sortingOrderInLayer: 0
     flipX: 0

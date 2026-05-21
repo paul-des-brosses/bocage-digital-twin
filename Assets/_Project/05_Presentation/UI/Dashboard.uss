@@ -225,8 +225,21 @@
     align-items: flex-start;
     padding-top: 4px;
     padding-bottom: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
     border-bottom-width: 1px;
     border-bottom-color: rgba(255, 255, 255, 0.03);
+    border-radius: 3px;
+}
+
+/*
+ * Highlighted state — toggled via class by SensorListBinding either
+ * when the row receives a PointerEnter or when the scene-side
+ * SensorHoverEmitter raises an Enter for the matching sensor id.
+ * Provides the UI feedback of the bidirectional hover sync (6c.3).
+ */
+.sensor-list-row--highlighted {
+    background-color: rgba(124, 168, 100, 0.12); /* vert pâle très transparent */
 }
 
 .sensor-status-dot {

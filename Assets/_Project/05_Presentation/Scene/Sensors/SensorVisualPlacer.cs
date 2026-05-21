@@ -119,6 +119,19 @@ namespace Bocage.Presentation.Scene.Sensors
                 var tag = go.AddComponent<SensorMetadataTag>();
                 tag.Initialize(s);
 
+                // Hover infrastructure (sub-étape 6c.3): a Collider2D sized
+                // to the sprite gives Unity's legacy OnMouseEnter/Exit a
+                // hit target, an emitter raises events on the static bus,
+                // and a highlight component listens and scales the local
+                // transform.
+                var collider = go.AddComponent<BoxCollider2D>();
+                if (renderer.sprite != null)
+                {
+                    collider.size = renderer.sprite.bounds.size;
+                }
+                go.AddComponent<SensorHoverEmitter>();
+                go.AddComponent<SensorHoverHighlight>();
+
                 count++;
             }
             return count;
