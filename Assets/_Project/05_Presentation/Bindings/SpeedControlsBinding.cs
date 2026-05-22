@@ -72,7 +72,11 @@ namespace Bocage.Presentation.Bindings
         {
             ResolveElements();
             WireCallbacks();
-            if (runner != null) runner.TickCompleted += OnTickCompleted;
+            if (runner != null)
+            {
+                runner.TickCompleted += OnTickCompleted;
+                runner.Rebuilt += OnRunnerRebuilt;
+            }
             RefreshDayLabel();
         }
 
@@ -93,7 +97,38 @@ namespace Bocage.Presentation.Bindings
         private void OnDisable()
         {
             UnwireCallbacks();
-            if (runner != null) runner.TickCompleted -= OnTickCompleted;
+            if (runner != null)
+            {
+                runner.TickCompleted -= OnTickCompleted;
+                runner.Rebuilt -= OnRunnerRebuilt;
+            }
+        }
+
+        /// <summary>
+        /// Called when the runner has been rebuilt externally (typically
+        /// by <see cref="InitialConditionsBinding"/>, which calls
+        /// <c>StartTicking</c> after the rebuild). Re-syncs the
+        /// highlighted speed button to match the runner's actual
+        /// ticking state so the UI doesn't lie about which speed is
+        /// active.
+        /// </summary>
+        private void OnRunnerRebuilt()
+        {
+            if (runner == null) return;
+            _state = !runner.IsRunning
+                ? SpeedState.Paused
+                : InferStateFromTicksPerSecond(runner.TicksPerSecond);
+            UpdateActiveVisualState();
+            RefreshDayLabel();
+        }
+
+        private static SpeedState InferStateFromTicksPerSecond(float tps)
+        {
+            // Snap to the closest of the four supported play-speeds.
+            if (tps < 3f) return SpeedState.X1;
+            if (tps < 7.5f) return SpeedState.X5;
+            if (tps < 15f) return SpeedState.X10;
+            return SpeedState.X20;
         }
 
         private void ResolveElements()

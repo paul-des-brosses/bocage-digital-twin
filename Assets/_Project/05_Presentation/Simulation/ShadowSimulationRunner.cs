@@ -63,11 +63,16 @@ namespace Bocage.Presentation.Simulation
             _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario);
 
             realRunner.TickCompleted += OnRealTickCompleted;
+            realRunner.Rebuilt += OnRealRebuilt;
         }
 
         private void OnDestroy()
         {
-            if (realRunner != null) realRunner.TickCompleted -= OnRealTickCompleted;
+            if (realRunner != null)
+            {
+                realRunner.TickCompleted -= OnRealTickCompleted;
+                realRunner.Rebuilt -= OnRealRebuilt;
+            }
         }
 
         private void OnRealTickCompleted()
@@ -77,6 +82,19 @@ namespace Bocage.Presentation.Simulation
             // against the now-current scenario state, without
             // double-ticking the scenario.
             _engine?.TickWithoutAdvancingScenario();
+        }
+
+        private void OnRealRebuilt()
+        {
+            // Real has been reset to day 0 with new initial conditions.
+            // Rebuild the shadow with an identical fresh model so the
+            // two trajectories stay aligned at t=0 and TechDelta starts
+            // from zero again. Reusing the shared scenario reference.
+            var shadowModel = new EcosystemModel(
+                initialWaterTableDepth: realRunner.Model.WaterTableDepth,
+                initialHedgerowDensity: realRunner.Model.HedgerowDensity,
+                initialFaunaPopulation: realRunner.Model.FaunaPopulation);
+            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario);
         }
     }
 }

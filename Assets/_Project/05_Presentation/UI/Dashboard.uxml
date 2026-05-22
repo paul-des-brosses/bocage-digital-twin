@@ -146,6 +146,43 @@
                 <ui:Label text="Paiement pour Services Environnementaux par mètre de haie. 0.30 à 0.80 selon contrat MAEC linéaire + PNR Perche." class="scenario-control-hint" />
             </ui:VisualElement>
 
+            <!--
+            Initial conditions (sub-étape 8c.4) — state of the bocage at
+            day 0. Editable only while CurrentDay == 0 (locked once the
+            simulation has started). The "Réinitialiser le bocage"
+            button rebuilds the EcosystemModel with the current slider
+            values and resets the day counter to 0, preserving the
+            scenario (climate, policies, horizon).
+            -->
+            <ui:Label text="Conditions initiales du bocage" class="scenario-section-title scenario-section-title--initial" tooltip="État du bocage au jour 0 du run. Modifiable uniquement avant le démarrage ; verrouillé une fois la simulation lancée. Le bouton Réinitialiser permet de repartir à zéro avec les valeurs choisies." />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Densité de haies (t=0)" class="scenario-control-label" />
+                    <ui:Label name="initial-hedgerow-density-value" text="90 m/ha" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="initial-hedgerow-density-slider" low-value="0" high-value="200" value="90" class="scenario-slider" show-input-field="true" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Profondeur nappe (t=0)" class="scenario-control-label" />
+                    <ui:Label name="initial-water-table-depth-value" text="2.0 m" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="initial-water-table-depth-slider" low-value="0.5" high-value="10" value="2" class="scenario-slider" show-input-field="true" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Abondance faune (t=0)" class="scenario-control-label" />
+                    <ui:Label name="initial-fauna-population-value" text="1.00 × réf." class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="initial-fauna-population-slider" low-value="0" high-value="1.5" value="1" class="scenario-slider" show-input-field="true" />
+            </ui:VisualElement>
+
+            <ui:Label name="initial-lock-hint" text="Ajustez puis cliquez Réinitialiser pour appliquer." class="initial-lock-hint" />
+            <ui:Button name="initial-reset-button" text="Réinitialiser le bocage" tooltip="Reconstruit l'EcosystemModel avec les valeurs ci-dessus et remet le compteur de jours à 0. Préserve le scénario (climat, politiques, horizon)." class="initial-reset-button" />
+
         </ui:VisualElement>
 
         <!--

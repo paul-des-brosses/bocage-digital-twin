@@ -121,6 +121,16 @@ namespace Bocage.Presentation.Simulation
         /// </summary>
         public event System.Action TickCompleted;
 
+        /// <summary>
+        /// Fired after a successful <see cref="Rebuild"/>: the engine and
+        /// the journal have been wiped and reconstructed from new
+        /// initial conditions. The shadow runner subscribes to this so
+        /// it can rebuild its own engine in lockstep — otherwise it
+        /// would keep ticking the old trajectory while the real moved
+        /// to a fresh day-0 state, immediately blowing up TechDelta.
+        /// </summary>
+        public event System.Action Rebuilt;
+
         private void Awake()
         {
             _engine = DefaultSimulation.Build(masterSeed);
@@ -187,6 +197,52 @@ namespace Bocage.Presentation.Simulation
                 TickCompleted?.Invoke();
                 PublishIndicators();
             }
+        }
+
+        /// <summary>
+        /// Wipes the simulation back to day 0 with a fresh
+        /// <see cref="EcosystemModel"/> built from the supplied initial
+        /// conditions. The current
+        /// <see cref="Bocage.SimulationCore.Scenario.ScenarioContext"/>
+        /// is RE-USED (so the user's preset / slider choices for
+        /// climate, policies and horizon survive a reset), but the
+        /// event log, decision journal and detector state are all
+        /// reinitialised. After this call:
+        /// <list type="bullet">
+        ///   <item><see cref="CurrentDay"/> == 0</item>
+        ///   <item><see cref="EventLog"/> is empty</item>
+        ///   <item><see cref="DecisionJournal"/> is empty</item>
+        ///   <item>Hero KPIs have been republished with the new state</item>
+        ///   <item>The <see cref="Rebuilt"/> event has fired so the
+        ///         shadow runner rebuilds in lockstep</item>
+        /// </list>
+        /// The runner is left in its current ticking state — if it was
+        /// ticking, it continues ticking the new model; if paused, it
+        /// stays paused.
+        /// </summary>
+        public void Rebuild(double initialHedgerowDensity, double initialWaterTableDepth, double initialFaunaPopulation)
+        {
+            // Build a fresh model with the supplied initial conditions.
+            // Non-overridden state (CropYield, InputCost, MaintenanceCost)
+            // falls back to the default Perche calibration baseline so the
+            // economic KPIs don't snap to weird values at t=0.
+            var model = new EcosystemModel(
+                initialWaterTableDepth: initialWaterTableDepth,
+                initialHedgerowDensity: initialHedgerowDensity,
+                initialFaunaPopulation: initialFaunaPopulation);
+            _engine = DefaultSimulation.Build(masterSeed, model, _engine != null ? _engine.Scenario : null);
+            _currentDay = 0;
+            _eventDetector = new EventDetector();
+            _eventLog = new EventLog();
+            _recommendationEngine = new RecommendationEngine();
+            _decisionJournal = new DecisionJournal();
+
+            PublishIndicators();
+            Rebuilt?.Invoke();
+            SimLogger.UserActionLog(
+                "[SimulationRunner] rebuilt at day 0 — hedge=" + initialHedgerowDensity.ToString("F1")
+                + " m/ha, depth=" + initialWaterTableDepth.ToString("F1")
+                + " m, fauna=" + initialFaunaPopulation.ToString("F2"));
         }
 
         /// <summary>

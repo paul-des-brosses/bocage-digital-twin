@@ -247,6 +247,49 @@
     color: rgba(220, 240, 200, 0.95);
 }
 
+.scenario-section-title--initial {
+    border-left-color: rgba(100, 130, 170, 0.85);     /* bleu acier — état initial du bocage */
+    color: rgba(170, 200, 230, 0.95);
+}
+
+/*
+ * Conditions initiales — slider locked state. When CurrentDay > 0
+ * the InitialConditionsBinding adds the --locked modifier class
+ * which fades the slider visuals to communicate the freeze.
+ */
+.initial-slider--locked .unity-base-slider__dragger {
+    background-color: rgba(124, 168, 100, 0.30);
+}
+
+.initial-slider--locked .unity-base-slider__tracker {
+    border-color: rgba(170, 162, 145, 0.10);
+}
+
+.initial-lock-hint {
+    font-size: 9px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-top: 4px;
+    margin-bottom: 6px;
+}
+
+.initial-reset-button {
+    margin-top: 4px;
+    padding: 4px 10px 4px 10px;
+    min-height: 24px;
+    background-color: rgba(28, 38, 28, 0.85);
+    border-width: 1px;
+    border-color: rgba(124, 168, 100, 0.85);
+    border-radius: 3px;
+    color: rgba(238, 232, 217, 1);
+    font-size: 11px;
+}
+
+.initial-reset-button:hover {
+    background-color: rgba(48, 64, 48, 1);
+}
+
 /*
  * Preset row (sub-étape 7c.2) — wraps onto multiple lines when the
  * scenario-panel is narrow. Buttons are styled to match the dark dashboard

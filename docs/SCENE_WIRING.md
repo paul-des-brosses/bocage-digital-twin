@@ -59,6 +59,7 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | **`BiodiversityLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_BiodiversityComposite.asset` |
 | **`TechDeltaLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_TechDelta.asset` |
 | **`DecisionPanelBinding` ✨ (sub-étape 8c.3)** | `Runner` → `_Bootstrap/SimulationRunner`. Spawn une carte par reco pending, boutons accept/reject mutent le journal directement. |
+| **`InitialConditionsBinding` ✨ (sub-étape 8c.4)** | `Runner` → `_Bootstrap/SimulationRunner`. Wire 3 sliders (`initial-hedgerow-density-slider`, `initial-water-table-depth-slider`, `initial-fauna-population-slider`) + bouton `initial-reset-button`. Sliders verrouillés quand `CurrentDay > 0`. |
 | `HedgerowShaderBinding` | (lié à la composition de scène) |
 | `SensorListBinding` | (lit les `SensorMetadataTag` posés dans la scène) |
 | `ViewportWarningBinding` | (auto, lit `Screen.width`) |
@@ -132,6 +133,19 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-05-21** — Sub-étape 8c.4 livrée : panneau « Conditions
+  initiales du bocage » dans le panneau gauche (`scenario-panel`,
+  après Politiques publiques). 3 sliders (HedgerowDensity 0-200,
+  WaterTableDepth 0.5-10, FaunaPopulation 0-1.5) + un bouton dont
+  le texte est dynamique : « **Lancer la simulation** » au tout
+  premier démarrage (day=0 et sim pas encore lancée), sinon
+  « **Réinitialiser la simulation** ». Click applique les sliders
+  via `SimulationRunner.Rebuild(...)` puis `StartTicking()` —
+  expérience one-click. Édition des sliders verrouillée à
+  `CurrentDay > 0`. Le shadow runner et `SpeedControlsBinding`
+  s'abonnent à l'event `Rebuilt` pour resynchroniser leur état
+  (modèle shadow recréé, bouton speed actif mis à jour).
 
 - **2026-05-21** — Sub-étape 8c.3 livrée :
   `AutoActionPipeline` (pure C# Couche 3) + `AutoActionApplier`
