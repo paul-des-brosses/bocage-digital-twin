@@ -26,12 +26,22 @@ namespace Bocage.Decision
             public IRecommendation Recommendation { get; }
             public DecisionVerdict Verdict { get; }
             public int VerdictSetOnDay { get; }
+            /// <summary>
+            /// Magnitude of the action the user chose when accepting the
+            /// recommendation. Meaningful only when
+            /// <see cref="Verdict"/> is Accepted / AutoAccepted; ignored
+            /// otherwise. Units depend on the recommendation type
+            /// (m/ha for PlantHedges, m for Irrigation, intensity-unit
+            /// for ReduceInputs).
+            /// </summary>
+            public double AppliedMagnitude { get; }
 
-            public Entry(IRecommendation recommendation, DecisionVerdict verdict, int verdictSetOnDay)
+            public Entry(IRecommendation recommendation, DecisionVerdict verdict, int verdictSetOnDay, double appliedMagnitude = 0.0)
             {
                 Recommendation = recommendation;
                 Verdict = verdict;
                 VerdictSetOnDay = verdictSetOnDay;
+                AppliedMagnitude = appliedMagnitude;
             }
         }
 
@@ -76,15 +86,18 @@ namespace Bocage.Decision
         /// <summary>
         /// Resolves a pending entry with a final verdict. Returns true
         /// if an entry was updated, false if the id was not found or
-        /// the entry was already resolved.
+        /// the entry was already resolved. The <paramref name="appliedMagnitude"/>
+        /// is meaningful only when <paramref name="newVerdict"/> is
+        /// Accepted / AutoAccepted (the user-chosen magnitude of the
+        /// action); for Rejected, pass 0.
         /// </summary>
-        public bool SetVerdict(string recommendationId, DecisionVerdict newVerdict, int currentDay)
+        public bool SetVerdict(string recommendationId, DecisionVerdict newVerdict, int currentDay, double appliedMagnitude = 0.0)
         {
             for (int i = 0; i < _entries.Count; i++)
             {
                 if (_entries[i].Recommendation.Id == recommendationId)
                 {
-                    _entries[i] = new Entry(_entries[i].Recommendation, newVerdict, currentDay);
+                    _entries[i] = new Entry(_entries[i].Recommendation, newVerdict, currentDay, appliedMagnitude);
                     return true;
                 }
             }

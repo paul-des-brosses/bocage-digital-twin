@@ -58,7 +58,8 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | `IntegratedProfitabilityLabelBinding` | `Runner` → `_Bootstrap/SimulationRunner` |
 | **`BiodiversityLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_BiodiversityComposite.asset` |
 | **`TechDeltaLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_TechDelta.asset` |
-| **`DecisionPanelBinding` ✨ (sub-étape 8c.3)** | `Runner` → `_Bootstrap/SimulationRunner`. Spawn une carte par reco pending, boutons accept/reject mutent le journal directement. |
+| **`DecisionPanelBinding` ✨ (sub-étape 8c.3, refactor history)** | `Runner` → `_Bootstrap/SimulationRunner`. `Recommendation Popup` → glisse le `DecisionPopupBinding` voisin. Gère le bouton « Recommandations en cours (X) » et la list popup historique (click ligne = ré-ouvre la popup reco). |
+| **`DecisionPopupBinding` ✨ (sub-étape 8c.3 post-livraison polish)** | `Runner` → `_Bootstrap/SimulationRunner`. Affiche un popup modal centré dès qu'une reco apparaît dans le journal. Met la sim en pause, slider magnitude + 3 boutons (Valider / Voir plus tard / Ignorer), reprend la sim quand la file (hors recos différées) est vide. |
 | **`InitialConditionsBinding` ✨ (sub-étape 8c.4)** | `Runner` → `_Bootstrap/SimulationRunner`. Wire 3 sliders (`initial-hedgerow-density-slider`, `initial-water-table-depth-slider`, `initial-fauna-population-slider`) + bouton `initial-reset-button`. Sliders verrouillés quand `CurrentDay > 0`. |
 | `HedgerowShaderBinding` | (lié à la composition de scène) |
 | `SensorListBinding` | (lit les `SensorMetadataTag` posés dans la scène) |

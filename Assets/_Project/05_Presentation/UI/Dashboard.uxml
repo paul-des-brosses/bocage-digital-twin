@@ -262,11 +262,8 @@
                 <ui:Label text="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end." class="scenario-control-hint" />
             </ui:VisualElement>
 
-            <ui:Label text="Recommandations" class="scenario-section-title scenario-section-title--decision" tooltip="Recos produites par l'algorithme à partir des événements capteurs. L'agriculteur arbitre : accepter applique l'action au monde réel ; rejeter laisse la trajectoire suivre son cours." />
-            <ui:Label name="decision-summary" text="—" class="decision-summary" />
-            <ui:ScrollView class="decision-cards-scroll" mode="Vertical">
-                <ui:VisualElement name="decision-cards" class="decision-cards" />
-            </ui:ScrollView>
+            <ui:Label text="Recommandations" class="scenario-section-title scenario-section-title--decision" tooltip="Les recos produites par l'algorithme apparaissent comme un popup centré qui met la simulation en pause. Le bouton ci-dessous ouvre la liste des recommandations en attente (dont celles que tu as différées via Voir plus tard)." />
+            <ui:Button name="decision-history-open-button" text="Aucune recommandation en cours" class="decision-history-open-button" tooltip="Ouvre la liste des recommandations actuellement en attente. Click sur une ligne = ré-ouvre la popup de recommandation pour l'examiner." />
 
         </ui:VisualElement>
 
@@ -289,6 +286,56 @@
                 <ui:VisualElement class="sensor-list-legend-row">
                     <ui:VisualElement class="sensor-status-dot sensor-status-dot--deferred" />
                     <ui:Label text="en attente" class="sensor-list-legend-text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!--
+        Decision popup overlay (sub-étape 8c.3 post-livraison iteration).
+        Modal centred popup that opens when the DecisionJournal has at
+        least one pending entry. Pauses the simulation while visible,
+        resumes at the previous speed once the queue is empty. Spawned
+        at the END of dashboard-root so it stacks above every other
+        element (UI Toolkit's z-order is DOM order within parent).
+        -->
+        <ui:VisualElement name="decision-popup-overlay" class="decision-popup-overlay hidden">
+            <ui:VisualElement name="decision-popup-card" class="decision-popup-card">
+                <ui:Label name="decision-popup-title" text="Recommandation" class="decision-popup-title" />
+                <ui:Label name="decision-popup-rationale" text="..." class="decision-popup-rationale" />
+
+                <ui:VisualElement name="decision-popup-outcomes" class="decision-popup-outcomes" />
+
+                <ui:Label text="Choisir l'ampleur de l'action :" class="decision-popup-prompt" />
+                <ui:VisualElement class="decision-popup-magnitude-row">
+                    <ui:Label name="decision-popup-magnitude-label" text="Magnitude" class="decision-popup-magnitude-label" />
+                    <ui:Label name="decision-popup-magnitude-value" text="—" class="decision-popup-magnitude-value" />
+                </ui:VisualElement>
+                <ui:Slider name="decision-popup-magnitude-slider" low-value="0" high-value="1" value="0" class="decision-popup-magnitude-slider" show-input-field="true" />
+
+                <ui:VisualElement class="decision-popup-actions">
+                    <ui:Button name="decision-popup-ignore-button" text="Ignorer" class="decision-popup-button decision-popup-button--ignore" tooltip="Rejette définitivement cette recommandation. Aucune action mécanique. La simulation reprend." />
+                    <ui:Button name="decision-popup-defer-button" text="Voir plus tard" class="decision-popup-button decision-popup-button--defer" tooltip="Garde la recommandation en attente sans décider maintenant. Retrouvable via le bouton 'Recommandations en cours'. La simulation reprend." />
+                    <ui:Button name="decision-popup-validate-button" text="Valider" class="decision-popup-button decision-popup-button--validate" tooltip="Applique l'action avec la magnitude choisie. La simulation reprend." />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!--
+        History list overlay — centred modal popup that lists every
+        pending recommendation. Spawned by DecisionPanelBinding when
+        the user clicks "Recommandations en cours". Rows are built
+        dynamically by DecisionPanelBinding.BuildHistoryRow; each row
+        has a title + day issued + "Examiner" button that re-opens
+        the single-rec popup for that recommendation.
+        -->
+        <ui:VisualElement name="decision-history-overlay" class="decision-history-overlay hidden">
+            <ui:VisualElement class="decision-history-card">
+                <ui:Label text="Recommandations en attente" class="decision-history-title" />
+                <ui:Label text="L'algorithme a détecté ces événements. Sélectionne-en un pour examiner la recommandation et choisir une action." class="decision-history-help" />
+                <ui:VisualElement name="decision-history-list" class="decision-history-list" />
+                <ui:Label name="decision-history-empty" text="Aucune recommandation en attente pour le moment." class="decision-history-empty" />
+                <ui:VisualElement class="decision-history-footer">
+                    <ui:Button name="decision-history-close-button" text="Fermer" class="decision-history-close-button" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

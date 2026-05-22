@@ -2619,6 +2619,7 @@ GameObject:
   - component: {fileID: 1463489837}
   - component: {fileID: 1463489836}
   - component: {fileID: 1463489838}
+  - component: {fileID: 1463489839}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -2826,8 +2827,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.DecisionPanelBinding
   runner: {fileID: 2115294099}
-  cardsContainerName: decision-cards
-  summaryLabelName: decision-summary
+  recommendationPopup: {fileID: 1463489839}
+  openHistoryButtonName: decision-history-open-button
+  historyOverlayName: decision-history-overlay
+  historyListName: decision-history-list
+  historyEmptyLabelName: decision-history-empty
+  historyCloseButtonName: decision-history-close-button
 --- !u!114 &1463489835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2862,7 +2867,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ed963d8f7dbd8274987594f053585f9e, type: 2}
   transitionDurationDays: 10
   presetsContainerName: scenario-presets-row
-  applyPersistedPresetOnStart: 1
 --- !u!114 &1463489837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2904,6 +2908,29 @@ MonoBehaviour:
   hedgerowDensityValueLabelName: initial-hedgerow-density-value
   waterTableDepthValueLabelName: initial-water-table-depth-value
   faunaPopulationValueLabelName: initial-fauna-population-value
+--- !u!114 &1463489839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 744a63c1df059494e846813dbbf906c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.DecisionPopupBinding
+  runner: {fileID: 2115294099}
+  overlayName: decision-popup-overlay
+  titleLabelName: decision-popup-title
+  rationaleLabelName: decision-popup-rationale
+  outcomesContainerName: decision-popup-outcomes
+  magnitudeLabelName: decision-popup-magnitude-label
+  magnitudeSliderName: decision-popup-magnitude-slider
+  magnitudeValueLabelName: decision-popup-magnitude-value
+  validateButtonName: decision-popup-validate-button
+  ignoreButtonName: decision-popup-ignore-button
+  deferButtonName: decision-popup-defer-button
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0

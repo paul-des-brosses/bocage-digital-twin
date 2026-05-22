@@ -553,107 +553,357 @@
 }
 
 /*
- * Vertical ScrollView wrapping the recommendations cards. The panel's
- * flex-grow lets the scroll area absorb whatever vertical space is left
- * after presets + decision sliders + horizon, so a long stream of
- * pending recos doesn't push other sections off the panel.
+ * Decision popup overlay — modal, centred, dark backdrop.
+ * Built on top of the existing dashboard via absolute positioning at
+ * dashboard-root level. Toggled via the .hidden utility class by
+ * DecisionPopupBinding.
  */
-.decision-cards-scroll {
-    flex-grow: 1;
+.decision-popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65);          /* dim backdrop, blocks visual focus */
+    align-items: center;
+    justify-content: center;
 }
 
-.decision-cards {
+.decision-popup-card {
+    width: 460px;
+    max-width: 90%;
+    padding: 18px 22px 18px 22px;
+    background-color: rgba(28, 31, 36, 0.98);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.40);
     flex-direction: column;
 }
 
-/*
- * One card per pending recommendation. Spawned dynamically by
- * DecisionPanelBinding.BuildCard.
- */
-.decision-card {
-    flex-direction: column;
-    padding: 8px 10px 8px 10px;
+.decision-popup-title {
+    font-size: 16px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+.decision-popup-rationale {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.85);
+    -unity-font-style: italic;
+    white-space: normal;
     margin-bottom: 8px;
+}
+
+.decision-popup-outcomes {
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.decision-popup-prompt {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.85);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(170, 162, 145, 0.20);
+}
+
+.decision-popup-magnitude-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.decision-popup-magnitude-label {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.85);
+}
+
+.decision-popup-magnitude-value {
+    font-size: 11px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+}
+
+.decision-popup-magnitude-slider {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    min-height: 22px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.decision-popup-magnitude-slider .unity-base-slider__tracker {
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.30);
+    border-radius: 3px;
+}
+
+.decision-popup-magnitude-slider .unity-base-slider__dragger {
+    background-color: rgba(124, 168, 100, 1);
+    border-color: rgba(0, 0, 0, 0.6);
+    border-width: 1px;
+    border-radius: 4px;
+    width: 14px;
+    height: 14px;
+}
+
+.decision-popup-magnitude-slider .unity-base-slider__text-field {
+    min-width: 60px;
+    margin-left: 8px;
+}
+
+.decision-popup-magnitude-slider .unity-base-slider__text-field .unity-base-field__input {
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.30);
+    border-radius: 3px;
+    padding: 2px 6px 2px 6px;
+    color: rgba(238, 232, 217, 1);
+    font-size: 11px;
+    -unity-text-align: middle-right;
+}
+
+.decision-popup-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.decision-popup-button {
+    margin-left: 8px;
+    padding: 6px 16px 6px 16px;
+    min-height: 28px;
+    border-width: 1px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.decision-popup-button--ignore {
+    background-color: rgba(16, 18, 22, 1);
+    border-color: rgba(170, 162, 145, 0.40);
+    color: rgba(220, 214, 198, 0.85);
+}
+
+.decision-popup-button--ignore:hover {
+    background-color: rgba(28, 31, 36, 1);
+    border-color: rgba(170, 162, 145, 0.60);
+}
+
+.decision-popup-button--validate {
+    background-color: rgba(28, 38, 28, 0.95);
+    border-color: rgba(124, 168, 100, 0.95);
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+}
+
+.decision-popup-button--validate:hover {
+    background-color: rgba(48, 68, 48, 1);
+}
+
+.decision-popup-button--defer {
+    background-color: rgba(28, 38, 50, 0.85);
+    border-color: rgba(140, 160, 190, 0.70);
+    color: rgba(220, 230, 240, 0.95);
+}
+
+.decision-popup-button--defer:hover {
+    background-color: rgba(40, 56, 72, 1);
+}
+
+/* =========================================================================
+ *  Decision history — open button in the right panel + centred list popup
+ * ========================================================================= */
+
+.decision-history-open-button {
+    margin-top: 4px;
+    padding: 6px 10px 6px 10px;
+    min-height: 26px;
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.30);
+    border-radius: 3px;
+    color: rgba(220, 214, 198, 0.95);
+    font-size: 11px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.decision-history-open-button:hover {
+    background-color: rgba(28, 31, 36, 1);
+    border-color: rgba(170, 162, 145, 0.55);
+}
+
+.decision-history-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.60);
+    align-items: center;
+    justify-content: center;
+}
+
+.decision-history-card {
+    width: 440px;
+    max-width: 88%;
+    max-height: 70%;
+    padding: 18px 22px 18px 22px;
+    background-color: rgba(28, 31, 36, 0.98);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.40);
+    flex-direction: column;
+}
+
+.decision-history-title {
+    font-size: 16px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+.decision-history-help {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.75);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-bottom: 10px;
+}
+
+.decision-history-list {
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+.decision-history-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px 6px 8px;
+    margin-bottom: 4px;
     background-color: rgba(16, 18, 22, 1);
     border-radius: 4px;
     border-width: 1px;
     border-color: rgba(170, 162, 145, 0.20);
 }
 
-.decision-card-title {
+.decision-history-row-info {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.decision-history-row-title {
     font-size: 12px;
     color: rgba(238, 232, 217, 1);
-    -unity-font-style: bold;
     white-space: normal;
 }
 
-.decision-card-rationale {
+.decision-history-row-day {
     font-size: 10px;
-    color: rgba(220, 214, 198, 0.75);
-    -unity-font-style: italic;
-    white-space: normal;
-    margin-top: 2px;
-    margin-bottom: 6px;
-}
-
-.decision-outcome-row {
-    flex-direction: row;
-    align-items: center;
-    margin-top: 2px;
-}
-
-.decision-outcome-horizon {
-    font-size: 9px;
     color: rgba(170, 162, 145, 0.85);
     -unity-font-style: italic;
-    min-width: 36px;
 }
 
-.decision-outcome-profit {
-    font-size: 9px;
-    color: rgba(220, 214, 198, 0.85);
-    margin-right: 6px;
-}
-
-.decision-outcome-biodiv {
-    font-size: 9px;
-    color: rgba(124, 168, 100, 0.85);
-}
-
-.decision-card-actions {
-    flex-direction: row;
-    justify-content: flex-end;
-    margin-top: 6px;
-}
-
-.decision-card-button {
-    margin-left: 4px;
-    padding: 2px 8px 2px 8px;
-    min-height: 20px;
+.decision-history-row-button {
+    margin-left: 8px;
+    padding: 4px 10px 4px 10px;
+    min-height: 22px;
+    background-color: rgba(28, 38, 28, 0.85);
     border-width: 1px;
+    border-color: rgba(124, 168, 100, 0.85);
     border-radius: 3px;
+    color: rgba(238, 232, 217, 1);
     font-size: 10px;
 }
 
-.decision-card-button--accept {
-    background-color: rgba(28, 38, 28, 0.85);
-    border-color: rgba(124, 168, 100, 0.85);
-    color: rgba(238, 232, 217, 1);
-}
-
-.decision-card-button--accept:hover {
+.decision-history-row-button:hover {
     background-color: rgba(48, 64, 48, 1);
 }
 
-.decision-card-button--reject {
-    background-color: rgba(16, 18, 22, 1);
-    border-color: rgba(170, 162, 145, 0.30);
-    color: rgba(220, 214, 198, 0.85);
+.decision-history-empty {
+    font-size: 11px;
+    color: rgba(170, 162, 145, 0.75);
+    -unity-font-style: italic;
+    -unity-text-align: middle-center;
+    margin-bottom: 8px;
+    padding: 12px 4px 12px 4px;
 }
 
-.decision-card-button--reject:hover {
+.decision-history-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.decision-history-close-button {
+    padding: 6px 16px 6px 16px;
+    min-height: 28px;
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.40);
+    border-radius: 3px;
+    color: rgba(220, 214, 198, 0.85);
+    font-size: 12px;
+}
+
+.decision-history-close-button:hover {
     background-color: rgba(28, 31, 36, 1);
-    border-color: rgba(170, 162, 145, 0.50);
+    border-color: rgba(170, 162, 145, 0.60);
+}
+
+/*
+ * Outcome blocks (used by the decision popup). Each block stacks a
+ * horizon header + 2 metric rows (profit + biodiv) vertically so the
+ * bracket text has the full popup width to breathe.
+ */
+.decision-outcome-block {
+    flex-direction: column;
+    margin-top: 6px;
+    padding-top: 4px;
+    border-top-width: 1px;
+    border-top-color: rgba(170, 162, 145, 0.10);
+}
+
+.decision-outcome-horizon {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+    margin-bottom: 2px;
+}
+
+.decision-outcome-metric-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1px;
+}
+
+.decision-outcome-metric-label {
+    font-size: 10px;
+    color: rgba(220, 214, 198, 0.75);
+    min-width: 70px;
+}
+
+.decision-outcome-metric-value {
+    font-size: 10px;
+    color: rgba(238, 232, 217, 0.95);
+    -unity-text-align: middle-right;
+    white-space: normal;
+    flex-shrink: 1;
+}
+
+/* Color hints per metric type — applied on top of the base value class. */
+.decision-outcome-profit {
+    color: rgba(220, 214, 198, 0.95);
+}
+
+.decision-outcome-biodiv {
+    color: rgba(124, 168, 100, 0.95);
 }
 
 /* =========================================================================

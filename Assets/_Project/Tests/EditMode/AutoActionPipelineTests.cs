@@ -23,7 +23,7 @@ namespace Bocage.Tests.EditMode
             var model = new EcosystemModel(initialHedgerowDensity: 50.0);
             var scenario = new ScenarioContext();
             var rec = new PlantHedgesRecommendation(10, "evt#10");
-            AutoActionPipeline.ApplyOne(rec, model, scenario);
+            AutoActionPipeline.ApplyOne(rec, model, scenario, PlantHedgesRecommendation.HedgeRestoreMetersPerHectare);
             Assert.AreEqual(50.0 + PlantHedgesRecommendation.HedgeRestoreMetersPerHectare,
                 model.HedgerowDensity, 1e-9);
         }
@@ -34,7 +34,7 @@ namespace Bocage.Tests.EditMode
             var model = new EcosystemModel(initialWaterTableDepth: 6.0);
             var scenario = new ScenarioContext();
             var rec = new IrrigationAdviceRecommendation(10, "evt#10");
-            AutoActionPipeline.ApplyOne(rec, model, scenario);
+            AutoActionPipeline.ApplyOne(rec, model, scenario, IrrigationAdviceRecommendation.WaterReliefDepthMeters);
             Assert.AreEqual(6.0 - IrrigationAdviceRecommendation.WaterReliefDepthMeters,
                 model.WaterTableDepth, 1e-9);
         }
@@ -46,21 +46,38 @@ namespace Bocage.Tests.EditMode
             var model = new EcosystemModel(initialWaterTableDepth: 0.8);
             var scenario = new ScenarioContext();
             var rec = new IrrigationAdviceRecommendation(10, "evt#10");
-            AutoActionPipeline.ApplyOne(rec, model, scenario);
+            AutoActionPipeline.ApplyOne(rec, model, scenario, IrrigationAdviceRecommendation.WaterReliefDepthMeters);
             Assert.That(model.WaterTableDepth, Is.GreaterThanOrEqualTo(0.5));
         }
 
         [Test]
-        public void ApplyOne_ReduceInputs_boosts_fauna_and_cuts_input_cost()
+        public void ApplyOne_ReduceInputs_default_magnitude_matches_legacy_constants()
         {
+            // At the reference cut (0.2), fauna boost is +0.05 and cost
+            // reduction is −200 €/ha (the values hard-coded before the
+            // magnitude refactor).
             var model = new EcosystemModel(
                 initialFaunaPopulation: 0.7,
                 initialInputCost: 1200.0);
             var scenario = new ScenarioContext();
             var rec = new ReduceInputsRecommendation(10, "evt#10");
-            AutoActionPipeline.ApplyOne(rec, model, scenario);
+            AutoActionPipeline.ApplyOne(rec, model, scenario, ReduceInputsRecommendation.IntensityCutPerStep);
             Assert.AreEqual(0.75, model.FaunaPopulation, 1e-9);
             Assert.AreEqual(1000.0, model.InputCost, 1e-9);
+        }
+
+        [Test]
+        public void ApplyOne_ReduceInputs_scales_linearly_with_magnitude()
+        {
+            // Half the magnitude → half the boost / cost-cut.
+            var model = new EcosystemModel(
+                initialFaunaPopulation: 0.7,
+                initialInputCost: 1200.0);
+            var scenario = new ScenarioContext();
+            var rec = new ReduceInputsRecommendation(10, "evt#10");
+            AutoActionPipeline.ApplyOne(rec, model, scenario, ReduceInputsRecommendation.IntensityCutPerStep / 2.0);
+            Assert.AreEqual(0.725, model.FaunaPopulation, 1e-9);
+            Assert.AreEqual(1100.0, model.InputCost, 1e-9);
         }
 
         // ---------------- Apply pipeline + journal ----------------
@@ -97,7 +114,8 @@ namespace Bocage.Tests.EditMode
             var journal = new DecisionJournal();
             var rec = new PlantHedgesRecommendation(10, "evt#10");
             journal.Append(rec, currentDay: 10);
-            journal.SetVerdict(rec.Id, DecisionVerdict.Accepted, currentDay: 11);
+            journal.SetVerdict(rec.Id, DecisionVerdict.Accepted, currentDay: 11,
+                appliedMagnitude: PlantHedgesRecommendation.HedgeRestoreMetersPerHectare);
             var model = new EcosystemModel(initialHedgerowDensity: 50.0);
 
             // First pass: applies, hedge bump.
@@ -117,7 +135,8 @@ namespace Bocage.Tests.EditMode
             var journal = new DecisionJournal();
             var rec = new IrrigationAdviceRecommendation(10, "evt#10");
             journal.Append(rec, currentDay: 10);
-            journal.SetVerdict(rec.Id, DecisionVerdict.AutoAccepted, currentDay: 10);
+            journal.SetVerdict(rec.Id, DecisionVerdict.AutoAccepted, currentDay: 10,
+                appliedMagnitude: IrrigationAdviceRecommendation.WaterReliefDepthMeters);
             var model = new EcosystemModel(initialWaterTableDepth: 6.0);
             int applied = AutoActionPipeline.Apply(journal, model, new ScenarioContext(), currentDay: 10);
             Assert.AreEqual(1, applied);

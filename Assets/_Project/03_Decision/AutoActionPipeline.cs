@@ -52,7 +52,7 @@ namespace Bocage.Decision
                 if (entry.Verdict != DecisionVerdict.Accepted && entry.Verdict != DecisionVerdict.AutoAccepted) continue;
                 if (journal.IsApplied(entry.Recommendation.Id)) continue;
 
-                ApplyOne(entry.Recommendation, model, scenario);
+                ApplyOne(entry.Recommendation, model, scenario, entry.AppliedMagnitude);
                 journal.MarkApplied(entry.Recommendation.Id, currentDay);
                 applied++;
             }
@@ -60,29 +60,35 @@ namespace Bocage.Decision
         }
 
         /// <summary>
-        /// Single-rec application. Exposed for tests that want to
-        /// verify each action's mechanical effect in isolation.
+        /// Single-rec application with a caller-chosen magnitude. The
+        /// magnitude is the user-set value from the decision popup
+        /// slider (e.g. 25 m/ha planted out of a 0-50 range with default
+        /// 30). For ReduceInputs the magnitude is the intensity cut;
+        /// fauna boost and input-cost reduction scale linearly with the
+        /// ratio (magnitude / reference cut).
         /// </summary>
-        public static void ApplyOne(IRecommendation rec, EcosystemModel model, ScenarioContext scenario)
+        public static void ApplyOne(IRecommendation rec, EcosystemModel model, ScenarioContext scenario, double magnitude)
         {
             switch (rec)
             {
                 case PlantHedgesRecommendation _:
-                    model.SetHedgerowDensity(model.HedgerowDensity + PlantHedgesRecommendation.HedgeRestoreMetersPerHectare);
+                    model.SetHedgerowDensity(model.HedgerowDensity + magnitude);
                     break;
                 case IrrigationAdviceRecommendation _:
                     // Reduce depth (water rises). Floor at 0.5 m so the
                     // water table doesn't surface absurdly.
-                    double newDepth = model.WaterTableDepth - IrrigationAdviceRecommendation.WaterReliefDepthMeters;
+                    double newDepth = model.WaterTableDepth - magnitude;
                     if (newDepth < 0.5) newDepth = 0.5;
                     model.SetWaterTableDepth(newDepth);
                     break;
                 case ReduceInputsRecommendation _:
-                    // Pragmatic shortcut: boost fauna + cut input cost
-                    // directly on the model. See class docstring for
-                    // the architectural rationale.
-                    model.SetFaunaPopulation(model.FaunaPopulation + 0.05);
-                    model.SetInputCost(model.InputCost - 200.0);
+                    // Scale the fauna boost + input cost cut linearly
+                    // with the user-chosen magnitude relative to the
+                    // reference cut (0.2 = default).
+                    double ratio = magnitude / ReduceInputsRecommendation.IntensityCutPerStep;
+                    if (ratio < 0) ratio = 0;
+                    model.SetFaunaPopulation(model.FaunaPopulation + 0.05 * ratio);
+                    model.SetInputCost(model.InputCost - 200.0 * ratio);
                     break;
             }
         }

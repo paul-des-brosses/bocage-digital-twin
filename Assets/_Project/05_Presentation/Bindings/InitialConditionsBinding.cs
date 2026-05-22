@@ -133,12 +133,26 @@ namespace Bocage.Presentation.Bindings
         private void OnResetClicked()
         {
             if (runner == null || _hedgeSlider == null || _depthSlider == null || _faunaSlider == null) return;
-            // Apply current slider values → fresh model at day 0, then
-            // start ticking so the user gets a one-click experience.
-            // SpeedControlsBinding will resync its highlighted button
-            // via its subscription to runner.Rebuilt.
+            // Two behaviours depending on whether we're in the
+            // "fresh start" state or in the middle of a run :
+            //  - Fresh start (button reads "Lancer la simulation",
+            //    day==0 && !IsRunning) → Rebuild with current slider
+            //    values, set speed to ×1, then start ticking.
+            //  - Mid-run (button reads "Réinitialiser la simulation")
+            //    → stop ticking, rebuild back to day 0, STAY PAUSED.
+            //    The user can then re-adjust any scenario slider and
+            //    click "Lancer la simulation" to begin again.
+            bool isFreshLaunch = runner.CurrentDay == 0 && !runner.IsRunning;
+
+            runner.StopTicking();
             runner.Rebuild(_hedgeSlider.value, _depthSlider.value, _faunaSlider.value);
-            runner.StartTicking();
+
+            if (isFreshLaunch)
+            {
+                runner.TicksPerSecond = 1f;
+                runner.StartTicking();
+            }
+
             RefreshLockState();
         }
 

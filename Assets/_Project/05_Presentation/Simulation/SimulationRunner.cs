@@ -238,6 +238,15 @@ namespace Bocage.Presentation.Simulation
             _decisionJournal = new DecisionJournal();
 
             PublishIndicators();
+            // Rebuild does NOT touch the ticking state — the caller
+            // decides whether to start, stop or leave as-is.
+            // - Lancer la simulation (fresh start): caller stops first,
+            //   rebuilds, then starts ticking at ×1.
+            // - Réinitialiser la simulation (mid-run reset): caller
+            //   stops first, rebuilds, leaves PAUSED so the user can
+            //   re-adjust sliders and click Lancer again.
+            // This separation keeps the Rebuild API a pure state-reset
+            // operation with no implicit side effects on the coroutine.
             Rebuilt?.Invoke();
             SimLogger.UserActionLog(
                 "[SimulationRunner] rebuilt at day 0 — hedge=" + initialHedgerowDensity.ToString("F1")

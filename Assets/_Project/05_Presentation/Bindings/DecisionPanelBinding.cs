@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Globalization;
 using Bocage.Decision;
-using Bocage.Decision.Outcomes;
 using Bocage.Decision.Recommendations;
 using Bocage.Presentation.Simulation;
 using Bocage.SimulationCore.Logging;
@@ -11,19 +9,19 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Renders the pending entries of <see cref="DecisionJournal"/> as
-    /// a vertical stack of cards inside a UXML container, with Accept
-    /// and Reject buttons that mutate the journal verdict on click.
-    /// Each card also displays the two-horizon outcome projection
-    /// (short 30 d, long 365 d) on both profit and biodiversity, with
-    /// the worst/expected/best bracket inline.
+    /// Renders the « Recommandations en cours » button in the right-hand
+    /// decision-panel, and the centred list popup that opens when the
+    /// user clicks it. The list shows every pending recommendation (in
+    /// the journal but not yet resolved, whether previously deferred
+    /// via "Voir plus tard" or never shown). Clicking an entry in the
+    /// list re-opens the full <see cref="DecisionPopupBinding"/>
+    /// popup for that recommendation.
     /// <para>
-    /// The cards are rebuilt every tick (subscription to
-    /// <see cref="SimulationRunner.TickCompleted"/>) to reflect new
-    /// pending entries appearing as events get detected and the
-    /// recommendation engine fires. A small diff would be more
-    /// efficient; for the typical bocage run (≤ a few pending at
-    /// once) the rebuild cost is negligible.
+    /// Button text follows the pending count : « Recommandations en
+    /// cours (3) » when there's something to act on, « Aucune
+    /// recommandation en cours » when the queue is empty. The button
+    /// is enabled either way so the user can always open the list
+    /// (which then displays an empty-state placeholder).
     /// </para>
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
@@ -32,16 +30,27 @@ namespace Bocage.Presentation.Bindings
         [SerializeField, Tooltip("Source of the journal and current day. Drag the GameObject carrying the SimulationRunner.")]
         private SimulationRunner runner;
 
-        [SerializeField, Tooltip("Name of the VisualElement that hosts the recommendation cards.")]
-        private string cardsContainerName = "decision-cards";
+        [SerializeField, Tooltip("Sibling binding that owns the single-recommendation popup. Click-through from the history list re-opens that popup.")]
+        private DecisionPopupBinding recommendationPopup;
 
-        [SerializeField, Tooltip("Name of the Label showing the journal summary line.")]
-        private string summaryLabelName = "decision-summary";
+        [Header("UXML element names")]
+        [SerializeField] private string openHistoryButtonName = "decision-history-open-button";
+        [SerializeField] private string historyOverlayName = "decision-history-overlay";
+        [SerializeField] private string historyListName = "decision-history-list";
+        [SerializeField] private string historyEmptyLabelName = "decision-history-empty";
+        [SerializeField] private string historyCloseButtonName = "decision-history-close-button";
+
+        private const string HiddenClass = "hidden";
 
         private UIDocument _document;
-        private VisualElement _container;
-        private Label _summaryLabel;
-        private readonly List<VisualElement> _cards = new List<VisualElement>();
+        private Button _openHistoryButton;
+        private VisualElement _historyOverlay;
+        private VisualElement _historyList;
+        private Label _historyEmptyLabel;
+        private Button _historyCloseButton;
+
+        private int _lastPendingCount = -1;
+        private bool _wired;
 
         private void Awake()
         {
@@ -51,154 +60,142 @@ namespace Bocage.Presentation.Bindings
         private void OnEnable()
         {
             ResolveElements();
-            if (runner != null) runner.TickCompleted += OnTick;
-            Rebuild();
+            WireCallbacks();
+            HideHistoryOverlay();
+            RefreshButtonLabel(force: true);
         }
 
         private void OnDisable()
         {
-            if (runner != null) runner.TickCompleted -= OnTick;
+            UnwireCallbacks();
         }
 
-        private void OnTick()
+        private void Update()
         {
-            Rebuild();
+            // Per-frame refresh: cheap text update when the pending
+            // count changes between ticks (user resolving recos in
+            // the popup, or new ones arriving). Also keeps the history
+            // list in sync if currently open.
+            RefreshButtonLabel(force: false);
+            if (_historyOverlay != null && !_historyOverlay.ClassListContains(HiddenClass))
+            {
+                RebuildHistoryList();
+            }
         }
 
         private void ResolveElements()
         {
             if (_document == null || _document.rootVisualElement == null) return;
-            _container = _document.rootVisualElement.Q<VisualElement>(cardsContainerName);
-            _summaryLabel = _document.rootVisualElement.Q<Label>(summaryLabelName);
-            if (_container == null)
+            var root = _document.rootVisualElement;
+            _openHistoryButton = root.Q<Button>(openHistoryButtonName);
+            _historyOverlay = root.Q<VisualElement>(historyOverlayName);
+            _historyList = root.Q<VisualElement>(historyListName);
+            _historyEmptyLabel = root.Q<Label>(historyEmptyLabelName);
+            _historyCloseButton = root.Q<Button>(historyCloseButtonName);
+
+            if (_openHistoryButton == null || _historyOverlay == null || _historyList == null)
             {
-                SimLogger.DebugLog("[DecisionPanelBinding] container '" + cardsContainerName + "' not found");
+                SimLogger.DebugLog("[DecisionPanelBinding] history button or overlay not found — check UXML names");
             }
         }
 
-        private void Rebuild()
+        private void WireCallbacks()
         {
-            if (_container == null || runner == null || runner.DecisionJournal == null) return;
+            if (_wired) return;
+            if (_openHistoryButton != null) _openHistoryButton.clicked += OnOpenHistoryClicked;
+            if (_historyCloseButton != null) _historyCloseButton.clicked += OnCloseHistoryClicked;
+            _wired = true;
+        }
+
+        private void UnwireCallbacks()
+        {
+            if (!_wired) return;
+            if (_openHistoryButton != null) _openHistoryButton.clicked -= OnOpenHistoryClicked;
+            if (_historyCloseButton != null) _historyCloseButton.clicked -= OnCloseHistoryClicked;
+            _wired = false;
+        }
+
+        private void RefreshButtonLabel(bool force)
+        {
+            if (_openHistoryButton == null || runner == null || runner.DecisionJournal == null) return;
+            int pending = runner.DecisionJournal.PendingEntries.Count;
+            if (!force && pending == _lastPendingCount) return;
+            _lastPendingCount = pending;
+            _openHistoryButton.text = pending > 0
+                ? "Recommandations en cours (" + pending + ")"
+                : "Aucune recommandation en cours";
+        }
+
+        private void OnOpenHistoryClicked()
+        {
+            ShowHistoryOverlay();
+            RebuildHistoryList();
+        }
+
+        private void OnCloseHistoryClicked()
+        {
+            HideHistoryOverlay();
+        }
+
+        private void ShowHistoryOverlay()
+        {
+            if (_historyOverlay != null) _historyOverlay.RemoveFromClassList(HiddenClass);
+        }
+
+        private void HideHistoryOverlay()
+        {
+            if (_historyOverlay != null) _historyOverlay.AddToClassList(HiddenClass);
+        }
+
+        private void RebuildHistoryList()
+        {
+            if (_historyList == null || runner == null || runner.DecisionJournal == null) return;
             var pending = runner.DecisionJournal.PendingEntries;
 
-            // Update summary line.
-            if (_summaryLabel != null)
-            {
-                int total = runner.DecisionJournal.Entries.Count;
-                int applied = runner.DecisionJournal.AppliedCount;
-                _summaryLabel.text = pending.Count == 0
-                    ? "Aucune recommandation en attente — " + applied + " appliquée(s) sur " + total
-                    : pending.Count + " en attente — " + applied + " appliquée(s) sur " + total;
-            }
-
-            // Naive rebuild: clear everything, rebuild from scratch. For
-            // the typical bocage run (≤ a handful of pending at once)
-            // the cost is negligible and the code stays simple.
-            _container.Clear();
-            _cards.Clear();
+            _historyList.Clear();
             for (int i = 0; i < pending.Count; i++)
             {
-                _container.Add(BuildCard(pending[i]));
+                _historyList.Add(BuildHistoryRow(pending[i].Recommendation));
+            }
+            if (_historyEmptyLabel != null)
+            {
+                _historyEmptyLabel.EnableInClassList(HiddenClass, pending.Count > 0);
             }
         }
 
-        private VisualElement BuildCard(DecisionJournal.Entry entry)
-        {
-            var card = new VisualElement();
-            card.AddToClassList("decision-card");
-
-            var title = new Label(entry.Recommendation.Title);
-            title.AddToClassList("decision-card-title");
-            card.Add(title);
-
-            var rationale = new Label(entry.Recommendation.Rationale);
-            rationale.AddToClassList("decision-card-rationale");
-            card.Add(rationale);
-
-            // Two-horizon outcome bracket.
-            var outcomes = OutcomeProjector.Project(entry.Recommendation, runner.Model);
-            for (int i = 0; i < outcomes.Length; i++)
-            {
-                card.Add(BuildOutcomeRow(outcomes[i]));
-            }
-
-            // Action buttons.
-            var actionsRow = new VisualElement();
-            actionsRow.AddToClassList("decision-card-actions");
-
-            var acceptBtn = new Button(() => OnAccept(entry.Recommendation.Id))
-            {
-                text = "Accepter"
-            };
-            acceptBtn.AddToClassList("decision-card-button");
-            acceptBtn.AddToClassList("decision-card-button--accept");
-            actionsRow.Add(acceptBtn);
-
-            var rejectBtn = new Button(() => OnReject(entry.Recommendation.Id))
-            {
-                text = "Rejeter"
-            };
-            rejectBtn.AddToClassList("decision-card-button");
-            rejectBtn.AddToClassList("decision-card-button--reject");
-            actionsRow.Add(rejectBtn);
-
-            card.Add(actionsRow);
-            _cards.Add(card);
-            return card;
-        }
-
-        private static VisualElement BuildOutcomeRow(OutcomeDistribution outcome)
+        private VisualElement BuildHistoryRow(IRecommendation rec)
         {
             var row = new VisualElement();
-            row.AddToClassList("decision-outcome-row");
+            row.AddToClassList("decision-history-row");
 
-            var horizonLabel = new Label(outcome.HorizonInDays + " j");
-            horizonLabel.AddToClassList("decision-outcome-horizon");
-            row.Add(horizonLabel);
+            var info = new VisualElement();
+            info.AddToClassList("decision-history-row-info");
 
-            // Profit bracket: "profit -60 / +20 / +60 €/ha/an"
-            var profitLabel = new Label(FormatBracket(
-                outcome.ProfitDeltaWorstCase,
-                outcome.ProfitDeltaExpected,
-                outcome.ProfitDeltaBestCase,
-                "€"));
-            profitLabel.AddToClassList("decision-outcome-profit");
-            row.Add(profitLabel);
+            var titleLabel = new Label(rec.Title);
+            titleLabel.AddToClassList("decision-history-row-title");
+            info.Add(titleLabel);
 
-            // Biodiv bracket as percent of composite.
-            var biodivLabel = new Label(FormatBracket(
-                outcome.BiodiversityDeltaWorstCase * 100,
-                outcome.BiodiversityDeltaExpected * 100,
-                outcome.BiodiversityDeltaBestCase * 100,
-                "% biodiv"));
-            biodivLabel.AddToClassList("decision-outcome-biodiv");
-            row.Add(biodivLabel);
+            var dayLabel = new Label("Détectée au jour " + rec.IssuedOnDay);
+            dayLabel.AddToClassList("decision-history-row-day");
+            info.Add(dayLabel);
+
+            row.Add(info);
+
+            var openButton = new Button(() => OpenRecommendation(rec))
+            {
+                text = "Examiner"
+            };
+            openButton.AddToClassList("decision-history-row-button");
+            row.Add(openButton);
 
             return row;
         }
 
-        private static string FormatBracket(double worst, double expected, double best, string suffix)
+        private void OpenRecommendation(IRecommendation rec)
         {
-            var inv = CultureInfo.InvariantCulture;
-            return worst.ToString("+0;-0;0", inv) + " / "
-                 + expected.ToString("+0;-0;0", inv) + " / "
-                 + best.ToString("+0;-0;0", inv) + " " + suffix;
-        }
-
-        private void OnAccept(string recId)
-        {
-            if (runner == null) return;
-            runner.DecisionJournal.SetVerdict(recId, DecisionVerdict.Accepted, runner.CurrentDay);
-            SimLogger.UserActionLog("decision: ACCEPTED " + recId + " on day " + runner.CurrentDay);
-            Rebuild();
-        }
-
-        private void OnReject(string recId)
-        {
-            if (runner == null) return;
-            runner.DecisionJournal.SetVerdict(recId, DecisionVerdict.Rejected, runner.CurrentDay);
-            SimLogger.UserActionLog("decision: REJECTED " + recId + " on day " + runner.CurrentDay);
-            Rebuild();
+            if (recommendationPopup == null || rec == null) return;
+            HideHistoryOverlay();
+            recommendationPopup.ShowRecommendationFromHistory(rec);
         }
     }
 }
