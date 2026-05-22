@@ -1,6 +1,7 @@
 using System.Collections;
 using Bocage.Data.RuntimeContainers;
 using Bocage.Indicators.Hero;
+using Bocage.Sensors;
 using Bocage.SimulationCore;
 using Bocage.SimulationCore.Logging;
 using Bocage.SimulationCore.Model;
@@ -55,6 +56,8 @@ namespace Bocage.Presentation.Simulation
         private SimulationEngine _engine;
         private Coroutine _tickRoutine;
         private int _currentDay;
+        private EventDetector _eventDetector;
+        private EventLog _eventLog;
 
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
@@ -67,6 +70,15 @@ namespace Bocage.Presentation.Simulation
         /// diverge through tech actions, not through RNG.
         /// </summary>
         public ulong MasterSeed => masterSeed;
+
+        /// <summary>
+        /// Append-only history of events emitted by the Couche 2
+        /// <see cref="EventDetector"/> during this run. Read by the
+        /// Couche 3 recommendation engine (sub-étape 8c.2) and by the
+        /// Couche 5 decision panel (sub-étape 8c.3). At sub-étape 8c.1
+        /// the log is populated but no UI consumes it yet.
+        /// </summary>
+        public EventLog EventLog => _eventLog;
 
         /// <summary>
         /// Number of simulated days that have elapsed since startup. Used
@@ -99,6 +111,8 @@ namespace Bocage.Presentation.Simulation
         private void Awake()
         {
             _engine = DefaultSimulation.Build(masterSeed);
+            _eventDetector = new EventDetector();
+            _eventLog = new EventLog();
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -146,6 +160,7 @@ namespace Bocage.Presentation.Simulation
 
                 _engine.Tick();
                 _currentDay++;
+                _eventDetector.Detect(_engine.Model, _eventLog);
                 PublishIndicators();
                 TickCompleted?.Invoke();
             }
@@ -175,6 +190,7 @@ namespace Bocage.Presentation.Simulation
             {
                 _engine.Tick();
                 _currentDay++;
+                _eventDetector.Detect(_engine.Model, _eventLog);
                 TickCompleted?.Invoke();
             }
             PublishIndicators();

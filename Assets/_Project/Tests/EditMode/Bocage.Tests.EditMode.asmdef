@@ -3,6 +3,7 @@
     "rootNamespace": "Bocage.Tests.EditMode",
     "references": [
         "Bocage.SimulationCore",
+        "Bocage.Sensors",
         "Bocage.Indicators",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
