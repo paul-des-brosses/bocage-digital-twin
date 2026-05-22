@@ -36,25 +36,27 @@ namespace Bocage.Presentation.Scenario
         [SerializeField, TextArea(2, 4), Tooltip("One-sentence description shown as tooltip on the button. Should explain when this preset is meaningful.")]
         private string description = "";
 
-        [Header("Climate")]
+        // Note 2026-05-21 (8c.3 post-livraison polish): the
+        // HedgeRemovalRate and InputIntensityFactor fields were removed
+        // from preset definitions. A preset is a "Cadre extérieur"
+        // (climate × public policy framework), NOT a bundle of farmer
+        // decisions. The farmer-controlled sliders (arrachage haie,
+        // intensité d'intrants) live separately in the right-hand
+        // "Espace agriculteur" and are NEVER touched by a preset click —
+        // the user keeps full control of those.
+
+        [Header("Conditions naturelles (climat)")]
         [SerializeField, Range(-2f, 5f), Tooltip("Annual mean temperature anomaly in °C relative to Perche reference.")]
         private float temperatureAnomalyC = 0f;
 
         [SerializeField, Range(-60f, 20f), Tooltip("Annual precipitation anomaly in % relative to Perche reference (~730 mm/yr).")]
         private float precipitationAnomalyPercent = 0f;
 
-        [Header("Agriculture")]
-        [SerializeField, Range(0f, 10f), Tooltip("Sustained hedge grubbing pressure in m/ha/yr.")]
-        private float hedgeRemovalRate = 0f;
-
-        [SerializeField, Range(0.5f, 2f), Tooltip("Multiplier on reference fertiliser/pesticide/fuel input level. 0.5 = organic extensive, 1 = conventional, 2 = intensive.")]
-        private float inputIntensityFactor = 1f;
-
-        [Header("Policy")]
-        [SerializeField, Range(0f, 100f), Tooltip("Share of the farm under MAEC contracts (% of SAU).")]
+        [Header("Politiques publiques (cadre)")]
+        [SerializeField, Range(0f, 100f), Tooltip("Share of the farm under MAEC contracts (% of SAU). EU/state framework.")]
         private float maecCoveragePercent = 0f;
 
-        [SerializeField, Range(0f, 1f), Tooltip("Per-metre PSE subsidy paid for maintained hedges (€/m/yr).")]
+        [SerializeField, Range(0f, 1f), Tooltip("Per-metre PSE subsidy paid for maintained hedges (€/m/yr). State/local PNR framework.")]
         private float pseSubsidyRate = 0f;
 
         [Header("Horizon")]
@@ -66,8 +68,6 @@ namespace Bocage.Presentation.Scenario
         public string Description => description;
         public float TemperatureAnomalyC => temperatureAnomalyC;
         public float PrecipitationAnomalyPercent => precipitationAnomalyPercent;
-        public float HedgeRemovalRate => hedgeRemovalRate;
-        public float InputIntensityFactor => inputIntensityFactor;
         public float MaecCoveragePercent => maecCoveragePercent;
         public float PseSubsidyRate => pseSubsidyRate;
         public int HorizonInDays => horizonInDays;

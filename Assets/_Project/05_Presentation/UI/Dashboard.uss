@@ -93,7 +93,7 @@
     left: 0;
     right: 0;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: center;              /* 5 KPI cards centred — the empty right-edge band has no purpose */
     padding: 12px 16px 12px 16px;
     background-color: rgba(20, 22, 26, 0.92);
     border-bottom-width: 1px;
@@ -174,8 +174,8 @@
 .body-row {
     position: absolute;
     bottom: 12px;
-    left: 290px;                           /* scenario-panel reserves the left gutter */
-    right: 280px;                          /* sensor list reserves the right gutter */
+    left: 290px;                           /* scenario-panel reserves the left gutter (260+16+~14) */
+    right: 310px;                          /* decision-panel reserves the right gutter (280+16+~14) */
     flex-direction: row;
     align-items: stretch;
 }
@@ -186,7 +186,7 @@
 
 .scenario-panel {
     position: absolute;
-    top: 166px;                           /* clears speed-bar (36px) + hero-strip height */
+    top: 154px;                           /* touches the bottom edge of hero-strip (36+~118) with no extra gap */
     bottom: 16px;
     left: 16px;
     width: 260px;
@@ -213,8 +213,38 @@
     margin-top: 4px;
     margin-bottom: 4px;
     padding-top: 4px;
+    padding-left: 6px;
     border-top-width: 1px;
     border-top-color: rgba(255, 255, 255, 0.06);
+    border-left-width: 3px;
+    border-left-color: rgba(170, 162, 145, 0.40);     /* default: ocre désaturé */
+}
+
+/*
+ * Section title modifiers (sub-étape 8c.3 polish). Each section gets a
+ * distinct left-border accent so the user can tell at a glance which
+ * sliders below are exogenous (climate, weather) vs. under farmer
+ * control vs. set by public policy. The palette uses the desaturated
+ * earth / vegetal accents of CLAUDE.md §11.
+ */
+.scenario-section-title--natural {
+    border-left-color: rgba(170, 100, 60, 0.85);      /* terre brûlée — climat subi */
+    color: rgba(200, 160, 130, 0.95);
+}
+
+.scenario-section-title--decision {
+    border-left-color: rgba(110, 150, 100, 0.85);     /* vert bouteille — choix de l'agriculteur */
+    color: rgba(180, 210, 170, 0.95);
+}
+
+.scenario-section-title--policy {
+    border-left-color: rgba(150, 130, 90, 0.85);      /* ocre soutenu — cadre PAC */
+    color: rgba(210, 190, 150, 0.95);
+}
+
+.scenario-section-title--preset {
+    border-left-color: rgba(124, 168, 100, 0.85);     /* vert pâle — raccourcis cadre */
+    color: rgba(220, 240, 200, 0.95);
 }
 
 /*
@@ -437,7 +467,156 @@
  * ========================================================================= */
 
 /* =========================================================================
- *  Sensor list — replaces the minimap (sub-étape 6c.2 decision)
+ *  Decision panel (sub-étape 8c.3) — right side, above sensor list
+ * ========================================================================= */
+
+/*
+ * Anchored top-right, leaves room below for the sensor list. Cards are
+ * spawned inside .decision-cards by DecisionPanelBinding when the
+ * journal has pending recommendations.
+ */
+/*
+ * Right-side panel — "Espace agriculteur" (sub-étape 8c.3 post-livraison
+ * polish). Holds presets + free sliders (hedge removal, input intensity)
+ * + horizon + recommendations cards. Spans the full vertical so all
+ * farmer-controlled UI lives in one place.
+ */
+.decision-panel {
+    position: absolute;
+    top: 154px;                            /* touches the bottom edge of hero-strip */
+    right: 16px;
+    bottom: 248px;                         /* clears the bottom-right sensor-list panel (max-height 220 + 12 gap + 16 margin) */
+    width: 280px;
+    padding: 10px 14px 12px 14px;
+    background-color: rgba(28, 31, 36, 0.94);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
+    flex-direction: column;
+}
+
+.decision-panel-title {
+    font-size: 14px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-bottom: 6px;
+}
+
+.decision-summary {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+    margin-bottom: 8px;
+}
+
+/*
+ * Vertical ScrollView wrapping the recommendations cards. The panel's
+ * flex-grow lets the scroll area absorb whatever vertical space is left
+ * after presets + decision sliders + horizon, so a long stream of
+ * pending recos doesn't push other sections off the panel.
+ */
+.decision-cards-scroll {
+    flex-grow: 1;
+}
+
+.decision-cards {
+    flex-direction: column;
+}
+
+/*
+ * One card per pending recommendation. Spawned dynamically by
+ * DecisionPanelBinding.BuildCard.
+ */
+.decision-card {
+    flex-direction: column;
+    padding: 8px 10px 8px 10px;
+    margin-bottom: 8px;
+    background-color: rgba(16, 18, 22, 1);
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.20);
+}
+
+.decision-card-title {
+    font-size: 12px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.decision-card-rationale {
+    font-size: 10px;
+    color: rgba(220, 214, 198, 0.75);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-top: 2px;
+    margin-bottom: 6px;
+}
+
+.decision-outcome-row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.decision-outcome-horizon {
+    font-size: 9px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+    min-width: 36px;
+}
+
+.decision-outcome-profit {
+    font-size: 9px;
+    color: rgba(220, 214, 198, 0.85);
+    margin-right: 6px;
+}
+
+.decision-outcome-biodiv {
+    font-size: 9px;
+    color: rgba(124, 168, 100, 0.85);
+}
+
+.decision-card-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+.decision-card-button {
+    margin-left: 4px;
+    padding: 2px 8px 2px 8px;
+    min-height: 20px;
+    border-width: 1px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+.decision-card-button--accept {
+    background-color: rgba(28, 38, 28, 0.85);
+    border-color: rgba(124, 168, 100, 0.85);
+    color: rgba(238, 232, 217, 1);
+}
+
+.decision-card-button--accept:hover {
+    background-color: rgba(48, 64, 48, 1);
+}
+
+.decision-card-button--reject {
+    background-color: rgba(16, 18, 22, 1);
+    border-color: rgba(170, 162, 145, 0.30);
+    color: rgba(220, 214, 198, 0.85);
+}
+
+.decision-card-button--reject:hover {
+    background-color: rgba(28, 31, 36, 1);
+    border-color: rgba(170, 162, 145, 0.50);
+}
+
+/* =========================================================================
+ *  Sensor list — floating bottom-right panel (restored after 8c.3 polish
+ *  iteration: capteurs are passive observations independent from the
+ *  climate/policy cadre, so they live outside scenario-panel).
  * ========================================================================= */
 
 .sensor-list-container {
@@ -445,6 +624,7 @@
     bottom: 12px;
     right: 16px;
     width: 256px;
+    max-height: 220px;                     /* bounded so it cannot grow up into the decision-panel above */
     padding: 10px 12px 10px 12px;
     background-color: rgba(28, 31, 36, 0.94);
     border-radius: 6px;

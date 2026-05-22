@@ -37,6 +37,7 @@ namespace Bocage.Decision
 
         private readonly List<Entry> _entries = new List<Entry>();
         private readonly HashSet<string> _coveredEventIds = new HashSet<string>();
+        private readonly Dictionary<string, int> _appliedOnDayByRecId = new Dictionary<string, int>();
 
         public IReadOnlyList<Entry> Entries => _entries;
 
@@ -125,5 +126,34 @@ namespace Bocage.Decision
                 return resolved;
             }
         }
+
+        /// <summary>
+        /// Records that the mechanical effect of the given recommendation
+        /// has been applied to the real model on day
+        /// <paramref name="currentDay"/>. The
+        /// <see cref="Bocage.Decision.AutoActionPipeline"/> calls this
+        /// after a successful application to guarantee idempotence:
+        /// the same accepted rec is never re-applied. Returns false if
+        /// the rec was already marked applied (caller should skip).
+        /// </summary>
+        public bool MarkApplied(string recommendationId, int currentDay)
+        {
+            if (recommendationId == null) return false;
+            if (_appliedOnDayByRecId.ContainsKey(recommendationId)) return false;
+            _appliedOnDayByRecId[recommendationId] = currentDay;
+            return true;
+        }
+
+        /// <summary>True if <see cref="MarkApplied"/> has been called for this rec id.</summary>
+        public bool IsApplied(string recommendationId)
+        {
+            return recommendationId != null && _appliedOnDayByRecId.ContainsKey(recommendationId);
+        }
+
+        /// <summary>
+        /// Number of recommendations whose mechanical effect has been
+        /// applied to the real model. Exposed for diagnostics.
+        /// </summary>
+        public int AppliedCount => _appliedOnDayByRecId.Count;
     }
 }

@@ -35,6 +35,7 @@ _Debug
 |---|---|---|
 | `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | RCs : HedgerowDensity, WaterTable, IntegratedProfitability, **BiodiversityComposite ✨**, **TechDelta ✨**. `Shadow Runner` → glisser le GO ci-dessous. |
 | `ShadowSimulationRunner` ✨ (sub-étape 8b) | `ShadowSimulationRunner` | `Real Runner` → le `SimulationRunner` ci-dessus (même GO ou autre, peu importe). |
+| **`AutoActionApplier` ✨ (sub-étape 8c.3)** | `AutoActionApplier` | `Runner` → `_Bootstrap/SimulationRunner`. Subscribes à `TickCompleted` et applique les recos Accepted/AutoAccepted au real engine seul (le shadow n'est jamais touché → TechDelta bouge). |
 | `SimulationTraceRecorder` *(optionnel — diagnostic 7b)* | `SimulationTraceRecorder` | — (s'auto-abonne au TickCompleted du SimulationRunner) |
 
 ---
@@ -57,6 +58,7 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | `IntegratedProfitabilityLabelBinding` | `Runner` → `_Bootstrap/SimulationRunner` |
 | **`BiodiversityLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_BiodiversityComposite.asset` |
 | **`TechDeltaLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_TechDelta.asset` |
+| **`DecisionPanelBinding` ✨ (sub-étape 8c.3)** | `Runner` → `_Bootstrap/SimulationRunner`. Spawn une carte par reco pending, boutons accept/reject mutent le journal directement. |
 | `HedgerowShaderBinding` | (lié à la composition de scène) |
 | `SensorListBinding` | (lit les `SensorMetadataTag` posés dans la scène) |
 | `ViewportWarningBinding` | (auto, lit `Screen.width`) |
@@ -130,6 +132,35 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-05-21** — Sub-étape 8c.3 livrée :
+  `AutoActionPipeline` (pure C# Couche 3) + `AutoActionApplier`
+  (MonoBehaviour Couche 5) appliquent les recos Accepted/AutoAccepted
+  au real engine seul. `DecisionJournal.MarkApplied/IsApplied` pour
+  garantir l'idempotence. Decision panel UI (à droite, au-dessus de la
+  sensor list) liste les recos pending avec outcomes 30j/365j et
+  boutons accept/reject. TechDelta KPI doit maintenant bouger quand
+  l'utilisateur accepte une reco.
+  + Polish post-livraison :
+    (a) ordre des opérations corrigé dans `SimulationRunner.TickLoop` —
+    `PublishIndicators` appelé APRÈS `TickCompleted` pour que le shadow
+    soit à jour avant la lecture, fixant un drift d'un tick sur le KPI
+    TechDelta ;
+    (b) seuils `EventDetector` retunés pour fire sous RCP4.5 : hedge
+    60→75 m/ha, drought 5→3.5 m, fauna 0.5→0.7 ;
+    (c) layout complètement refondu en 2 zones conceptuelles + 1
+    panneau flottant :
+    **gauche = Cadre extérieur** (préréglages climat×politique +
+    conditions naturelles subies + politiques publiques),
+    **droite = Espace agriculteur** (décisions quotidiennes
+    hedge/intrants + horizon + recommandations à arbitrer),
+    **bas-droite floating = Capteurs déployés**. Les préréglages
+    n'appliquent QUE les paramètres exogènes (climat + politiques +
+    horizon) ; les sliders agriculteur ne sont jamais modifiés par un
+    clic preset. `ScenarioPresetDefinition` allégé : suppression des
+    champs `hedgeRemovalRate` et `inputIntensityFactor`. Les 4 presets
+    renommés en grille climat × politique : Référence, Politique
+    vertueuse, Trajectoire RCP4.5, RCP4.5 + Politique forte.
 
 - **2026-05-21** — Sub-étape 8b livrée :
   `BiodiversityCompositeIndicator` (composite 50 % fauna + 30 % hedge +

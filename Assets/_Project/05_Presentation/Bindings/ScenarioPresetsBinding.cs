@@ -132,22 +132,23 @@ namespace Bocage.Presentation.Bindings
                 SimLogger.DebugLog("[ScenarioPresetsBinding] runner or scenario not available; preset ignored");
                 return;
             }
+            // Apply ONLY the exogenous fields (climate + public policy +
+            // horizon). The farmer-controlled sliders (HedgeRemovalRate,
+            // InputIntensityFactor) are deliberately left alone — a
+            // preset is the "Cadre extérieur" the farmer is presented
+            // with, not a substitute for his own choices.
             var s = runner.Scenario;
             s.TemperatureAnomalyC.SetTarget(preset.TemperatureAnomalyC, transitionDurationDays);
             s.PrecipitationAnomalyPercent.SetTarget(preset.PrecipitationAnomalyPercent, transitionDurationDays);
-            s.HedgeRemovalRate.SetTarget(preset.HedgeRemovalRate, transitionDurationDays);
-            s.InputIntensityFactor.SetTarget(preset.InputIntensityFactor, transitionDurationDays);
             s.MaecCoveragePercent.SetTarget(preset.MaecCoveragePercent, transitionDurationDays);
             s.PseSubsidyRate.SetTarget(preset.PseSubsidyRate, transitionDurationDays);
             s.HorizonInDays = preset.HorizonInDays;
 
             if (controlsBinding != null)
             {
-                controlsBinding.SnapToPresetValues(
+                controlsBinding.SnapToPresetExogenousValues(
                     preset.TemperatureAnomalyC,
                     preset.PrecipitationAnomalyPercent,
-                    preset.HedgeRemovalRate,
-                    preset.InputIntensityFactor,
                     preset.MaecCoveragePercent,
                     preset.PseSubsidyRate,
                     preset.HorizonInDays);

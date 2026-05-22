@@ -85,21 +85,28 @@
         (CLAUDE.md §15); horizon is applied directly (it's a deadline,
         not a smoothed setpoint).
         -->
+        <!--
+        Scenario panel — LEFT side. Holds everything that is EXOGENOUS to
+        the farmer: climate (subi), public policy framework (MAEC, PSE
+        rates set by the EU/State), and the deployed sensors (passive
+        observations of the world). Restructured 2026-05-21 so the
+        "what is imposed" vs "what the farmer decides" boundary is
+        visually unambiguous (cf. decision-panel on the right).
+        -->
         <ui:VisualElement name="scenario-panel" class="scenario-panel">
-            <ui:Label text="Scénario" class="scenario-panel-title" />
+            <ui:Label text="Cadre extérieur" class="scenario-panel-title" tooltip="Conditions imposées à l'exploitation : climat subi et politiques publiques en vigueur. Les capteurs (à droite, en bas) observent passivement le système." />
 
             <!--
-            Preset row (sub-étape 7c.2) — one button per ScenarioPresetDefinition
-            assigned on ScenarioPresetsBinding. Clicking a button applies the
-            six physical params + horizon in one go, with the same 10-day
-            transition window as a manual slider drag. The last applied
-            preset id is persisted in PlayerPrefs and re-applied at startup.
+            Preset row — one button per ScenarioPresetDefinition. A
+            preset is a "Cadre extérieur" shortcut: climate × public
+            policy combo. It NEVER touches the farmer's sliders
+            (arrachage haies, intensité d'intrants) which stay under
+            user control in the right-hand "Espace agriculteur".
             -->
-            <ui:Label text="Préréglages" class="scenario-section-title" />
+            <ui:Label text="Préréglages de cadre" class="scenario-section-title scenario-section-title--preset" tooltip="Un clic = un cadre climatique + politique sourcé. Les sliders ci-dessous restent libres pour ajuster finement. Les décisions de l'agriculteur (à droite) ne sont JAMAIS modifiées par un preset." />
             <ui:VisualElement name="scenario-presets-row" class="scenario-presets-row" />
-            <ui:Label text="Un clic = configuration sourcée. Les sliders ci-dessous restent libres pour ajuster." class="scenario-control-hint" />
 
-            <ui:Label text="Climat" class="scenario-section-title" />
+            <ui:Label text="Conditions naturelles (subies)" class="scenario-section-title scenario-section-title--natural" tooltip="Conditions climatiques et météorologiques imposées de l'extérieur à l'exploitation. Le scénario climatique sous-jacent (RCP4.5, RCP8.5, etc.) façonne ces deux paramètres." />
 
             <ui:VisualElement class="scenario-control">
                 <ui:VisualElement class="scenario-control-header">
@@ -119,27 +126,7 @@
                 <ui:Label text="−60 % (sécheresse extrême) à +20 % (excès humidité). Référence Perche ≈ 730 mm/an." class="scenario-control-hint" />
             </ui:VisualElement>
 
-            <ui:Label text="Agriculture" class="scenario-section-title" />
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Taux d'arrachage de haies" class="scenario-control-label" />
-                    <ui:Label name="hedge-removal-value" text="0.0 m/ha/an" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="hedge-removal-slider" low-value="0" high-value="10" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="0 = aucune destruction. 5 = remembrement agressif (Perche 1970-90)." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Intensité d'intrants" class="scenario-control-label" />
-                    <ui:Label name="input-intensity-value" text="1.0× réf." class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="input-intensity-slider" low-value="0.5" high-value="2" value="1" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:Label text="Politique" class="scenario-section-title" />
+            <ui:Label text="Politiques publiques (cadre)" class="scenario-section-title scenario-section-title--policy" tooltip="Cadre financier MAEC + PSE défini par l'État et la PAC. Les taux ne sont pas choisis par l'agriculteur ; il peut seulement s'engager ou non dans ces dispositifs." />
 
             <ui:VisualElement class="scenario-control">
                 <ui:VisualElement class="scenario-control-header">
@@ -157,17 +144,6 @@
                 </ui:VisualElement>
                 <ui:Slider name="pse-rate-slider" low-value="0" high-value="1" value="0" class="scenario-slider" show-input-field="true" />
                 <ui:Label text="Paiement pour Services Environnementaux par mètre de haie. 0.30 à 0.80 selon contrat MAEC linéaire + PNR Perche." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:Label text="Horizon" class="scenario-section-title" />
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Durée du run" class="scenario-control-label" />
-                    <ui:Label name="horizon-value" text="365 j" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:SliderInt name="horizon-slider" low-value="30" high-value="1825" value="365" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end (7c.3)." class="scenario-control-hint" />
             </ui:VisualElement>
 
         </ui:VisualElement>
@@ -207,13 +183,63 @@
         </ui:VisualElement>
 
         <!--
-        Sensor list — replaces the minimap that was originally planned
-        at sub-étape 6c.2. A spatial map duplicated information already
-        visible in the scene behind the UI; a structured list of
-        deployed sensors with status, type and observed/deferred tag
-        gives more density and prepares the hover sync of 6c.3.
-        Rows are spawned dynamically by SensorListBinding from the
-        SensorMetadataTag of each scene sensor.
+        Decision panel — RIGHT side. Holds everything UNDER FARMER
+        CONTROL: presets quick-pick, the two free sliders the farmer
+        operates daily (hedge maintenance and input intensity), the
+        run horizon, and the recommendations the algorithm produces for
+        the farmer to arbitrate. Restructured 2026-05-21 to co-locate
+        all "agriculteur" UI (was split between scenario-panel and a
+        separate decision-panel above the sensor list).
+        -->
+        <ui:VisualElement name="decision-panel" class="decision-panel">
+            <ui:Label text="Espace agriculteur" class="decision-panel-title" tooltip="Tout ce que l'agriculteur contrôle directement : ses pratiques quotidiennes, l'horizon de simulation, l'arbitrage des recommandations." />
+
+            <ui:Label text="Décisions quotidiennes" class="scenario-section-title scenario-section-title--decision" tooltip="Choix sous le contrôle direct de l'agriculteur : entretien du bocage, intensité des pratiques agricoles." />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Taux d'arrachage de haies" class="scenario-control-label" />
+                    <ui:Label name="hedge-removal-value" text="0.0 m/ha/an" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="hedge-removal-slider" low-value="0" high-value="10" value="0" class="scenario-slider" show-input-field="true" />
+                <ui:Label text="0 = aucune destruction. 5 = remembrement agressif (Perche 1970-90)." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Intensité d'intrants" class="scenario-control-label" />
+                    <ui:Label name="input-intensity-value" text="1.0× réf." class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="input-intensity-slider" low-value="0.5" high-value="2" value="1" class="scenario-slider" show-input-field="true" />
+                <ui:Label text="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:Label text="Horizon de simulation" class="scenario-section-title scenario-section-title--decision" tooltip="Durée totale du run sur laquelle l'agriculteur veut projeter sa stratégie." />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Durée du run" class="scenario-control-label" />
+                    <ui:Label name="horizon-value" text="365 j" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:SliderInt name="horizon-slider" low-value="30" high-value="1825" value="365" class="scenario-slider" show-input-field="true" />
+                <ui:Label text="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:Label text="Recommandations" class="scenario-section-title scenario-section-title--decision" tooltip="Recos produites par l'algorithme à partir des événements capteurs. L'agriculteur arbitre : accepter applique l'action au monde réel ; rejeter laisse la trajectoire suivre son cours." />
+            <ui:Label name="decision-summary" text="—" class="decision-summary" />
+            <ui:ScrollView class="decision-cards-scroll" mode="Vertical">
+                <ui:VisualElement name="decision-cards" class="decision-cards" />
+            </ui:ScrollView>
+
+        </ui:VisualElement>
+
+        <!--
+        Sensor list — floating bottom-right panel listing the deployed
+        sensors with status (online / deferred). Rows spawned by
+        SensorListBinding from each SensorMetadataTag in the scene.
+        Kept as a separate floating element rather than inlined in
+        the scenario-panel: sensors are a passive readout of the world,
+        independent from the climate/policy framework.
         -->
         <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
             <ui:Label text="Capteurs déployés" class="sensor-list-title" />

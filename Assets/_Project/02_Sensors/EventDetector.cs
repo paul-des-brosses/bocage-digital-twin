@@ -24,10 +24,26 @@ namespace Bocage.Sensors
     /// </summary>
     public sealed class EventDetector
     {
-        public const double HedgeAlertThresholdMetersPerHectare = 60.0;
-        public const double DroughtDepthThresholdMeters = 5.0;
+        // Thresholds tuned 2026-05-21 to fire under moderate scenarios
+        // (RCP4.5 alone) rather than only at catastrophic ones. Earlier
+        // values (60 / 5 / 0.5) only triggered under combined climate +
+        // intensification stress, leaving the digital twin's decision
+        // path unobservable in the canonical "Trajectoire RCP4.5"
+        // preset which is the most likely user demo path.
+        //
+        // Hedge alert at 75 m/ha = ~20 % loss from the Perche baseline
+        // (90 m/ha). INRAE chalara monitoring flags ash dieback at
+        // around that level of crown defoliation.
+        // Drought depth at 3.5 m = root-zone alarm level (Chambre
+        // Normandie agronomic alert). Below this, deep-rooted crops
+        // and most hedge species lose access to capillary water.
+        // Fauna at 0.7 = −30 % from baseline, aligned with the
+        // Vigie-Nature farmland bird decline observed over 1989-2017
+        // in intensified zones.
+        public const double HedgeAlertThresholdMetersPerHectare = 75.0;
+        public const double DroughtDepthThresholdMeters = 3.5;
         public const int DroughtConsecutiveDaysThreshold = 30;
-        public const double FaunaAcousticAnomalyThreshold = 0.5;
+        public const double FaunaAcousticAnomalyThreshold = 0.7;
         public const int CooldownDays = 30;
 
         private int _consecutiveDryDays;

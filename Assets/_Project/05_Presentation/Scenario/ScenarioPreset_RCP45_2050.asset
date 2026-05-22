@@ -14,12 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
   id: rcp45
   displayName: Trajectoire RCP4.5
-  description: "Horizon 2050, +2 \xB0C et \u221220 % pr\xE9cipitations (sc\xE9nario
-    IPCC AR6 RCP4.5)."
+  description: "Horizon 2050, +2 \xB0C et −20 % pr\xE9cipitations (sc\xE9nario
+    IPCC AR6 RCP4.5). Sans aide publique."
   temperatureAnomalyC: 2
   precipitationAnomalyPercent: -20
-  hedgeRemovalRate: 0
-  inputIntensityFactor: 1
   maecCoveragePercent: 0
   pseSubsidyRate: 0
   horizonInDays: 1825

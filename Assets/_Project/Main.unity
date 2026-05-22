@@ -2614,6 +2614,10 @@ GameObject:
   - component: {fileID: 1463489831}
   - component: {fileID: 1463489833}
   - component: {fileID: 1463489832}
+  - component: {fileID: 1463489835}
+  - component: {fileID: 1463489834}
+  - component: {fileID: 1463489837}
+  - component: {fileID: 1463489836}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -2808,6 +2812,76 @@ MonoBehaviour:
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.BiodiversityLabelBinding
   container: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
   labelName: biodiversity-value
+--- !u!114 &1463489834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a57b2b5a7991b044bff8e005ffcb139, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.DecisionPanelBinding
+  runner: {fileID: 2115294099}
+  cardsContainerName: decision-cards
+  summaryLabelName: decision-summary
+--- !u!114 &1463489835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4ce2899bce174b4e9cd1c05f12229aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Decision.AutoActionApplier
+  runner: {fileID: 2115294099}
+--- !u!114 &1463489836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 807bda293e2a0174aa8a0a0c22d0cad2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.ScenarioPresetsBinding
+  runner: {fileID: 2115294099}
+  controlsBinding: {fileID: 1463489831}
+  presets:
+  - {fileID: 11400000, guid: 455022b1a25930649b9442e22f2bc0fb, type: 2}
+  - {fileID: 11400000, guid: 2d3f050a464141b45b440ab34e33f5f2, type: 2}
+  - {fileID: 11400000, guid: f0b8a3594cbd0c54e87742d17c944649, type: 2}
+  - {fileID: 11400000, guid: ed963d8f7dbd8274987594f053585f9e, type: 2}
+  transitionDurationDays: 10
+  presetsContainerName: scenario-presets-row
+  applyPersistedPresetOnStart: 1
+--- !u!114 &1463489837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a06878b492d89b4db78a9e1ff7cb8d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.SpeedControlsBinding
+  runner: {fileID: 2115294099}
+  pauseButtonName: speed-pause-button
+  playX1ButtonName: speed-x1-button
+  playX5ButtonName: speed-x5-button
+  playX10ButtonName: speed-x10-button
+  playX20ButtonName: speed-x20-button
+  skipEndButtonName: speed-skip-end-button
+  dayCounterLabelName: speed-day-counter
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0

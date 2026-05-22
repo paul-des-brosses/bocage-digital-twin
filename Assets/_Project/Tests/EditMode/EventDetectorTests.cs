@@ -122,11 +122,14 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void Detect_fauna_at_threshold_does_not_emit()
         {
-            // The detector uses strict inequality: fauna == 0.5 should
-            // NOT trigger. Guards against an off-by-one rounding bug.
+            // The detector uses strict inequality: fauna exactly equal to
+            // the threshold should NOT trigger. Guards against an
+            // off-by-one rounding bug. The threshold was raised from 0.5
+            // to 0.7 on 2026-05-21 so this test follows.
             var detector = new EventDetector();
             var log = new EventLog();
-            var model = new EcosystemModel(initialFaunaPopulation: 0.5);
+            var model = new EcosystemModel(
+                initialFaunaPopulation: EventDetector.FaunaAcousticAnomalyThreshold);
             detector.Detect(model, log);
             Assert.AreEqual(0, log.Count);
         }

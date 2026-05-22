@@ -200,26 +200,27 @@ namespace Bocage.Presentation.Bindings
         }
 
         /// <summary>
-        /// Snaps every slider and value label to the supplied target values
-        /// without triggering the per-slider callbacks (so this method
-        /// alone does NOT push anything to the ScenarioContext). Used by
-        /// <see cref="ScenarioPresetsBinding"/> after it has applied a
-        /// preset to the scenario: the sliders jump visually to the new
-        /// target while the model interpolates over the transition window.
+        /// Snaps the EXOGENOUS sliders (climate, public policy, horizon)
+        /// to the supplied target values without triggering callbacks —
+        /// so this method alone does NOT push anything to the
+        /// ScenarioContext. Used by <see cref="ScenarioPresetsBinding"/>
+        /// after it has applied a preset: visual snap of the climate /
+        /// policy / horizon sliders while the model interpolates.
+        /// <para>
+        /// The farmer-controlled sliders (hedge removal, input intensity)
+        /// are deliberately NOT touched here — they remain under user
+        /// control regardless of which preset is loaded.
+        /// </para>
         /// </summary>
-        public void SnapToPresetValues(
+        public void SnapToPresetExogenousValues(
             double temperatureAnomalyC,
             double precipitationAnomalyPercent,
-            double hedgeRemovalRate,
-            double inputIntensityFactor,
             double maecCoveragePercent,
             double pseSubsidyRate,
             int horizonInDays)
         {
             SetSlider(_tempSlider, _tempLabel, (float)temperatureAnomalyC, FormatTemperature);
             SetSlider(_precipSlider, _precipLabel, (float)precipitationAnomalyPercent, FormatPercentSigned);
-            SetSlider(_hedgeRemovalSlider, _hedgeRemovalLabel, (float)hedgeRemovalRate, FormatHedgeRemoval);
-            SetSlider(_inputIntensitySlider, _inputIntensityLabel, (float)inputIntensityFactor, FormatIntensity);
             SetSlider(_maecSlider, _maecLabel, (float)maecCoveragePercent, FormatPercent);
             SetSlider(_pseSlider, _pseLabel, (float)pseSubsidyRate, FormatPseRate);
             SetSliderInt(_horizonSlider, _horizonLabel, horizonInDays, FormatHorizon);

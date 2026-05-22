@@ -177,8 +177,15 @@ namespace Bocage.Presentation.Simulation
                 _currentDay++;
                 _eventDetector.Detect(_engine.Model, _eventLog);
                 PublishRecommendations();
-                PublishIndicators();
+                // TickCompleted fires BEFORE PublishIndicators so that
+                // the shadow runner (subscriber) advances its own engine
+                // FIRST, and any auto-actions (also subscribers) modify
+                // the real model — then PublishIndicators reads the
+                // synchronized post-tick state of BOTH engines.
+                // Without this order, TechDelta would drift by an
+                // off-by-one tick under sustained scenario stress.
                 TickCompleted?.Invoke();
+                PublishIndicators();
             }
         }
 

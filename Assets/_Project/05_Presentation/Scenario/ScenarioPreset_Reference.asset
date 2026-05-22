@@ -14,12 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
   id: reference
   displayName: "R\xE9f\xE9rence"
-  description: "Baseline calibr\xE9e RICA Agreste 2024 grandes cultures Perche. Profit
-    \u2248 335 \u20AC/ha/an."
+  description: "Climat neutre, sans aide publique. Cadre de r\xE9f\xE9rence Perche.\
+    \ L'agriculteur d\xE9finit ses pratiques librement (sliders \xE0 droite)."
   temperatureAnomalyC: 0
   precipitationAnomalyPercent: 0
-  hedgeRemovalRate: 0
-  inputIntensityFactor: 1
   maecCoveragePercent: 0
   pseSubsidyRate: 0
   horizonInDays: 365
