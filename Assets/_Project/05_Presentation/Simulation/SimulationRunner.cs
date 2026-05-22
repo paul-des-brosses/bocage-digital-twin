@@ -50,6 +50,12 @@ namespace Bocage.Presentation.Simulation
         [SerializeField] private RC_BiodiversityComposite biodiversityContainer;
         [SerializeField] private RC_TechDelta techDeltaContainer;
 
+        [Header("Derived presentation channels (sub-étape 9α / 9β)")]
+        [SerializeField, Tooltip("Optional. Soil-moisture proxy consumed by S_Meadow. Derived from WaterTableDepth (SoilMoistureIndicator). Safe to leave null if the meadow shader is not in the scene yet.")]
+        private RC_SoilMoisture soilMoistureContainer;
+        [SerializeField, Tooltip("Optional. Hedgerow-health proxy consumed by the _HealthT channel of the hedge shader. Derived from HedgerowDensity + recent stress events (HedgerowHealthIndicator). Safe to leave null until the shader exposes the property.")]
+        private RC_HedgerowHealth hedgerowHealthContainer;
+
         [Header("Shadow run (sub-étape 8b)")]
         [SerializeField, Tooltip("Optional. If assigned, the shadow runner provides the second EcosystemModel against which the real run is compared by TechDeltaIndicator. If left null, the tech-delta KPI is computed against the real run itself (delta = 0).")]
         private ShadowSimulationRunner shadowRunner;
@@ -350,6 +356,23 @@ namespace Bocage.Presentation.Simulation
                 double raw = TechDeltaIndicator.Compute(model, shadowModel, _engine.Scenario);
                 double normalized = TechDeltaIndicator.Normalize(raw);
                 techDeltaContainer.Set((float)raw, (float)normalized);
+            }
+
+            // ---- Derived presentation channels (sub-étape 9α / 9β) ----
+            // These are read by the shader bindings (S_Meadow, S_Pond,
+            // SG_Hedgerow). Both are unit-range, so raw == normalized.
+            if (soilMoistureContainer != null)
+            {
+                double moisture = SoilMoistureIndicator.Compute(model);
+                double normalized = SoilMoistureIndicator.Normalize(moisture);
+                soilMoistureContainer.Set((float)moisture, (float)normalized);
+            }
+
+            if (hedgerowHealthContainer != null)
+            {
+                double health = HedgerowHealthIndicator.Compute(model, _eventLog);
+                double normalized = HedgerowHealthIndicator.Normalize(health);
+                hedgerowHealthContainer.Set((float)health, (float)normalized);
             }
         }
     }

@@ -268,7 +268,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f90, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -667,6 +667,55 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &188111634
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 188111635}
+  - component: {fileID: 188111636}
+  m_Layer: 0
+  m_Name: PondShaderBinding
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &188111635
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188111634}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1335269289}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &188111636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188111634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b5c1d4f7a0e6bc29d3f4a1b8e6d5c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.PondShaderBinding
+  container: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
+  spawnRoot: {fileID: 1324521048}
+  pondNamePrefixes:
+  - pond
+  waterLevelProperty: _WaterLevel
 --- !u!1 &189509840
 GameObject:
   m_ObjectHideFlags: 0
@@ -1180,7 +1229,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1563,6 +1612,55 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &839802121
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 839802122}
+  - component: {fileID: 839802123}
+  m_Layer: 0
+  m_Name: MeadowShaderBinding
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &839802122
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839802121}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1335269289}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &839802123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839802121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a4b0c3e6f9d5ab18c2e3f0a7d5c4b6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.MeadowShaderBinding
+  container: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
+  spawnRoot: {fileID: 1324521048}
+  meadowNamePrefixes:
+  - grass_
+  moistureProperty: _Moisture
 --- !u!1 &848426509
 GameObject:
   m_ObjectHideFlags: 0
@@ -1621,7 +1719,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2195,6 +2293,8 @@ Transform:
   - {fileID: 1299759979}
   - {fileID: 544412604}
   - {fileID: 1324521048}
+  - {fileID: 839802122}
+  - {fileID: 188111635}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1335269290
@@ -2223,12 +2323,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 418ff20319d4ba64e867df2dbcfd11ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.HedgerowShaderBinding
-  container: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
-  spawnRoot: {fileID: 1324521048}
+  densityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
+  healthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
+  spawnRoot: {fileID: 1335269289}
   hedgeNamePrefixes:
   - hedge_
   - pollard_
   densityProperty: _Density
+  healthProperty: _HealthT
 --- !u!1 &1399379608
 GameObject:
   m_ObjectHideFlags: 0
@@ -2562,7 +2664,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3264,7 +3366,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4059,6 +4161,8 @@ MonoBehaviour:
   profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
   biodiversityContainer: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
   techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
+  soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
+  hedgerowHealthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
   shadowRunner: {fileID: 2115294100}
 --- !u!114 &2115294100
 MonoBehaviour:

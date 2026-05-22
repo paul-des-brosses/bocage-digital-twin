@@ -3,14 +3,15 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 8 livrées (simulation core,
-scène data-driven, 5 Hero KPIs tous câblés honnêtement, dashboard
-UI Toolkit en 2 zones « Cadre extérieur » / « Espace agriculteur »,
-capteurs visibles avec hover sync, presets climat × politique, contrôles
-de vitesse, événements + recommandations + journal de décisions +
-auto-actions appliquées au real engine uniquement, conditions
-initiales éditables avec one-click launch). Prochaine étape : 9
-(effets visuels finaux + faune animée + polish).
+**Statut global** : en cours — étapes 1 à 8 livrées + sub-étapes 9α
+et 9β livrées (shaders mare/prairie pilotés par modèle, modulation
+healthT sur les haies via binding). Le reste de l'Étape 9 (faune
+statique en pool, animation faune, healthT faune, particules) est
+**reporté au backlog** (cf `BACKLOG.md`) pour livrer une v1
+fonctionnelle d'abord ; le polish visuel viendra en post-livraison.
+Prochaine étape : **10 — Polish, optimisation, déploiement final**,
+avec revue de la logique/utilité du Digital Twin et première
+publication GitHub Pages.
 
 ---
 
@@ -376,56 +377,153 @@ arbitrer définitivement à l'étape 9 polish visuel.
 
 ---
 
-## Étape 9 — Tous les effets visuels et faune
+## Étape 9 — Effets visuels et faune (partiellement livrée)
 
 **Objectif** : scène vivante avec tous les sprites finaux, modulation
 visuelle pilotée par le modèle.
 
-**Livrables**
+**Livrables originels** vs statut effectif :
 
-- Tous les sprites finaux générés via Nanobanana et post-traités.
-- Faune en pool (hirondelle, chouette, busard, héron, amphibien) avec
-  patterns d'animation simples.
-- Densité de faune pilotée par l'index de biodiversité.
-- Shader haies, mare, prairie pilotés par variables modèle (humidité,
-  healthT, niveau d'eau).
-- Effets Niveau 3 : modulation `healthT` sur faune et haies.
-- Particules Unity (feuilles dérivantes, poussières dans la lumière).
+1. ✅ Tous les sprites finaux générés via Nanobanana et post-traités
+   (faune, haies, mare, prairie, capteurs, hills_perche).
+2. ⏸ **Reporté backlog** : faune en pool (4 espèces) avec patterns
+   d'animation simples — cf `BACKLOG.md` items 1 + 2.
+3. ⏸ **Reporté backlog** : densité de faune pilotée par l'index de
+   biodiversité — cf `BACKLOG.md` item 1 (dépend de #2).
+4. ✅ **Sub-étape 9α livrée** : shaders haies (déjà livré Étape 5),
+   mare (`S_Pond`) et prairie (`S_Meadow`) pilotés par variables
+   modèle.
+5. ⚠️ **Sub-étape 9β livrée partielle** : modulation `healthT` sur
+   les haies (binding + indicateur dérivé + container observable).
+   Le node `_HealthT` dans `SG_Hedgerow.shadergraph` reste à câbler
+   manuellement (5 min) — cf `BACKLOG.md` item 5. La même modulation
+   sur la faune est reportée — cf `BACKLOG.md` item 3.
+6. ⏸ **Reporté backlog** : particules Unity (feuilles dérivantes,
+   poussières dans la lumière) — cf `BACKLOG.md` item 4.
 
-**Critère de validation**
+**Sub-étape 9α — Shaders mare et prairie** : ✅ livré.
+- `SoilMoistureIndicator` (Couche 4) dérive un proxy [0,1] de
+  l'humidité du sol depuis `EcosystemModel.WaterTableDepth`.
+  Extensible plus tard si on ajoute des précipitations lissées.
+- Containers observables `RC_SoilMoisture`.
+- Shaders `S_Pond.shader` et `S_Meadow.shader` en HLSL pur (cf
+  `DECISIONS.md` #41), mêmes propriétés que SG_Hedgerow côté binding.
+- Matériaux `M_Pond.mat` et `M_Meadow.mat` avec couleurs par défaut
+  calibrées palette Perche.
+- Bindings `PondShaderBinding` et `MeadowShaderBinding` (scan par
+  préfixe de nom sous le spawnRoot, `MaterialPropertyBlock` partagé).
+- `SimulationRunner` publie les deux indicateurs après chaque tick.
+- Tests EditMode : `SoilMoistureIndicatorTests`.
 
-- Démo : scène riche, faune pool tourne, les effets visuels suivent
-  les variables du modèle (vérifié par audit primauté du capteur).
+**Sub-étape 9β — HealthT sur les haies** : ✅ livré (code) /
+🔧 reste 1 action manuelle Unity.
+- `HedgerowHealthIndicator` (Couche 4) dérive un proxy [0,1] de la
+  santé des haies depuis la densité courante + événements actifs
+  (chalara, drought) dans une fenêtre glissante de 60 jours. Pas de
+  variable d'état (cf `DECISIONS.md` #42).
+- Container observable `RC_HedgerowHealth`.
+- `HedgerowShaderBinding` étendu pour pousser `_HealthT` en plus de
+  `_Density`. Unity ignore silencieusement la propriété tant que
+  `SG_Hedgerow.shadergraph` ne l'expose pas.
+- Tests EditMode : `HedgerowHealthIndicatorTests`.
+- **Action manuelle Unity restante** : ajouter le node `_HealthT` au
+  Shader Graph `SG_hedgerow.shadergraph` (cf `BACKLOG.md` item 5).
 
-**Estimation** : 1.5 jour.
+**Critère de validation 9α/9β**
 
-**Statut** : à faire.
+- Démo : on lance la simu ; la mare se ternit / brunit quand la
+  nappe descend, la prairie jaunit quand l'humidité baisse, les
+  haies réagissent à la densité (déjà l'Étape 5) — le canal healthT
+  est branché côté data, en attente du node shader.
+- Aucun chiffre inventé, aucun cycle de saison artificiel.
+- Tests EditMode passent (Couche 1 + Couche 4 indicateurs).
+
+**Estimation** : 0.7 jour (9α + 9β) — livré.
+
+**Estimation initiale** : 1.5 jour — la partie livrée fait ~50 % du
+livrable original, le reste est en backlog explicite.
+
+**Statut** : ⚠️ livraison partielle assumée. Items 2/3/5/6 du
+livrable original sont formellement reportés au backlog avec hooks
+d'extension propres (binding pattern réutilisable, asmdef en place,
+DECISIONS.md à jour).
 
 ---
 
-## Étape 10 — Polish, optimisation, déploiement final
+## Étape 10 — Polish logique, déploiement final, première publication
 
-**Objectif** : version portfolio livrable, déployée sur GitHub Pages.
+**Objectif** : livrer un Digital Twin **fonctionnel et honnête**, pas
+joli (le polish visuel est en backlog explicite). L'accent est mis sur
+la qualité de la boucle d'utilité (à quoi sert ce DT, est-il
+démontrable en 2 minutes ?) avant la qualité esthétique.
 
-**Livrables**
+**Sub-étape 10a — Revue de la logique et de l'utilité du Digital Twin**
+
+- Audit du « scénario démo » : un visiteur du portfolio doit
+  comprendre en 90 secondes ce que le DT fait et pourquoi il est
+  honnête. Identifier les frictions narratives (KPI flottants, popup
+  recommandation peu lisible, conditions initiales pas explicables,
+  etc.).
+- Sécuriser la chaîne causale visible : événement → recommandation →
+  arbitrage → impact sur les KPIs et sur la divergence real/shadow.
+  Si un maillon est invisible ou confus, il faut le clarifier avant
+  publication.
+- Audit primauté du capteur : aucun visuel ne doit dépendre du
+  calendrier ou d'une logique scénique. Inventaire des
+  bindings/shaders, traçage de chaque sortie visuelle à une
+  variable du modèle ou à un indicateur.
+- Simplifications acceptées si elles aident la lisibilité du DT (un
+  KPI redondant peut être masqué, un slider peu utile peut être
+  caché derrière un repli "Avancé").
+
+**Sub-étape 10b — Optimisation et build WebGL**
+
+- Vérifier la conformité aux contraintes perf (CLAUDE.md §7) :
+  IL2CPP, stripping High, Brotli, ASTC/Crunched DXT, pas de MSAA,
+  pas de DoF, pas de threads.
+- Mesurer : taille build < 30 MB compressé, TTI < 10 s sur connexion
+  résidentielle, 60 FPS stable desktop.
+- Couper si dépassement, dans l'ordre de `CLAUDE.md` §17.
+
+**Sub-étape 10c — Polish UI léger (pas visuel)**
+
+- Alignements, marges, contrastes, hover states (rien de fancy).
+- Bandeau viewport < 1280 px déjà en place — vérifier qu'il ne casse
+  rien en redimensionnement.
+- Pas d'animation UI complexe (cf `BACKLOG.md` item 7).
+
+**Sub-étape 10d — README + déploiement GitHub Pages**
 
 - Workflow GitHub Actions (`game-ci/unity-builder`) qui build et
   déploie sur la branche `gh-pages`.
-- Build WebGL final < 30 MB (compressé Brotli).
-- Time-to-interactive < 10 s vérifié.
-- 60 FPS stable vérifié.
-- Polish UI final (alignements, marges, hovers).
-- README finalisé avec démo link, GIF hero, screenshots.
-- `SessionReporter` opérationnel et accessible depuis l'UI.
-- Audit final : aucune violation de la primauté du capteur.
+- README finalisé : démo link, GIF hero (capture 10–15 s du DT en
+  action), 2–3 screenshots, schéma d'architecture des 5 couches,
+  liens vers `BACKLOG.md` et `DECISIONS.md`.
+- Premier push de la démo en public.
+
+**Sub-étape 10e — Audit final**
+
+- Re-vérifier que `BACKLOG.md` est exhaustif (un futur contributeur
+  doit pouvoir reprendre l'effet visuel reporté en 1 h max sans
+  reconstruire le contexte).
+- Re-vérifier qu'aucune violation de primauté du capteur n'a été
+  introduite en cours de polish.
+- Tests EditMode passent tous.
+
+**Hors scope assumé (cf `BACKLOG.md`)** :
+- `SessionReporter` accessible depuis l'UI (item 8).
+- Animations UI léchées (item 7).
+- Tout effet visuel avancé (items 1–6).
 
 **Critère de validation**
 
 - Démo accessible publiquement sur `https://<user>.github.io/<repo>/`.
-- README avec liens vivants.
+- README en anglais (cf `DECISIONS.md` #31) avec liens vivants.
 - Build CI vert.
+- Un visiteur du portfolio comprend l'utilité du DT en moins de 2 min
+  sans devoir lire la doc.
 
-**Estimation** : 1.5 jour.
+**Estimation** : 1.5 jour (10a + 10b + 10c + 10d + 10e).
 
 **Statut** : à faire.
 

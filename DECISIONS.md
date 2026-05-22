@@ -705,3 +705,85 @@ ne reposent sur rien.
   "stub" sur la cartouche aurait été un cache-misère.
 - *Étendre EcosystemModel maintenant* : gonfle l'Étape 6 de
   ~30-50 % et empiète sur les Étapes 7-8 prévues pour ce travail.
+
+---
+
+### 41. Shaders mare et prairie en HLSL plutôt que Shader Graph (révision partielle du #37)
+
+**Contexte** : à la sub-étape 9α (livrable #4 de l'Étape 9), il fallait
+livrer deux nouveaux shaders runtime : `SG_Pond` (mare pilotée par la
+nappe) et `SG_Meadow` (prairie pilotée par l'humidité). La décision
+#37 disait Shader Graph pour tous les shaders runtime.
+
+**Décision** : déviation locale du #37 — `S_Pond.shader` et
+`S_Meadow.shader` sont écrits en HLSL pur (`.shader`). `SG_Sky` et
+`SG_Hedgerow` restent en Shader Graph et ne sont pas re-générés.
+
+**Raison** :
+- Les deux shaders en question sont simples (un lerp de couleur piloté
+  par un float `[0,1]`). Le bénéfice "preview live" du SG est marginal
+  ici.
+- Authorer un `.shadergraph` à la main est impraticable (1500 lignes
+  de YAML avec GUIDs internes), et c'est précisément ce que CLAUDE.md
+  §2 demande à Claude Code de faire. Un `.shader` HLSL équivalent fait
+  60–80 lignes lisibles, versionables, modifiables sans ouvrir Unity.
+- Conséquence pour la suite : la couche binding consomme la même
+  interface (`MaterialPropertyBlock` sur un float), donc passer
+  ultérieurement à un Shader Graph est non bloquant (item backlog).
+
+**Conséquence opérationnelle** :
+- L'utilisateur ne crée plus le shader graph dans Unity pour la mare
+  et la prairie ; les `.shader` sont importés tels quels.
+- Si on veut un effet plus avancé plus tard (rides sur la mare,
+  variation florale sur la prairie), on peut soit étendre les
+  `.shader` en HLSL, soit refactoriser vers un `.shadergraph` en
+  reprenant la même interface de propriétés. Documenté dans
+  `BACKLOG.md`.
+
+**Alternative écartée** : tenir le #37 strictement et demander à
+l'utilisateur de créer manuellement les deux Shader Graphs depuis
+zéro — ralentit la livraison de l'Étape 9 pour un gain visuel nul
+au format actuel.
+
+---
+
+### 42. Hedgerow health proxy dérivé en Couche 4, pas variable d'état
+
+**Contexte** : à la sub-étape 9β, on voulait moduler les sprites de
+haies par un canal `_HealthT` représentant la "santé" du linéaire.
+Tentation initiale : ajouter une propriété `HedgerowHealth` à
+`EcosystemModel` avec des règles biophysiques de mise à jour
+(chalara, sécheresse, recovery saisonnier, etc.).
+
+**Décision** : `HedgerowHealth` n'est PAS une variable d'état. Elle
+est calculée à la volée par `HedgerowHealthIndicator` (Couche 4) en
+agrégeant la densité courante et les événements actifs de l'EventLog
+(chalara récent, sécheresse récente) dans une fenêtre glissante de
+60 jours.
+
+**Raison** :
+- Le principe de primauté du capteur (CLAUDE.md §9) n'exige pas qu'un
+  visuel soit dérivé d'une variable d'état dédiée — il exige qu'il
+  soit dérivé d'une mesure ou d'un calcul du modèle traçable. Une
+  agrégation déterministe d'EventLog + state existant remplit ce
+  contrat.
+- Ajouter une variable d'état force des règles de dynamique
+  artificielles (taux de récupération, couplage croisé) sans
+  bénéfice pour le moteur de décision : la santé est une lecture, pas
+  un levier.
+- Garder la surface du modèle minimale facilite les tests et la
+  reprise du projet pour ajouter de meilleurs effets visuels en
+  backlog.
+
+**Conséquence opérationnelle** :
+- Le shader haies (`SG_Hedgerow`) doit lire `_HealthT` quand il sera
+  étendu — entrée backlog "SG_Hedgerow healthT node". En attendant,
+  le binding pousse silencieusement la valeur ; Unity ignore les
+  propriétés non déclarées par le shader.
+- Si une analyse plus fine s'impose un jour (saisons sèches
+  cumulatives, fragmentation du linéaire), on pourra promouvoir
+  `HedgerowHealth` en variable d'état sans casser l'API du binding.
+
+**Alternative écartée** : variable d'état `HedgerowHealth` mise à
+jour par une `HedgeHealthDynamicsRule` — surdimensionné pour le
+besoin actuel, alourdit le modèle.
