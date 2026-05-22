@@ -1,5 +1,6 @@
 using System.Collections;
 using Bocage.Data.RuntimeContainers;
+using Bocage.Decision;
 using Bocage.Indicators.Hero;
 using Bocage.Sensors;
 using Bocage.SimulationCore;
@@ -58,6 +59,8 @@ namespace Bocage.Presentation.Simulation
         private int _currentDay;
         private EventDetector _eventDetector;
         private EventLog _eventLog;
+        private RecommendationEngine _recommendationEngine;
+        private DecisionJournal _decisionJournal;
 
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
@@ -79,6 +82,16 @@ namespace Bocage.Presentation.Simulation
         /// the log is populated but no UI consumes it yet.
         /// </summary>
         public EventLog EventLog => _eventLog;
+
+        /// <summary>
+        /// Append-only history of recommendations and their verdicts.
+        /// Read by the Couche 5 decision panel (sub-étape 8c.3) and by
+        /// the auto-actions consumer that applies accepted entries to
+        /// the real engine. The shadow run does NOT see this journal —
+        /// that asymmetry is exactly what makes the tech-delta KPI
+        /// meaningful.
+        /// </summary>
+        public DecisionJournal DecisionJournal => _decisionJournal;
 
         /// <summary>
         /// Number of simulated days that have elapsed since startup. Used
@@ -113,6 +126,8 @@ namespace Bocage.Presentation.Simulation
             _engine = DefaultSimulation.Build(masterSeed);
             _eventDetector = new EventDetector();
             _eventLog = new EventLog();
+            _recommendationEngine = new RecommendationEngine();
+            _decisionJournal = new DecisionJournal();
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -161,6 +176,7 @@ namespace Bocage.Presentation.Simulation
                 _engine.Tick();
                 _currentDay++;
                 _eventDetector.Detect(_engine.Model, _eventLog);
+                PublishRecommendations();
                 PublishIndicators();
                 TickCompleted?.Invoke();
             }
@@ -191,6 +207,7 @@ namespace Bocage.Presentation.Simulation
                 _engine.Tick();
                 _currentDay++;
                 _eventDetector.Detect(_engine.Model, _eventLog);
+                PublishRecommendations();
                 TickCompleted?.Invoke();
             }
             PublishIndicators();
@@ -199,6 +216,22 @@ namespace Bocage.Presentation.Simulation
             // We intentionally do NOT restart ticking — sub-étape 7c.3
             // skip-to-end ends in a paused state so the user can inspect.
             // The caller is free to call StartTicking() again if needed.
+        }
+
+        /// <summary>
+        /// Asks the <see cref="RecommendationEngine"/> for fresh
+        /// recommendations against the current event log + journal,
+        /// and appends new ones to the journal. The journal's own
+        /// de-dup guard means calling this every tick is safe even
+        /// though the same events linger in the log.
+        /// </summary>
+        private void PublishRecommendations()
+        {
+            var pending = _recommendationEngine.ProduceRecommendations(_eventLog, _decisionJournal);
+            for (int i = 0; i < pending.Count; i++)
+            {
+                _decisionJournal.Append(pending[i], _currentDay);
+            }
         }
 
         private void PublishIndicators()

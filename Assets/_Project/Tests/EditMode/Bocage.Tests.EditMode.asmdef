@@ -4,6 +4,7 @@
     "references": [
         "Bocage.SimulationCore",
         "Bocage.Sensors",
+        "Bocage.Decision",
         "Bocage.Indicators",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
