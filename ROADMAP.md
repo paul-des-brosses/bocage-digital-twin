@@ -3,12 +3,14 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 7 livrées (simulation core,
-scène data-driven, 3 Hero KPIs honnêtes + 2 placeholders, dashboard
-UI Toolkit complet, capteurs visibles avec hover sync scène ↔ liste,
-panneau scénario avec presets sourcés et contrôles de vitesse).
-Prochaine étape : 8 (décisions + biodiversité + shadow run +
-panneau Conditions initiales).
+**Statut global** : en cours — étapes 1 à 8 livrées (simulation core,
+scène data-driven, 5 Hero KPIs tous câblés honnêtement, dashboard
+UI Toolkit en 2 zones « Cadre extérieur » / « Espace agriculteur »,
+capteurs visibles avec hover sync, presets climat × politique, contrôles
+de vitesse, événements + recommandations + journal de décisions +
+auto-actions appliquées au real engine uniquement, conditions
+initiales éditables avec one-click launch). Prochaine étape : 9
+(effets visuels finaux + faune animée + polish).
 
 ---
 
@@ -357,7 +359,20 @@ arbitrables par l'utilisateur, comparaison shadow run fonctionnelle.
 **Estimation** : 2.5 jours (était 2 j, +0.5 j pour le panneau
 Conditions initiales).
 
-**Statut** : à faire.
+**Statut** : ✅ livré (sub-étapes 8a + 8b + 8c.1 + 8c.2 + 8c.3 + 8c.4).
+Variable d'état `FaunaPopulation` + dynamique livrées en 8a. Hero KPIs
+Biodiversité (composite pondéré) et TechDelta (real vs shadow profit)
+câblés honnêtement en 8b avec `ShadowSimulationRunner` parallèle.
+`EventDetector` Couche 2 avec 3 types d'événements (chalara, drought,
+fauna acoustic) en 8c.1. `RecommendationEngine` + `OutcomeProjector`
+(2 horizons + 3-point bracket) + `DecisionJournal` append-only en 8c.2.
+`AutoActionPipeline` + Decision Panel UI (cards avec accept/reject) en
+8c.3, avec polish layout en 2 zones « Cadre extérieur » / « Espace
+agriculteur ». Panneau « Conditions initiales du bocage » + bouton
+one-click « Lancer / Réinitialiser la simulation » en 8c.4. La
+cohérence visuelle entre HedgerowDensity et SceneCompositionDefinition
+est restée à l'option (c) — composition fixe — par défaut, à
+arbitrer définitivement à l'étape 9 polish visuel.
 
 ---
 
