@@ -112,8 +112,8 @@ Assets/_Project/
 └── Editor/, Prefabs/, Fonts/, Resources/
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full architectural diagram
-and module description.
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architectural
+diagram and module description.
 
 ## Method
 
@@ -122,7 +122,7 @@ accelerate production:
 
 - **Architecture and design decisions**: developed iteratively in
   collaboration with Claude (claude.ai), documented in
-  [DECISIONS.md](DECISIONS.md).
+  [DECISIONS.md](docs/DECISIONS.md).
 - **Implementation**: developed with Claude Code, following the
   architectural specification in [CLAUDE.md](CLAUDE.md).
 - **Visual assets**: 2D sprites generated via Nanobanana with stylistic
@@ -133,7 +133,7 @@ accelerate production:
 
 The architecture, technical trade-offs, and the scientific calibration of
 the simulation rules are human decisions, documented in
-[DECISIONS.md](DECISIONS.md) and [ARCHITECTURE.md](ARCHITECTURE.md).
+[DECISIONS.md](docs/DECISIONS.md) and [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 

@@ -275,7 +275,7 @@ n'est pas optimisée et invitant à élargir.
 
 ## 13. Gestion des sprites
 
-Voir `ASSETS_LIST.md` pour la liste exhaustive des sprites attendus.
+Voir `docs/ASSETS_LIST.md` pour la liste exhaustive des sprites attendus.
 
 Pipeline :
 
@@ -346,8 +346,8 @@ douloureux) :
 Si une décision technique semble manquer dans cette spécification,
 consulter dans l'ordre :
 
-1. `DECISIONS.md` (décisions de design déjà tranchées).
-2. `ARCHITECTURE.md` (détails architecturaux).
+1. `docs/DECISIONS.md` (décisions de design déjà tranchées).
+2. `docs/ARCHITECTURE.md` (détails architecturaux).
 3. Demander explicitement à l'utilisateur.
 
 **Ne pas combler de soi-même.** Une décision non documentée est une
