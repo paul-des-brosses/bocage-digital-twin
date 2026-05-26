@@ -72,15 +72,60 @@ namespace Bocage.Decision
         /// <summary>
         /// Appends a brand-new recommendation to the journal at its
         /// default verdict. Returns false if a recommendation already
-        /// exists for the same triggering event (idempotent).
+        /// exists for the same triggering event (idempotent on event
+        /// instance).
+        /// <para>
+        /// Per-type supersession (sub-étape 10a): if an existing entry
+        /// of the same TYPE prefix is still in <see cref="DecisionVerdict.Pending"/>
+        /// when the new one lands, the older entry is marked
+        /// <see cref="DecisionVerdict.Superseded"/>. The journal thus
+        /// holds at most one Pending per type at any instant — the
+        /// latest — which keeps the history list from growing when
+        /// the user has chosen to ignore a recurring detection.
+        /// Already-resolved entries (Accepted / Rejected / AutoAccepted)
+        /// are never touched here; they remain in the audit trail
+        /// untouched.
+        /// </para>
         /// </summary>
         public bool Append(IRecommendation rec, int currentDay)
         {
             if (rec == null) return false;
             if (_coveredEventIds.Contains(rec.TriggeredByEventId)) return false;
+
+            // Type-level supersession of any older Pending entry. We
+            // mark in place (struct entries) so the journal stays a
+            // strictly-growing list — no removal, no reordering.
+            string newTypePrefix = ExtractTypePrefix(rec.Id);
+            if (newTypePrefix != null)
+            {
+                for (int i = 0; i < _entries.Count; i++)
+                {
+                    var existing = _entries[i];
+                    if (existing.Verdict != DecisionVerdict.Pending) continue;
+                    if (ExtractTypePrefix(existing.Recommendation.Id) != newTypePrefix) continue;
+                    _entries[i] = new Entry(
+                        existing.Recommendation,
+                        DecisionVerdict.Superseded,
+                        currentDay,
+                        existing.AppliedMagnitude);
+                }
+            }
+
             _entries.Add(new Entry(rec, rec.DefaultVerdict, currentDay));
             _coveredEventIds.Add(rec.TriggeredByEventId);
             return true;
+        }
+
+        /// <summary>
+        /// Recommendation ids follow the pattern <c>type#dayOrSalt</c>
+        /// (cf. PlantHedgesRecommendation.Id and friends). Strip the
+        /// suffix to compare by type. Returns null for null/empty input.
+        /// </summary>
+        private static string ExtractTypePrefix(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            int sep = id.IndexOf('#');
+            return sep < 0 ? id : id.Substring(0, sep);
         }
 
         /// <summary>

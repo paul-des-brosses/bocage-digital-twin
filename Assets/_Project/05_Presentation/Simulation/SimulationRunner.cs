@@ -1,6 +1,7 @@
 using System.Collections;
 using Bocage.Data.RuntimeContainers;
 using Bocage.Decision;
+using Bocage.Decision.Recommendations;
 using Bocage.Indicators.Hero;
 using Bocage.Sensors;
 using Bocage.SimulationCore;
@@ -294,6 +295,70 @@ namespace Bocage.Presentation.Simulation
             // We intentionally do NOT restart ticking — sub-étape 7c.3
             // skip-to-end ends in a paused state so the user can inspect.
             // The caller is free to call StartTicking() again if needed.
+        }
+
+        /// <summary>
+        /// Applies a one-off "plant hedges" intervention requested by the
+        /// user OUTSIDE the recommendation pathway (manual action button
+        /// in the espace agriculteur). Sub-étape 10a friction fix —
+        /// before this, the 3 reco actions could only be triggered by
+        /// an algorithm prompt, leaving the user passive between events.
+        /// <para>
+        /// Implementation: the same mechanical effect as
+        /// <see cref="Bocage.Decision.AutoActionPipeline.ApplyOne"/>,
+        /// applied directly on the real model (the shadow run is not
+        /// touched — that asymmetry is exactly what feeds TechDelta).
+        /// We do NOT journal the action: the journal carries
+        /// recommendation-arbitrage history, and a manual button click
+        /// has no triggering event nor outcome bracket. The action
+        /// nonetheless surfaces in <see cref="SimLogger.UserActionLog"/>
+        /// for telemetry.
+        /// </para>
+        /// </summary>
+        public void ApplyManualPlantHedges(double metersPerHectare)
+        {
+            if (_engine == null || _engine.Model == null) return;
+            double magnitude = metersPerHectare < 0 ? 0 : metersPerHectare;
+            _engine.Model.SetHedgerowDensity(_engine.Model.HedgerowDensity + magnitude);
+            PublishIndicators();
+            SimLogger.UserActionLog("manual: plant-hedges +" + magnitude.ToString("F1") + " m/ha (day " + _currentDay + ")");
+        }
+
+        /// <summary>
+        /// Manual irrigation intervention: raises the water table by the
+        /// chosen depth (clamped so the table doesn't surface absurdly).
+        /// See <see cref="ApplyManualPlantHedges"/> for the design
+        /// rationale.
+        /// </summary>
+        public void ApplyManualIrrigation(double depthMeters)
+        {
+            if (_engine == null || _engine.Model == null) return;
+            double magnitude = depthMeters < 0 ? 0 : depthMeters;
+            double newDepth = _engine.Model.WaterTableDepth - magnitude;
+            if (newDepth < 0.5) newDepth = 0.5;
+            _engine.Model.SetWaterTableDepth(newDepth);
+            PublishIndicators();
+            SimLogger.UserActionLog("manual: irrigation −" + magnitude.ToString("F2") + " m depth (day " + _currentDay + ")");
+        }
+
+        /// <summary>
+        /// Manual "reduce inputs" pulse: applies the same one-shot fauna
+        /// boost + input-cost reduction that the
+        /// <see cref="Bocage.Decision.Recommendations.ReduceInputsRecommendation"/>
+        /// applies, scaled by the chosen intensity cut. Note this is a
+        /// punctual nudge — for sustained reduction, the agriculteur
+        /// uses the continuous "Intensité d'intrants" slider instead.
+        /// </summary>
+        public void ApplyManualReduceInputs(double intensityCut)
+        {
+            if (_engine == null || _engine.Model == null) return;
+            double magnitude = intensityCut < 0 ? 0 : intensityCut;
+            double reference = ReduceInputsRecommendation.IntensityCutPerStep;
+            double ratio = reference > 0 ? magnitude / reference : 0;
+            _engine.Model.SetFaunaPopulation(_engine.Model.FaunaPopulation + 0.05 * ratio);
+            _engine.Model.SetInputCost(_engine.Model.InputCost - 200.0 * ratio);
+            PublishIndicators();
+            SimLogger.UserActionLog("manual: reduce-inputs −" + magnitude.ToString("F2") + " intensity (ratio=" + ratio.ToString("F2") + ", day " + _currentDay + ")");
         }
 
         /// <summary>

@@ -57,7 +57,12 @@ namespace Bocage.Presentation.Bindings
         [SerializeField, Tooltip("USS class for the sensor name label.")]
         private string nameLabelClass = "sensor-row-name";
 
-        [SerializeField, Tooltip("USS class for the subtitle label (variable or deferred-until).")]
+        // Legacy serialized field kept so existing scene wiring doesn't
+        // warn on import after the subtitle row was dropped at
+        // sub-étape 10a. The class is no longer referenced from code.
+        // TODO post-10a: remove this field once the scene asset has
+        // been saved without it.
+        [SerializeField, HideInInspector]
         private string subtitleLabelClass = "sensor-row-subtitle";
 
         [SerializeField, Tooltip("USS class applied to a row while it (or its scene sibling) is hovered.")]
@@ -206,24 +211,14 @@ namespace Bocage.Presentation.Bindings
             nameLabel.AddToClassList(nameLabelClass);
             textBlock.Add(nameLabel);
 
-            var subtitleLabel = new Label(BuildSubtitle(meta));
-            subtitleLabel.AddToClassList(subtitleLabelClass);
-            textBlock.Add(subtitleLabel);
+            // Subtitle row dropped at sub-étape 10a — the variable name
+            // (e.g. "Piezometer — mesure WaterTableDepth") was jargony
+            // and redundant with the legend at the bottom of the list
+            // ("branché" / "en attente"). Keeping only dot + display
+            // name gives a denser, cleaner read.
 
             row.Add(textBlock);
             return row;
-        }
-
-        private static string BuildSubtitle(SensorMetadataTag meta)
-        {
-            string typeLabel = meta.Type.ToString();
-            if (meta.OnlineStatus == SensorOnlineStatus.Online)
-            {
-                string variable = string.IsNullOrEmpty(meta.ObservedModelVariable) ? "—" : meta.ObservedModelVariable;
-                return typeLabel + " — mesure " + variable;
-            }
-            string deferred = string.IsNullOrEmpty(meta.DeferredUntilStep) ? "étape ultérieure" : meta.DeferredUntilStep;
-            return typeLabel + " — en attente " + deferred;
         }
 
         private void ClearRows()

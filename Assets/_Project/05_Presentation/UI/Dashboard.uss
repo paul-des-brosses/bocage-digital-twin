@@ -163,6 +163,21 @@
     margin-top: 2px;
 }
 
+/*
+ * Permanent inline caption appended to a Hero KPI card to clarify its
+ * meaning at a glance (used by tech-delta to surface the shadow-run
+ * mechanic without requiring a tooltip hover). Sub-étape 10a friction
+ * #1 fix. Same visual register as .kpi-deferred-tag but slightly
+ * brighter — it is information that ANCHORS reading, not a placeholder.
+ */
+.kpi-caption {
+    font-size: 10px;
+    color: rgba(220, 214, 198, 0.55);
+    -unity-font-style: italic;
+    margin-top: 2px;
+    white-space: normal;
+}
+
 /* =========================================================================
  *  Body row — Level-B panels
  * ========================================================================= */
@@ -186,7 +201,7 @@
 
 .scenario-panel {
     position: absolute;
-    top: 154px;                           /* touches the bottom edge of hero-strip (36+~118) with no extra gap */
+    top: 170px;                           /* touches the bottom edge of hero-strip (36+~134 incl. tech-delta caption row) */
     bottom: 16px;
     left: 16px;
     width: 260px;
@@ -587,6 +602,25 @@
     margin-bottom: 4px;
 }
 
+/*
+ * Source-event sub-title — sub-étape 10a friction #2 fix.
+ * Displays the causal chain « capteur → événement → recommandation »
+ * just below the popup title. Ocre désaturé to feel like provenance
+ * metadata rather than an instruction; smaller than the rationale so
+ * it doesn't fight for attention. Hidden by default (empty text) —
+ * DecisionPopupBinding sets it via RecommendationProvenance.Format.
+ */
+.decision-popup-source-event {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(170, 162, 145, 0.15);
+}
+
 .decision-popup-rationale {
     font-size: 11px;
     color: rgba(220, 214, 198, 0.85);
@@ -737,6 +771,31 @@
     border-color: rgba(170, 162, 145, 0.55);
 }
 
+/*
+ * Manual action buttons inside the "Interventions ponctuelles" section.
+ * Slightly more prominent than the history button (green accent) since
+ * they actually mutate the model on click. Sub-étape 10a friction fix.
+ */
+.manual-action-button {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding: 4px 10px 4px 10px;
+    min-height: 24px;
+    background-color: rgba(40, 64, 32, 0.95);
+    border-width: 1px;
+    border-color: rgba(124, 168, 100, 0.55);
+    border-radius: 3px;
+    color: rgba(220, 232, 200, 0.98);
+    font-size: 11px;
+    -unity-text-align: middle-center;
+    align-self: flex-end;
+}
+
+.manual-action-button:hover {
+    background-color: rgba(54, 86, 44, 1);
+    border-color: rgba(124, 168, 100, 0.95);
+}
+
 .decision-history-overlay {
     position: absolute;
     top: 0;
@@ -807,6 +866,19 @@
     font-size: 10px;
     color: rgba(170, 162, 145, 0.85);
     -unity-font-style: italic;
+}
+
+/*
+ * Provenance sub-line inside a history row — sub-étape 10a friction #2.
+ * Smaller and lower contrast than the title so the row still reads
+ * « title first, then context ». Wraps to a second line if needed.
+ */
+.decision-history-row-provenance {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.70);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-top: 1px;
 }
 
 .decision-history-row-button {

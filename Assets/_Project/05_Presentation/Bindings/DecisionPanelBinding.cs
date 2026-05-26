@@ -175,9 +175,14 @@ namespace Bocage.Presentation.Bindings
             titleLabel.AddToClassList("decision-history-row-title");
             info.Add(titleLabel);
 
-            var dayLabel = new Label("Détectée au jour " + rec.IssuedOnDay);
-            dayLabel.AddToClassList("decision-history-row-day");
-            info.Add(dayLabel);
+            // Sub-line: causal chain (sensor + event + day). Replaces
+            // the previous standalone "Détectée au jour N" line which
+            // had less context. Sub-étape 10a friction #2 fix.
+            var provenanceText = RecommendationProvenance.Format(
+                rec, runner != null ? runner.EventLog : null);
+            var provenanceLabel = new Label(provenanceText);
+            provenanceLabel.AddToClassList("decision-history-row-provenance");
+            info.Add(provenanceLabel);
 
             row.Add(info);
 

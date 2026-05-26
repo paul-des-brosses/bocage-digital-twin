@@ -20,5 +20,16 @@ namespace Bocage.Decision.Recommendations
 
         /// <summary>The recommendation is configured to apply automatically without arbitration.</summary>
         AutoAccepted = 3,
+
+        /// <summary>
+        /// A newer pending recommendation of the same TYPE has been
+        /// journalled, replacing this one in the active list. The
+        /// entry is kept in the journal for audit (SessionReporter,
+        /// telemetry) but is filtered out of <c>PendingEntries</c> so
+        /// the history list shows at most one entry per type. Set
+        /// automatically by <c>DecisionJournal.Append</c> on type
+        /// collision, never by user action.
+        /// </summary>
+        Superseded = 4,
     }
 }

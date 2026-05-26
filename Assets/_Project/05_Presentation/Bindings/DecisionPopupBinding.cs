@@ -41,6 +41,7 @@ namespace Bocage.Presentation.Bindings
         [Header("UXML element names")]
         [SerializeField] private string overlayName = "decision-popup-overlay";
         [SerializeField] private string titleLabelName = "decision-popup-title";
+        [SerializeField] private string sourceEventLabelName = "decision-popup-source-event";
         [SerializeField] private string rationaleLabelName = "decision-popup-rationale";
         [SerializeField] private string outcomesContainerName = "decision-popup-outcomes";
         [SerializeField] private string magnitudeLabelName = "decision-popup-magnitude-label";
@@ -54,7 +55,7 @@ namespace Bocage.Presentation.Bindings
 
         private UIDocument _document;
         private VisualElement _overlay;
-        private Label _title, _rationale, _magnitudeLabel, _magnitudeValueLabel;
+        private Label _title, _sourceEvent, _rationale, _magnitudeLabel, _magnitudeValueLabel;
         private VisualElement _outcomesContainer;
         private Slider _magnitudeSlider;
         private Button _validateButton, _ignoreButton, _deferButton;
@@ -64,6 +65,17 @@ namespace Bocage.Presentation.Bindings
         // still be re-opened from the history list popup. Cleared at
         // OnEnable so a fresh play session starts without skips.
         private readonly HashSet<string> _skippedRecommendationIds = new HashSet<string>();
+
+        // Recommendation TYPES the user has rejected this session via
+        // "Ignorer". Auto-popup suppresses any new recommendation of
+        // these types (e.g. all future "plant-hedges#N" recs). The
+        // recos remain in pending and accessible via the history list,
+        // but they no longer interrupt the simulation flow — matches
+        // the user's stated intent on Ignorer ("non définitif").
+        // Without this guard, a 30-day event-detector cooldown means a
+        // rejected chalara reco re-pops every 1.5 seconds real-time at
+        // ×20 speed, breaking the UX.
+        private readonly HashSet<string> _ignoredRecommendationTypes = new HashSet<string>();
 
         // Currently-displayed recommendation (null = popup hidden).
         private IRecommendation _currentRecommendation;
@@ -117,6 +129,7 @@ namespace Bocage.Presentation.Bindings
             var root = _document.rootVisualElement;
             _overlay = root.Q<VisualElement>(overlayName);
             _title = root.Q<Label>(titleLabelName);
+            _sourceEvent = root.Q<Label>(sourceEventLabelName);
             _rationale = root.Q<Label>(rationaleLabelName);
             _outcomesContainer = root.Q<VisualElement>(outcomesContainerName);
             _magnitudeLabel = root.Q<Label>(magnitudeLabelName);
@@ -155,10 +168,36 @@ namespace Bocage.Presentation.Bindings
             for (int i = 0; i < pending.Count; i++)
             {
                 var rec = pending[i].Recommendation;
-                if (_skippedRecommendationIds.Contains(rec.Id)) continue;
+                if (ShouldAutoSkip(rec)) continue;
                 ShowPopupFor(rec);
                 return;
             }
+        }
+
+        /// <summary>
+        /// True if the recommendation should not auto-popup because the
+        /// user previously deferred it (same instance) or ignored a
+        /// recommendation of the same type this session.
+        /// </summary>
+        private bool ShouldAutoSkip(IRecommendation rec)
+        {
+            if (rec == null) return true;
+            if (_skippedRecommendationIds.Contains(rec.Id)) return true;
+            string type = ExtractTypePrefix(rec.Id);
+            if (type != null && _ignoredRecommendationTypes.Contains(type)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Recommendation ids follow the pattern <c>type#dayOrSalt</c>
+        /// (cf. PlantHedgesRecommendation.Id and friends). Strip the
+        /// suffix to compare by type.
+        /// </summary>
+        private static string ExtractTypePrefix(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            int sep = id.IndexOf('#');
+            return sep < 0 ? id : id.Substring(0, sep);
         }
 
         /// <summary>
@@ -189,6 +228,13 @@ namespace Bocage.Presentation.Bindings
             if (runner != null) runner.StopTicking();
 
             if (_title != null) _title.text = rec.Title;
+            // Surface the causal chain: which sensor caught what, on
+            // which day. Falls back to a generic line if the event log
+            // lookup fails (cf. RecommendationProvenance.Format).
+            if (_sourceEvent != null)
+            {
+                _sourceEvent.text = RecommendationProvenance.Format(rec, runner != null ? runner.EventLog : null);
+            }
             if (_rationale != null) _rationale.text = rec.Rationale;
 
             BuildOutcomesInto(_outcomesContainer, rec, runner != null ? runner.Model : null);
@@ -212,6 +258,11 @@ namespace Bocage.Presentation.Bindings
                 DecisionVerdict.Accepted,
                 runner.CurrentDay,
                 appliedMagnitude: magnitude);
+            // Validation overrides any prior Ignorer on this type: the
+            // user is back in active engagement, future events of the
+            // same type should pop the modal again.
+            string type = ExtractTypePrefix(_currentRecommendation.Id);
+            if (type != null) _ignoredRecommendationTypes.Remove(type);
             SimLogger.UserActionLog("decision: VALIDATED " + _currentRecommendation.Id
                 + " magnitude=" + magnitude.ToString("F2", Inv));
             DismissAndAdvance();
@@ -225,7 +276,16 @@ namespace Bocage.Presentation.Bindings
                 DecisionVerdict.Rejected,
                 runner.CurrentDay,
                 appliedMagnitude: 0.0);
-            SimLogger.UserActionLog("decision: IGNORED " + _currentRecommendation.Id);
+            // Suppress AUTO-popping of any future recommendation of the
+            // same type during this session. The user said no to this
+            // kind of action; we don't want the detector cooldown to
+            // re-pop the same advice every couple seconds at high
+            // speed. The recos still appear in the history list for
+            // revisit.
+            string type = ExtractTypePrefix(_currentRecommendation.Id);
+            if (type != null) _ignoredRecommendationTypes.Add(type);
+            SimLogger.UserActionLog("decision: IGNORED " + _currentRecommendation.Id
+                + " (auto-popup suppressed for type=" + type + ")");
             DismissAndAdvance();
         }
 
@@ -252,7 +312,7 @@ namespace Bocage.Presentation.Bindings
                 for (int i = 0; i < pending.Count; i++)
                 {
                     var rec = pending[i].Recommendation;
-                    if (_skippedRecommendationIds.Contains(rec.Id)) continue;
+                    if (ShouldAutoSkip(rec)) continue;
                     next = rec;
                     break;
                 }

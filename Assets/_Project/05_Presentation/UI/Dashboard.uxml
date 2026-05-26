@@ -65,12 +65,20 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-tech-delta" class="kpi-card" tooltip="Avantage relatif (en %) de la run réelle sur la run fantôme, sur la rentabilité intégrée. À 8b la run fantôme est identique à la run réelle (pas encore de décisions tech) donc le delta est 0 par construction ; il se chargera quand les recommandations de l'étape 8c arrivent.">
+            <ui:VisualElement name="kpi-tech-delta" class="kpi-card" tooltip="Avantage relatif (en %) de la run réelle sur la run fantôme, sur la rentabilité intégrée. Le DT fait tourner en parallèle une seconde simulation à laquelle aucune décision tech n'est appliquée — la différence chiffre l'apport net des arbitrages de l'agriculteur.">
                 <ui:Label name="tech-delta-label" text="Delta tech" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
                     <ui:Label name="tech-delta-value" text="—" class="kpi-value" />
                     <ui:Label name="tech-delta-unit" text="%" class="kpi-unit" />
                 </ui:VisualElement>
+                <!--
+                Permanent caption: makes the shadow-run mechanic legible
+                without requiring the visitor to hover the tooltip
+                (sub-étape 10a friction #1). Stays present even when the
+                value is at 0 (no decisions yet) so the framing reads
+                even on a fresh run.
+                -->
+                <ui:Label name="tech-delta-caption" text="Réel vs run fantôme (sans décisions)" class="kpi-caption" />
             </ui:VisualElement>
 
         </ui:VisualElement>
@@ -262,7 +270,46 @@
                 <ui:Label text="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end." class="scenario-control-hint" />
             </ui:VisualElement>
 
-            <ui:Label text="Recommandations" class="scenario-section-title scenario-section-title--decision" tooltip="Les recos produites par l'algorithme apparaissent comme un popup centré qui met la simulation en pause. Le bouton ci-dessous ouvre la liste des recommandations en attente (dont celles que tu as différées via Voir plus tard)." />
+            <!--
+            Manual interventions — sub-étape 10a friction fix:
+            the 3 algorithm-driven actions (plant hedges, irrigation,
+            reduce inputs) are now also accessible permanently as
+            farmer buttons, not only when a recommendation is shown.
+            Each has its own magnitude slider with the same range as
+            the recommendation popup. Effects bypass the journal (no
+            arbitrage history) but DO diverge real vs shadow run, so
+            the TechDelta KPI captures them.
+            -->
+            <ui:Label text="Interventions ponctuelles" class="scenario-section-title scenario-section-title--decision" tooltip="Actions « ponctuelles » que l'agriculteur peut déclencher à tout moment, indépendamment des recommandations algorithmiques. Effet immédiat sur le modèle." />
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Replanter des haies" class="scenario-control-label" />
+                    <ui:Label name="manual-plant-hedges-value" text="30 m/ha" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="manual-plant-hedges-slider" low-value="0" high-value="50" value="30" class="scenario-slider" show-input-field="true" />
+                <ui:Button name="manual-plant-hedges-button" text="Planter" class="manual-action-button" tooltip="Ajoute la magnitude choisie (m/ha) à la densité courante des haies. Coût d'investissement non modélisé en v1 (cf BACKLOG.md #9)." />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Irriguer / soulager la nappe" class="scenario-control-label" />
+                    <ui:Label name="manual-irrigation-value" text="0.5 m" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="manual-irrigation-slider" low-value="0" high-value="3" value="0.5" class="scenario-slider" show-input-field="true" />
+                <ui:Button name="manual-irrigation-button" text="Irriguer" class="manual-action-button" tooltip="Remonte le toit de la nappe de la profondeur choisie (m). Floor à 0.5 m pour éviter l'engorgement." />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Baisser intrants (pulse)" class="scenario-control-label" />
+                    <ui:Label name="manual-reduce-inputs-value" text="0.20× réf." class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="manual-reduce-inputs-slider" low-value="0" high-value="0.5" value="0.2" class="scenario-slider" show-input-field="true" />
+                <ui:Button name="manual-reduce-inputs-button" text="Appliquer" class="manual-action-button" tooltip="Pulse de réduction d'intrants : boost faune ponctuel + baisse instantanée des coûts. Pour une réduction continue, utilise plutôt le slider Intensité d'intrants ci-dessus." />
+            </ui:VisualElement>
+
+            <ui:Label text="Recommandations algorithmiques" class="scenario-section-title scenario-section-title--decision" tooltip="Les recos produites par l'algorithme apparaissent comme un popup centré qui met la simulation en pause. Le bouton ci-dessous ouvre la liste des recommandations en attente (dont celles que tu as différées via Voir plus tard)." />
             <ui:Button name="decision-history-open-button" text="Aucune recommandation en cours" class="decision-history-open-button" tooltip="Ouvre la liste des recommandations actuellement en attente. Click sur une ligne = ré-ouvre la popup de recommandation pour l'examiner." />
 
         </ui:VisualElement>
@@ -301,6 +348,15 @@
         <ui:VisualElement name="decision-popup-overlay" class="decision-popup-overlay hidden">
             <ui:VisualElement name="decision-popup-card" class="decision-popup-card">
                 <ui:Label name="decision-popup-title" text="Recommandation" class="decision-popup-title" />
+                <!--
+                Source-event line: makes the « capteur → événement →
+                recommandation » causal chain visible without doc
+                (sub-étape 10a friction #2). Populated at runtime by
+                DecisionPopupBinding via RecommendationProvenance.Format.
+                Empty string by default so the line collapses cleanly
+                when no recommendation is shown.
+                -->
+                <ui:Label name="decision-popup-source-event" text="" class="decision-popup-source-event" />
                 <ui:Label name="decision-popup-rationale" text="..." class="decision-popup-rationale" />
 
                 <ui:VisualElement name="decision-popup-outcomes" class="decision-popup-outcomes" />
