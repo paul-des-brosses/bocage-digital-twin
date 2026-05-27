@@ -36,8 +36,11 @@ Perche bocage site with:
 - **A scenario panel** with sliders for climate, agricultural pressure,
   regulatory constraints, and time horizon.
 - **A decisions panel** that surfaces algorithmic recommendations for the
-  user to arbitrate (e.g. replant after chalara detection, activate
-  auxiliary irrigation under prolonged drought).
+  user to arbitrate (e.g. activate auxiliary irrigation under prolonged
+  drought, reduce input intensity after a fauna acoustic anomaly). Three
+  manual "punctual interventions" mirror the same actions for the farmer
+  to trigger them off-event. Chalara detection is deferred to a future
+  pass with a proper visual sensor — see `docs/BACKLOG.md` #16.
 - **A comparison view** showing the simulation with and without
   instrumented management, side by side.
 
@@ -114,6 +117,53 @@ Assets/_Project/
 
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architectural
 diagram and module description.
+
+## Status
+
+Currently finishing **Step 10 — polish and first public release**. Steps
+1 to 9 are delivered (simulation core, instrumented scene, 5 honest Hero
+KPIs, full dashboard, event → recommendation → arbitrage pipeline,
+shadow run for TechDelta, model-driven pond / meadow / hedgerow shaders).
+The GitHub Pages deployment is not yet live.
+
+The current state, completed work and deferred items are tracked in
+[docs/ROADMAP.md](docs/ROADMAP.md) and [docs/BACKLOG.md](docs/BACKLOG.md).
+A scientific overview of what is simulated, with sources, lives in a
+working document under `docs/SIMULATION_OVERVIEW.md` (not yet committed —
+work in progress).
+
+## Getting started
+
+**Unity version required**: `6000.4.4f1` (Unity 6 LTS). Open the project
+folder from Unity Hub — the editor will warn if the installed version
+differs.
+
+**Open the scene**: `Assets/_Project/Main.unity`. This is the only scene
+in the project (cf. DECISIONS #25). Press Play.
+
+**Run the tests**:
+`Window > General > Test Runner > EditMode > Run All`. The suite covers
+the simulation core, indicators, the recommendation engine, the journal
+supersession logic and the sensor noise model. All tests should be
+green on a fresh clone.
+
+**Project reference docs** (under `docs/`):
+- [`CLAUDE.md`](CLAUDE.md) — operational specification (hard rules,
+  layer contracts, conventions).
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — 5-layer
+  architecture detail, asmdef graph, data flow.
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 44 ADRs covering every
+  significant design choice with rationale and sources.
+- [`docs/CALIBRATION.md`](docs/CALIBRATION.md) — calibration of every
+  numerical parameter (Solagro, INRAE, PNR Perche, Légifrance…).
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — step-by-step delivery
+  history and remaining items.
+- [`docs/BACKLOG.md`](docs/BACKLOG.md) — items deliberately deferred
+  past v1, each with implementation hooks.
+- [`docs/SCENE_WIRING.md`](docs/SCENE_WIRING.md) — which binding sits
+  on which scene root, which ScriptableObject is wired where.
+- [`docs/WEBGL_GOTCHAS.md`](docs/WEBGL_GOTCHAS.md) — known WebGL
+  pitfalls already mitigated in code.
 
 ## Method
 

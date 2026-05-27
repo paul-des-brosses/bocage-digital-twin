@@ -3,15 +3,30 @@
 10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
 peut être un point de coupe propre si le scope déborde.
 
-**Statut global** : en cours — étapes 1 à 8 livrées + sub-étapes 9α
-et 9β livrées (shaders mare/prairie pilotés par modèle, modulation
-healthT sur les haies via binding). Le reste de l'Étape 9 (faune
-statique en pool, animation faune, healthT faune, particules) est
-**reporté au backlog** (cf `BACKLOG.md`) pour livrer une v1
-fonctionnelle d'abord ; le polish visuel viendra en post-livraison.
-Prochaine étape : **10 — Polish, optimisation, déploiement final**,
-avec revue de la logique/utilité du Digital Twin et première
-publication GitHub Pages.
+**Statut global** : en finition Étape 10. Étapes 1 à 8 livrées,
+sub-étapes 9α / 9β livrées entièrement (shaders mare/prairie pilotés
+par modèle ; modulation healthT sur les haies, binding + indicateur
++ node Shader Graph câblé). Le reste de l'Étape 9 (faune statique
+en pool, animation faune, healthT faune, particules) est **reporté
+au backlog** (cf `BACKLOG.md`) pour livrer une v1 fonctionnelle
+d'abord ; le polish visuel viendra en post-livraison.
+
+**Sub-étapes 10a et 10b (polish) livrées** :
+- 10a : audit narratif, popup loop fix sur Ignorer, supersession
+  type-level dans le journal, interventions ponctuelles manuelles
+  (3 boutons), provenance capteur → événement → reco visible.
+- 10b polish capteur : `FaunaSensorReader` (bruit gaussien),
+  detection fauna sur lecture mesurée (pas vérité modèle), retrait
+  de la détection chalara du détecteur (capteur inadapté — voir
+  `BACKLOG.md` #16), recalibration CAP basic payment.
+
+**Reste pour publication MVP** :
+- **10b-perf** : audit ProjectSettings WebGL + build mesuré.
+- **10c** : polish UI léger (alignements, hover, libellés).
+- **10d** : workflow GitHub Actions + README final + déploiement
+  GitHub Pages.
+- **10e** : audit final (primauté capteur, tests verts, backlog
+  exhaustif).
 
 ---
 
@@ -393,11 +408,11 @@ visuelle pilotée par le modèle.
 4. ✅ **Sub-étape 9α livrée** : shaders haies (déjà livré Étape 5),
    mare (`S_Pond`) et prairie (`S_Meadow`) pilotés par variables
    modèle.
-5. ⚠️ **Sub-étape 9β livrée partielle** : modulation `healthT` sur
-   les haies (binding + indicateur dérivé + container observable).
-   Le node `_HealthT` dans `SG_Hedgerow.shadergraph` reste à câbler
-   manuellement (5 min) — cf `BACKLOG.md` item 5. La même modulation
-   sur la faune est reportée — cf `BACKLOG.md` item 3.
+5. ✅ **Sub-étape 9β livrée** : modulation `healthT` sur les haies
+   (binding + indicateur dérivé + container observable + node
+   `_HealthT` câblé dans `SG_Hedgerow.shadergraph`, livré au commit
+   `5270467`). La même modulation sur la faune reste reportée —
+   cf `BACKLOG.md` item 3.
 6. ⏸ **Reporté backlog** : particules Unity (feuilles dérivantes,
    poussières dans la lumière) — cf `BACKLOG.md` item 4.
 
@@ -415,38 +430,43 @@ visuelle pilotée par le modèle.
 - `SimulationRunner` publie les deux indicateurs après chaque tick.
 - Tests EditMode : `SoilMoistureIndicatorTests`.
 
-**Sub-étape 9β — HealthT sur les haies** : ✅ livré (code) /
-🔧 reste 1 action manuelle Unity.
+**Sub-étape 9β — HealthT sur les haies** : ✅ livré complet.
 - `HedgerowHealthIndicator` (Couche 4) dérive un proxy [0,1] de la
   santé des haies depuis la densité courante + événements actifs
   (chalara, drought) dans une fenêtre glissante de 60 jours. Pas de
-  variable d'état (cf `DECISIONS.md` #42).
+  variable d'état (cf `DECISIONS.md` #42). Note : la détection
+  chalara a depuis été retirée du détecteur en 10b polish (cf
+  `BACKLOG.md` #16), donc seul le canal sécheresse alimente la
+  pénalité en pratique.
 - Container observable `RC_HedgerowHealth`.
 - `HedgerowShaderBinding` étendu pour pousser `_HealthT` en plus de
-  `_Density`. Unity ignore silencieusement la propriété tant que
-  `SG_Hedgerow.shadergraph` ne l'expose pas.
+  `_Density`.
+- `SG_hedgerow.shadergraph` complété avec un second Lerp qui
+  interpole entre la couleur saine (sortie du Lerp densité) et une
+  couleur stressée brun-ocre, modulée par `1 - _HealthT` via un
+  node One Minus.
 - Tests EditMode : `HedgerowHealthIndicatorTests`.
-- **Action manuelle Unity restante** : ajouter le node `_HealthT` au
-  Shader Graph `SG_hedgerow.shadergraph` (cf `BACKLOG.md` item 5).
 
 **Critère de validation 9α/9β**
 
 - Démo : on lance la simu ; la mare se ternit / brunit quand la
   nappe descend, la prairie jaunit quand l'humidité baisse, les
-  haies réagissent à la densité (déjà l'Étape 5) — le canal healthT
-  est branché côté data, en attente du node shader.
+  haies réagissent à la densité et virent au brun-ocre quand
+  `RC_HedgerowHealth` chute.
 - Aucun chiffre inventé, aucun cycle de saison artificiel.
 - Tests EditMode passent (Couche 1 + Couche 4 indicateurs).
 
 **Estimation** : 0.7 jour (9α + 9β) — livré.
 
-**Estimation initiale** : 1.5 jour — la partie livrée fait ~50 % du
-livrable original, le reste est en backlog explicite.
+**Estimation initiale** : 1.5 jour — la partie livrée couvre la
+modulation visuelle pilotée modèle pour 3 éléments (haies, mare,
+prairie). Le reste (faune en pool + animation + healthT faune +
+particules) est en backlog explicite.
 
-**Statut** : ⚠️ livraison partielle assumée. Items 2/3/5/6 du
-livrable original sont formellement reportés au backlog avec hooks
-d'extension propres (binding pattern réutilisable, asmdef en place,
-DECISIONS.md à jour).
+**Statut** : ✅ livré pour la partie scope MVP. Items 2/3/6 du
+livrable original (faune, particules) sont formellement reportés au
+backlog avec hooks d'extension propres (binding pattern réutilisable,
+asmdef en place, DECISIONS.md à jour).
 
 ---
 
@@ -457,26 +477,46 @@ joli (le polish visuel est en backlog explicite). L'accent est mis sur
 la qualité de la boucle d'utilité (à quoi sert ce DT, est-il
 démontrable en 2 minutes ?) avant la qualité esthétique.
 
-**Sub-étape 10a — Revue de la logique et de l'utilité du Digital Twin**
+**Sub-étape 10a — Revue de la logique et de l'utilité du Digital Twin** : ✅ livré.
 
-- Audit du « scénario démo » : un visiteur du portfolio doit
-  comprendre en 90 secondes ce que le DT fait et pourquoi il est
-  honnête. Identifier les frictions narratives (KPI flottants, popup
-  recommandation peu lisible, conditions initiales pas explicables,
-  etc.).
-- Sécuriser la chaîne causale visible : événement → recommandation →
-  arbitrage → impact sur les KPIs et sur la divergence real/shadow.
-  Si un maillon est invisible ou confus, il faut le clarifier avant
-  publication.
-- Audit primauté du capteur : aucun visuel ne doit dépendre du
-  calendrier ou d'une logique scénique. Inventaire des
-  bindings/shaders, traçage de chaque sortie visuelle à une
-  variable du modèle ou à un indicateur.
-- Simplifications acceptées si elles aident la lisibilité du DT (un
-  KPI redondant peut être masqué, un slider peu utile peut être
-  caché derrière un repli "Avancé").
+Audit narratif identifié 4 frictions (cf rapport agent + DECISIONS
+ADR #44), fix code livré au commit `3253a96` :
+- **Tech-delta caption** permanent sous le KPI 5 du hero strip
+  (« Réel vs run fantôme (sans décisions) »).
+- **Chaîne capteur → événement → reco visible** : nouvelle classe
+  `RecommendationProvenance` (Couche 3) qui formate
+  « Détecté jour N par <capteur> — <event summary> » sous le titre
+  popup et dans chaque rangée de l'historique.
+- **Popup loop guard sur Ignorer** : type ajouté à un set
+  `_ignoredRecommendationTypes` qui suppress l'auto-popup pour la
+  session (clear sur Validate pour permettre changement d'avis).
+- **Supersession dans le journal** : nouvelle valeur de verdict
+  `Superseded` ; un nouveau Pending de même type marque
+  automatiquement l'ancien Superseded → au plus 1 Pending par type
+  à un instant donné, la liste historique reste bornée. Sémantique
+  formalisée dans DECISIONS ADR #44.
+- **Interventions ponctuelles** (3 boutons « Replanter / Irriguer /
+  Baisser intrants pulse ») câblées à `SimulationRunner.ApplyManualXxx`
+  pour permettre à l'agriculteur de déclencher les actions sans
+  attendre un événement.
 
-**Sub-étape 10b — Optimisation et build WebGL**
+**Sub-étape 10b polish capteur** : ✅ livré (commit `6134e88`).
+
+- `FaunaSensorReader` (Couche 2) : bruit gaussien Poisson-style
+  combinant acoustique + piège photo, σ ∝ 1/√fauna. Reproductible
+  via un sous-flux RNG `"fauna-sensors"`.
+- `EventDetector.Detect(model, log, measuredFaunaPopulation)` :
+  l'alerte fauna se base sur la lecture MESURÉE, pas la vérité
+  modèle. Renforce le principe primauté du capteur (CLAUDE.md §9).
+- `HedgeChalaraEvent` retiré du détecteur — un piège photo IR ne
+  détecte pas un champignon parasite. Reactivation prévue via un
+  capteur adapté (NDVI drone ou enquête terrain), cf `BACKLOG.md`
+  #16. Les classes event + reco PlantHedges sont conservées.
+- `IntegratedProfitabilityIndicator` : CAP basic payment recalé
+  230 → 220 €/ha avec décomposition DPB + redistributif + écorégime
+  base (Légifrance + Leandri Conseils 2025).
+
+**Sub-étape 10b-perf — Optimisation et build WebGL** : à faire.
 
 - Vérifier la conformité aux contraintes perf (CLAUDE.md §7) :
   IL2CPP, stripping High, Brotli, ASTC/Crunched DXT, pas de MSAA,

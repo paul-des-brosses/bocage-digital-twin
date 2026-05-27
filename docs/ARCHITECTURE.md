@@ -124,10 +124,21 @@ réaliste) et détecte les événements significatifs.
 - `ISensor` : interface commune.
 - Implémentations dans `Implementations/` (station météo, piézomètre,
   capteur acoustique, piège photo, tour eddy covariance).
-- `EventDetector` : analyse les mesures pour détecter chalara,
-  sécheresse prolongée, anomalies acoustiques, etc.
-- `MeasurementHistory` : buffer circulaire des dernières mesures par
-  capteur (taille bornée).
+- `FaunaSensorReader` : synthèse Gaussienne combinant deux capteurs
+  indépendants (acoustique + piège photo) avec σ ∝ 1/√fauna (théorie
+  Poisson : abondances rares → estimations plus bruitées). Sous-flux
+  RNG dédié `"fauna-sensors"` dérivé du seed maître pour la
+  reproductibilité indépendante des autres sous-systèmes. Sa lecture
+  alimente l'`EventDetector` pour l'alerte fauna.
+- `EventDetector` : compare l'état du modèle (et la lecture mesurée
+  fauna) à des seuils calibrés pour émettre des événements (sécheresse
+  prolongée, anomalie acoustique). Cooldown par type pour éviter le
+  spam. La détection chalara est désactivée en v1 (capteur inadapté —
+  cf `BACKLOG.md` #16).
+- `Events/` : `IEvent` + classes d'événements concrets
+  (`DroughtProlongedEvent`, `FaunaAcousticAnomalyEvent`,
+  `HedgeChalaraEvent` conservé dormant).
+- `EventLog` : append-only chronologique des événements émis.
 
 **Non-responsabilités**
 
@@ -150,12 +161,27 @@ des issues probables sous incertitude, journalise les décisions.
 
 - `RecommendationEngine` : produit des recommandations à partir des
   événements détectés et du contexte.
-- `OutcomeProjector` : projette des distributions d'issues à plusieurs
-  horizons (court / moyen / long terme), avec incertitudes.
-- `AutoActions` : actions automatiques (irrigation auxiliaire, etc.)
-  appliquées si la simulation fonctionne avec `applyTechActions = true`.
+- `Recommendations/` : interface `IRecommendation` + classes concrètes
+  (`PlantHedgesRecommendation` dormante en v1, `IrrigationAdviceRecommendation`,
+  `ReduceInputsRecommendation`).
+- `OutcomeProjector` : projette des distributions d'issues à 2 horizons
+  (30 j et 365 j) sous forme de 3-points (worst / expected / best) — pas
+  de Monte-Carlo, distributions calibrées en dur (cf `DECISIONS.md`).
+- `RecommendationProvenance` : helper de formatage pur (pas de Unity)
+  qui résout l'`IEvent` source d'une reco depuis l'`EventLog` et
+  renvoie une ligne « Détecté jour N par <capteur> — <event summary> »
+  consommée par le popup décision et la liste historique (sub-étape 10a).
+- `AutoActionPipeline` : applique l'effet mécanique de chaque reco
+  Accepted / AutoAccepted sur l'`EcosystemModel` du run réel. Idempotent
+  via `DecisionJournal.MarkApplied/IsApplied`. La triche `ReduceInputs`
+  qui modifie directement le modèle au lieu du scénario partagé est
+  formalisée dans ADR #43.
 - `DecisionJournal` : journal append-only des décisions (utilisateur ou
-  algorithmiques) avec horodatage simulé.
+  algorithmiques) avec horodatage simulé. Verdicts : `Pending`,
+  `Accepted`, `Rejected`, `AutoAccepted`, et `Superseded` (auto-marqué
+  quand un nouveau Pending de même type arrive — au plus 1 Pending par
+  type à un instant donné, cf ADR #44).
+- `DecisionVerdict` : enum des verdicts ci-dessus.
 
 **Non-responsabilités**
 

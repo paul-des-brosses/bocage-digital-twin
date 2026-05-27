@@ -377,19 +377,9 @@ structure trophique.
   d'état dédiées.
 
 **Pré-requis** : décider de la granularité (1 vs N indices) après
-lecture de `SIMULATION_OVERVIEW.md` et discussion avec un référent.
+discussion avec un référent agronome.
 
 **Estimation** : à cadrer (1-3 jours selon ambition).
-
-**Pourquoi reporté** : item explicite de l'Étape 10 mais pas critique
-pour une première publication démontrable.
-
-**Cible** : bouton "Exporter la session" dans le dashboard qui
-sérialise (en JSON dans la console / un fichier WebGL téléchargeable)
-le déroulé : seed, scénario, journal de décisions, courbes des Hero
-KPIs.
-
-**Estimation** : 0.5 jour.
 
 ---
 

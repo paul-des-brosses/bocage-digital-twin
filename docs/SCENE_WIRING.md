@@ -33,7 +33,7 @@ _Debug
 
 | GameObject enfant | Components | Références à brancher |
 |---|---|---|
-| `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | RCs : HedgerowDensity, WaterTable, IntegratedProfitability, **BiodiversityComposite ✨**, **TechDelta ✨**. `Shadow Runner` → glisser le GO ci-dessous. |
+| `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | RCs Hero : HedgerowDensity, WaterTable, IntegratedProfitability, BiodiversityComposite, TechDelta. RCs presentation channels (9α/9β) : `SoilMoisture Container` → `RC_SoilMoisture.asset`, `Hedgerow Health Container` → `RC_HedgerowHealth.asset`. `Shadow Runner` → glisser le GO ci-dessous. |
 | `ShadowSimulationRunner` ✨ (sub-étape 8b) | `ShadowSimulationRunner` | `Real Runner` → le `SimulationRunner` ci-dessus (même GO ou autre, peu importe). |
 | **`AutoActionApplier` ✨ (sub-étape 8c.3)** | `AutoActionApplier` | `Runner` → `_Bootstrap/SimulationRunner`. Subscribes à `TickCompleted` et applique les recos Accepted/AutoAccepted au real engine seul (le shadow n'est jamais touché → TechDelta bouge). |
 | `SimulationTraceRecorder` *(optionnel — diagnostic 7b)* | `SimulationTraceRecorder` | — (s'auto-abonne au TickCompleted du SimulationRunner) |
@@ -61,7 +61,10 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | **`DecisionPanelBinding` ✨ (sub-étape 8c.3, refactor history)** | `Runner` → `_Bootstrap/SimulationRunner`. `Recommendation Popup` → glisse le `DecisionPopupBinding` voisin. Gère le bouton « Recommandations en cours (X) » et la list popup historique (click ligne = ré-ouvre la popup reco). |
 | **`DecisionPopupBinding` ✨ (sub-étape 8c.3 post-livraison polish)** | `Runner` → `_Bootstrap/SimulationRunner`. Affiche un popup modal centré dès qu'une reco apparaît dans le journal. Met la sim en pause, slider magnitude + 3 boutons (Valider / Voir plus tard / Ignorer), reprend la sim quand la file (hors recos différées) est vide. |
 | **`InitialConditionsBinding` ✨ (sub-étape 8c.4)** | `Runner` → `_Bootstrap/SimulationRunner`. Wire 3 sliders (`initial-hedgerow-density-slider`, `initial-water-table-depth-slider`, `initial-fauna-population-slider`) + bouton `initial-reset-button`. Sliders verrouillés quand `CurrentDay > 0`. |
-| `HedgerowShaderBinding` | (lié à la composition de scène) |
+| **`ManualActionsBinding` ✨ (sub-étape 10a)** | `Runner` → `_Bootstrap/SimulationRunner`. Câble 3 sliders + 3 boutons des « Interventions ponctuelles » du décision-panel : `manual-plant-hedges-*`, `manual-irrigation-*`, `manual-reduce-inputs-*`. Chaque clic appelle `SimulationRunner.ApplyManualXxx`, applique l'effet directement au real model (pas au shadow → TechDelta capte la divergence), pas de journal. |
+| `HedgerowShaderBinding` | `Density Container` → `RC_HedgerowDensity.asset`. `Health Container` → `RC_HedgerowHealth.asset` (sub-étape 9β). `Spawn Root` → racine `Composition` enfant de `_Scene_Visual`. Scanne les enfants commençant par `hedge_`. |
+| **`PondShaderBinding` ✨ (sub-étape 9α)** | `Container` → `RC_WaterTableDepth.asset`. `Spawn Root` → même racine `Composition` que HedgerowShaderBinding. Préfixe scanné par défaut : `pond`. |
+| **`MeadowShaderBinding` ✨ (sub-étape 9α)** | `Container` → `RC_SoilMoisture.asset`. `Spawn Root` → même racine `Composition`. Préfixe scanné par défaut : `grass_`. |
 | `SensorListBinding` | (lit les `SensorMetadataTag` posés dans la scène) |
 | `ViewportWarningBinding` | (auto, lit `Screen.width`) |
 | `ScenarioControlsBinding` | `Runner` → `_Bootstrap/SimulationRunner` |
@@ -114,9 +117,11 @@ Localisation : `Assets/_Project/Data/RuntimeContainers/`
 | `RC_IntegratedProfitability.asset` | `SimulationRunner` | `IntegratedProfitabilityLabelBinding` |
 | `RC_BiodiversityComposite.asset` ✨ | `SimulationRunner` | `BiodiversityLabelBinding` |
 | `RC_TechDelta.asset` ✨ | `SimulationRunner` | `TechDeltaLabelBinding` |
+| `RC_SoilMoisture.asset` ✨ (9α) | `SimulationRunner` | `MeadowShaderBinding` |
+| `RC_HedgerowHealth.asset` ✨ (9β) | `SimulationRunner` | `HedgerowShaderBinding` (slot Health Container) |
 
 (à compléter au fil des étapes — Biodiversity et TechDelta arrivent à
-l'étape 8.)
+l'étape 8, SoilMoisture et HedgerowHealth à l'étape 9.)
 
 ---
 
@@ -134,6 +139,36 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-05-27** — Sub-étape 10b polish capteur livrée : nouveau
+  composant `FaunaSensorReader` (Couche 2, pas de GameObject —
+  instancié par `SimulationRunner` en Awake et reconstruit en
+  lockstep dans `Rebuild`). Modifie la signature de
+  `EventDetector.Detect(model, log, measuredFaunaPopulation)` —
+  l'alerte fauna se base désormais sur la lecture bruitée, pas la
+  vérité modèle. `HedgeChalaraEvent` retiré du détecteur — voir
+  BACKLOG #16 pour la réactivation via un capteur adapté.
+
+- **2026-05-26** — Sub-étape 10a livrée : ajout du composant
+  `ManualActionsBinding` sur `_UI_Canvas` (interventions ponctuelles
+  Plant / Irrigate / Reduce inputs déclenchables sans attendre un
+  événement). Sémantique d'arbitrage popup formalisée dans
+  DECISIONS #44 : nouvelle valeur `DecisionVerdict.Superseded` + set
+  `_ignoredRecommendationTypes` côté `DecisionPopupBinding`.
+
+- **2026-05-26** — Sub-étape 9β finalisée : `SG_hedgerow.shadergraph`
+  expose la propriété `_HealthT`. Second Lerp inséré entre la sortie
+  du Lerp densité et le Multiply texture, T = `1 - _HealthT` via un
+  node One Minus.
+
+- **2026-05-25** — Sub-étape 9α livrée : 2 nouveaux bindings
+  (`PondShaderBinding`, `MeadowShaderBinding`) sur `_UI_Canvas`, 2
+  nouveaux RCs observables (`RC_SoilMoisture`, `RC_HedgerowHealth`).
+  Materials `M_Pond.mat` et `M_Meadow.mat` (shaders HLSL `S_Pond.shader`
+  et `S_Meadow.shader`, cf DECISIONS #41) à affecter via le custom
+  inspector de `SceneComposition_Default.asset` sur les éléments
+  `pond` et `grass_border`. `HedgerowShaderBinding` étendu : nouveau
+  slot `Health Container` à brancher sur `RC_HedgerowHealth.asset`.
 
 - **2026-05-21** — Sub-étape 8c.4 livrée : panneau « Conditions
   initiales du bocage » dans le panneau gauche (`scenario-panel`,

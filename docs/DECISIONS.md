@@ -880,3 +880,89 @@ similaire.
   `RealRunTechAdjustment` existe* : prive l'Étape 8 d'une des trois
   recos honnêtes qui démontrent la chaîne capteur → reco → impact,
   et donc d'un quart de sa valeur démonstrative.
+
+---
+
+### 44. Sémantique d'arbitrage des recommandations : Valider / Voir plus tard / Ignorer + verdict Superseded
+
+**Contexte** : à la sub-étape 10a, l'audit a identifié deux frictions
+sur la popup décision. (1) Cliquer **Ignorer** sur une reco
+récurrente ne suffisait pas — l'`EventDetector` rebatissait la même
+détection 30 jours plus tard et la popup repopait en boucle.
+(2) Inversement, **Voir plus tard** sur N occurrences successives
+d'un même type accumulait N entrées dans l'historique, le bouton
+« Recommandations en cours (12) » devenant rapidement bruyant.
+
+**Décision** : trois verbes utilisateur, trois sémantiques claires,
+un quatrième verdict système pour borner l'historique.
+
+**Verdicts utilisateur (trois boutons popup)** :
+
+- **`Valider`** → verdict `Accepted`. L'auto-action est appliquée
+  sur le modèle réel (pas sur le shadow). Le type de la reco est
+  **retiré** du set d'ignore session — la prochaine occurrence du
+  même type fera popup à nouveau, parce que l'utilisateur a montré
+  qu'il s'engageait activement sur cette catégorie de décision.
+- **`Voir plus tard`** → verdict reste `Pending`. La reco est
+  ajoutée à un set `_skippedRecommendationIds` (clé : id
+  d'instance) côté `DecisionPopupBinding` qui empêche son
+  auto-popup pour la session. L'utilisateur peut la ré-ouvrir
+  depuis le bouton historique. Une **nouvelle** instance du même
+  type (event id différent) ne sera pas affectée — son propre
+  auto-popup déclenchera normalement.
+- **`Ignorer`** → verdict `Rejected`. **Le TYPE entier** de la reco
+  est ajouté à `_ignoredRecommendationTypes` pour la session. Toute
+  nouvelle reco dont l'id commence par le même préfixe (avant le
+  `#`) est silencieusement skippée à l'auto-popup. Elle reste
+  visible dans l'historique pour revisit, mais n'interrompt plus la
+  simulation.
+
+**Verdict système (auto-marqué dans le journal)** :
+
+- **`Superseded`** → marqué automatiquement par `DecisionJournal.Append`
+  quand une **nouvelle** reco arrive et qu'une `Pending` du même
+  type est déjà dans le journal. L'ancienne devient `Superseded`,
+  la nouvelle prend sa place comme seule `Pending` de ce type.
+  Audit conservé (les entrées Superseded restent dans `Entries`),
+  mais `PendingEntries` n'expose que la dernière → la liste
+  historique est bornée à 1 entrée Pending par type.
+
+**Conséquences** :
+
+- Au plus **1 Pending par type** à un instant donné, quelle que
+  soit la durée du run.
+- Les `Accepted` et `Rejected` ne sont JAMAIS touchés par la
+  supersession — le trail d'arbitrage utilisateur est intact pour
+  un futur `SessionReporter`.
+- Les manipulations de set côté `DecisionPopupBinding` sont
+  in-memory, perdues à la fin de la session — pas de persistance
+  PlayerPrefs (CLAUDE.md §16). Une nouvelle session repart avec une
+  liste vierge des types ignorés / différés.
+
+**Raison de la double couche (journal + binding)** :
+
+Le journal est l'autorité **modèle** (verdicts persistants pour
+audit) ; les sets binding sont la couche **UX** (skipping
+d'auto-popup pour ne pas saouler). Les deux sont indépendants :
+- Tu peux ignorer une reco via Ignorer → le journal sait qu'elle
+  est Rejected, l'auto-popup la skip via le set type.
+- Tu peux revisiter via Examiner dans l'historique → la popup
+  apparaît même si le type est dans le set ignore (override
+  explicite par action utilisateur).
+- Tu peux la re-Valider → journal passe à Accepted, set ignore
+  vidé pour ce type, prochain event fera popup.
+
+**Alternatives écartées** :
+- *Pas de supersession, on accepte que l'historique grossisse* :
+  bouton « Recommandations en cours (47) » illisible à un mois de
+  run sim continu. Rejette aussi l'esprit MVP.
+- *Marquer la nouvelle reco directement `Rejected` à l'arrivée si
+  son type est dans `_ignoredRecommendationTypes`* : casse la
+  capacité utilisateur à changer d'avis depuis l'historique (rien
+  d'utile à examiner si tout est déjà Rejected). On préfère garder
+  la nouvelle `Pending` et bloquer juste l'auto-popup.
+- *Supersession dans `EventDetector` au lieu du journal (ne pas
+  réémettre l'event si type récent suppressé)* : viole §9 (le
+  détecteur doit refléter ce que les capteurs voient, pas
+  l'historique des décisions). On suppress à l'étage présentation,
+  pas à l'étage mesure.
