@@ -105,26 +105,18 @@ lourde. Particle System Unity standard, pre-warm activé.
 
 ---
 
-## 5. SG_Hedgerow — node `_HealthT` natif
+## 5. ~~SG_Hedgerow — node `_HealthT` natif~~ — livré
 
-**Pourquoi reporté** : sub-étape 9β a câblé le binding pour pousser
-`_HealthT` via `MaterialPropertyBlock`, mais le Shader Graph
-`SG_hedgerow.shadergraph` ne lit pas encore cette propriété. Unity
-ignore silencieusement les SetFloat sur propriétés inconnues, donc le
-canal est dormant côté visuel pour l'instant.
+**Statut** : ✅ livré en sub-étape 10b (audit MVP). Le Shader Graph
+`SG_hedgerow.shadergraph` lit désormais la propriété `_HealthT` via un
+second Lerp inséré entre le mix densité et le multiply texture :
+- A = sortie du Lerp_density (couleur saine, dérivée de `_Density`)
+- B = couleur stressée (R 0.55 / G 0.50 / B 0.35, brun-ocre)
+- T = `1 - _HealthT` (via node `One Minus`)
 
-**Action manuelle Unity** (5–10 min) :
-1. Ouvrir `Assets/_Project/05_Presentation/Scene/Shaders/SG_hedgerow.shadergraph`.
-2. Ajouter une propriété blackboard `_HealthT` (Float, Default 1.0,
-   Range [0,1]).
-3. Avant le node Color final, insérer un Lerp :
-   - A = couleur "saine" (verte) déjà calculée
-   - B = couleur "stressée" (brune / désaturée, à choisir)
-   - T = `1 - _HealthT`
-4. Sauvegarder. Le binding pousse déjà `_HealthT` à chaque tick : effet
-   visible immédiatement.
-
-**Estimation** : 10 min.
+Le canal data était déjà câblé par `HedgerowShaderBinding` depuis 9β ;
+cet item ne nécessitait plus que le geste manuel dans l'éditeur Shader
+Graph. La rubrique est conservée en historique pour traçabilité.
 
 ---
 
