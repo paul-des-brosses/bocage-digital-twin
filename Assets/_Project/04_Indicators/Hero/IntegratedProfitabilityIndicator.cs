@@ -47,15 +47,15 @@ namespace Bocage.Indicators.Hero
         public const double PacHedgeBonusEurosPerHectare = 20.0;
 
         /// <summary>
-        /// CAP base support: DPB (Droit Paiement de Base) + paiement vert
-        /// + écorégime. National average 2025 per Ministère Agriculture:
-        /// DPB ≈ 128 €/ha, paiement vert ≈ 40, écorégime ≈ 60.
-        /// Total ≈ 230 €/ha/yr forfaitaire indépendant des conditions de
-        /// production. C'est l'amortisseur principal du revenu agricole
-        /// français — sans lui une majorité de fermes céréalières
-        /// seraient déficitaires (cf. RICA 2024).
+        /// CAP base support : DPB (Droit Paiement de Base) + paiement
+        /// redistributif + écorégime base. Le paiement vert PAC 2014-2020
+        /// est supprimé depuis 2022 et remplacé par l'écorégime à partir
+        /// de 2023 (Légifrance, arrêté du 25 novembre 2025).
+        /// Montants 2025 : DPB Hexagone ≈ 127,67 €/ha, paiement redistributif
+        /// (52 premiers ha) ≈ 48 €/ha, écorégime base ≈ 45 €/ha.
+        /// Total ≈ 220 €/ha/yr. Sources : Légifrance + Leandri Conseils 2025.
         /// </summary>
-        public const double BasicCapPaymentEurosPerHectare = 230.0;
+        public const double BasicCapPaymentEurosPerHectare = 220.0;
 
         /// <summary>
         /// Returns the integrated profitability in € / hectare / year.

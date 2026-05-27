@@ -9,6 +9,12 @@ namespace Bocage.Tests.EditMode
     /// Unit tests for the Couche 2 <see cref="EventDetector"/>. Tests
     /// exercise each detection path independently, plus the cooldown
     /// guard and the prolonged-drought consecutive-day accounting.
+    /// <para>
+    /// Sub-étape 10b: the fauna noise model lives in
+    /// <see cref="FaunaSensorReader"/>; the detector itself receives a
+    /// deterministic <c>measuredFaunaPopulation</c> from its caller, so
+    /// these tests pass an explicit value rather than wiring an RNG.
+    /// </para>
     /// </summary>
     public sealed class EventDetectorTests
     {
@@ -20,46 +26,9 @@ namespace Bocage.Tests.EditMode
             var detector = new EventDetector();
             var log = new EventLog();
             var model = new EcosystemModel();
-            int appended = detector.Detect(model, log);
+            int appended = detector.Detect(model, log, 1.0);
             Assert.AreEqual(0, appended);
             Assert.AreEqual(0, log.Count);
-        }
-
-        // ---------------- Hedge chalara ----------------
-
-        [Test]
-        public void Detect_low_hedge_density_emits_chalara_event()
-        {
-            var detector = new EventDetector();
-            var log = new EventLog();
-            // 50 < 60 threshold → chalara detected.
-            var model = new EcosystemModel(initialHedgerowDensity: 50.0);
-            detector.Detect(model, log);
-            Assert.AreEqual(1, log.Count);
-            Assert.IsInstanceOf<HedgeChalaraEvent>(log.Events[0]);
-            var e = (HedgeChalaraEvent)log.Events[0];
-            Assert.AreEqual(50.0, e.HedgerowDensityAtDetection, 1e-9);
-            Assert.AreEqual(EventSeverity.Warning, e.Severity);
-        }
-
-        [Test]
-        public void Detect_chalara_respects_cooldown()
-        {
-            var detector = new EventDetector();
-            var log = new EventLog();
-            var model = new EcosystemModel(initialHedgerowDensity: 50.0);
-
-            // Day 0: first detection.
-            detector.Detect(model, log);
-            Assert.AreEqual(1, log.Count);
-
-            // Subsequent ticks within cooldown should not append.
-            // We can't advance the model day directly without ticking
-            // the engine, so we just call Detect on the same model
-            // 29 times (all "day 0"). Cooldown is "current - last < 30
-            // days", so calling at the same day is in cooldown.
-            for (int i = 0; i < 50; i++) detector.Detect(model, log);
-            Assert.AreEqual(1, log.Count, "Cooldown should prevent re-emission at the same day.");
         }
 
         // ---------------- Prolonged drought ----------------
@@ -72,12 +41,12 @@ namespace Bocage.Tests.EditMode
             var model = new EcosystemModel(initialWaterTableDepth: 6.0);
 
             // Less than 30 consecutive dry days: no event.
-            for (int i = 0; i < 29; i++) detector.Detect(model, log);
+            for (int i = 0; i < 29; i++) detector.Detect(model, log, 1.0);
             Assert.AreEqual(0, log.Count,
                 "29 consecutive dry days should not yet trigger drought event.");
 
             // 30th consecutive: should trigger.
-            detector.Detect(model, log);
+            detector.Detect(model, log, 1.0);
             Assert.AreEqual(1, log.Count);
             Assert.IsInstanceOf<DroughtProlongedEvent>(log.Events[0]);
             var e = (DroughtProlongedEvent)log.Events[0];
@@ -94,11 +63,11 @@ namespace Bocage.Tests.EditMode
             var wet = new EcosystemModel(initialWaterTableDepth: 2.0);
 
             // 20 dry days, then 1 wet day → counter resets to 0.
-            for (int i = 0; i < 20; i++) detector.Detect(dry, log);
-            detector.Detect(wet, log);
+            for (int i = 0; i < 20; i++) detector.Detect(dry, log, 1.0);
+            detector.Detect(wet, log, 1.0);
 
             // 29 more dry days should NOT trigger (counter was reset).
-            for (int i = 0; i < 29; i++) detector.Detect(dry, log);
+            for (int i = 0; i < 29; i++) detector.Detect(dry, log, 1.0);
             Assert.AreEqual(0, log.Count,
                 "After a wet break, the consecutive counter should restart from zero.");
         }
@@ -110,9 +79,9 @@ namespace Bocage.Tests.EditMode
         {
             var detector = new EventDetector();
             var log = new EventLog();
-            // 0.3 < 0.5 threshold → anomaly detected.
-            var model = new EcosystemModel(initialFaunaPopulation: 0.3);
-            detector.Detect(model, log);
+            var model = new EcosystemModel();
+            // 0.3 < 0.7 threshold → anomaly detected.
+            detector.Detect(model, log, 0.3);
             Assert.AreEqual(1, log.Count);
             Assert.IsInstanceOf<FaunaAcousticAnomalyEvent>(log.Events[0]);
             var e = (FaunaAcousticAnomalyEvent)log.Events[0];
@@ -124,37 +93,34 @@ namespace Bocage.Tests.EditMode
         {
             // The detector uses strict inequality: fauna exactly equal to
             // the threshold should NOT trigger. Guards against an
-            // off-by-one rounding bug. The threshold was raised from 0.5
-            // to 0.7 on 2026-05-21 so this test follows.
+            // off-by-one rounding bug.
             var detector = new EventDetector();
             var log = new EventLog();
-            var model = new EcosystemModel(
-                initialFaunaPopulation: EventDetector.FaunaAcousticAnomalyThreshold);
-            detector.Detect(model, log);
+            var model = new EcosystemModel();
+            detector.Detect(model, log, EventDetector.FaunaAcousticAnomalyThreshold);
             Assert.AreEqual(0, log.Count);
         }
 
         // ---------------- Cross-type independence ----------------
 
         [Test]
-        public void Detect_simultaneous_triggers_emit_all_three()
+        public void Detect_simultaneous_triggers_emit_drought_and_fauna()
         {
             var detector = new EventDetector();
             var log = new EventLog();
-            // Worst case: collapsed hedges + drought + fauna anomaly.
+            // Worst case: drought + fauna collapse. Hedge dieback is no
+            // longer flagged by the detector (sub-étape 10b — the chalara
+            // event is dormant pending backlog #16).
             var model = new EcosystemModel(
-                initialHedgerowDensity: 30.0,
                 initialWaterTableDepth: 7.0,
                 initialFaunaPopulation: 0.2);
 
-            // Drive the drought counter to threshold first.
-            for (int i = 0; i < 30; i++) detector.Detect(model, log);
+            // Drive the drought counter to threshold; the fauna check
+            // fires immediately on the first tick (no consecutive-day
+            // accounting), so by the time drought triggers both events
+            // are in the log under cooldown.
+            for (int i = 0; i < 30; i++) detector.Detect(model, log, 0.2);
 
-            // Expect 3 events: drought (day 0, after 30 ticks),
-            // chalara (also day 0, in cooldown after first), fauna
-            // (also day 0, in cooldown after first). Cooldown after
-            // first detection prevents re-emission.
-            // So actually we expect exactly 3 unique-type events total.
             int hedgeChalara = 0, drought = 0, fauna = 0;
             foreach (var e in log.Events)
             {
@@ -162,7 +128,7 @@ namespace Bocage.Tests.EditMode
                 if (e is DroughtProlongedEvent) drought++;
                 if (e is FaunaAcousticAnomalyEvent) fauna++;
             }
-            Assert.AreEqual(1, hedgeChalara, "Exactly one chalara event under cooldown.");
+            Assert.AreEqual(0, hedgeChalara, "Detector no longer emits chalara events (sub-étape 10b).");
             Assert.AreEqual(1, drought, "Exactly one drought event under cooldown.");
             Assert.AreEqual(1, fauna, "Exactly one fauna event under cooldown.");
         }

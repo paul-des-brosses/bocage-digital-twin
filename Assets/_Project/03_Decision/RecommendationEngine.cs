@@ -56,7 +56,6 @@ namespace Bocage.Decision
             string instanceId = MakeEventInstanceId(ev);
             switch (ev)
             {
-                case HedgeChalaraEvent _:           return new PlantHedgesRecommendation(ev.DetectedOnDay, instanceId);
                 case DroughtProlongedEvent _:       return new IrrigationAdviceRecommendation(ev.DetectedOnDay, instanceId);
                 case FaunaAcousticAnomalyEvent _:   return new ReduceInputsRecommendation(ev.DetectedOnDay, instanceId);
                 default:                            return null;

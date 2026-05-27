@@ -8,9 +8,10 @@ namespace Bocage.Sensors.Events
     /// under <see cref="EventDetector.FaunaAcousticAnomalyThreshold"/>.
     /// <para>
     /// Sources: Vigie-Nature acoustic protocols flag a "low signature"
-    /// at ~−50 % of the reference biodiversity baseline; IPBES 2019
-    /// confirms the same order of magnitude for insect decline in
-    /// intensified European farmland.
+    /// at ~−50 % of the reference biodiversity baseline; Hallmann
+    /// et al. 2017 (Krefeld, −75 % insect biomass) and MNHN 2024
+    /// (−70-80 % European agro-industrial farmland) confirm the
+    /// order of magnitude.
     /// </para>
     /// </summary>
     public sealed class FaunaAcousticAnomalyEvent : IEvent

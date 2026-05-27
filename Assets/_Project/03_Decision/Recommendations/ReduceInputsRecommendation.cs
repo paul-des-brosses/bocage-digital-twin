@@ -4,8 +4,9 @@ namespace Bocage.Decision.Recommendations
     /// Suggests reducing fertiliser/pesticide intensity in response to
     /// an acoustic fauna anomaly (passive recorders flagging a low
     /// signature). The pressure-release recommendation aligns with
-    /// IPBES (2019) and Vigie-Nature evidence that pesticide reduction
-    /// is the fastest lever to recover farmland insect abundance.
+    /// Hallmann et al. 2017 / MNHN 2024 and Vigie-Nature evidence
+    /// that pesticide reduction is the fastest lever to recover
+    /// farmland insect abundance.
     /// <para>
     /// Mechanical effect when accepted (sub-étape 8c.3 AutoAction):
     /// reduces the scenario's <c>InputIntensityFactor</c> by

@@ -60,8 +60,9 @@ namespace Bocage.SimulationCore.Model
         /// <para>
         /// Calibration sources: INRAE / OFB Vigie-Nature (−30 % oiseaux
         /// des milieux agricoles depuis 1989), Réseau Haies / Solagro
-        /// (doublement des passereaux à 100+ m/ha), IPBES (−50 % insectes
-        /// en 30 ans sous pression pesticides). Dynamics with a ~1-year
+        /// (doublement des passereaux bocage vs zone ouverte — Constant
+        /// et al. 1976), Hallmann et al. 2017 / MNHN 2024 (−75 % biomasse
+        /// insectes en 27 ans sous pression agricole). Dynamics with a ~1-year
         /// time constant: fauna populations track habitat changes slowly.
         /// </para>
         /// </summary>

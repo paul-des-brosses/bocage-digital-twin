@@ -19,12 +19,16 @@ namespace Bocage.SimulationCore.Rules
     ///         −30 % entre 1989 et 2017 dans les zones intensifiées.
     ///         Sert d'ordre de grandeur pour la pénalité d'intrants
     ///         (intensity 2.0 → fauna ~0.5).</item>
-    ///   <item>Réseau Haies de France / Solagro : densité haies > 100 m/ha
-    ///         double l'abondance des passereaux par rapport à une plaine
-    ///         nue. Sert de borne haute pour <see cref="HedgeFactorCap"/>.</item>
-    ///   <item>IPBES Assessment Report 2019 (chap. 2) : déclin de
-    ///         −50 % des populations d'insectes sur 30 ans en zone
-    ///         agricole intensive. Aligne le slope <see cref="InputIntensityPenaltyAbove"/>.</item>
+    ///   <item>Constant, Eybert et Maheo (1976), cité par Réseau Haies :
+    ///         bocage dense vs zone agricole ouverte ≈ doublement des oiseaux
+    ///         nicheurs (99 vs 35 individus/10 ha). Seuil 100 m/ha = proxy
+    ///         non sourcé précisément, interprété comme bocage fonctionnel.
+    ///         Sert de borne haute pour <see cref="HedgeFactorCap"/>.</item>
+    ///   <item>Hallmann et al. 2017 (PLoS ONE, étude Krefeld) : −75 % de
+    ///         biomasse d'insectes volants en 27 ans en zones agricoles
+    ///         allemandes. MNHN 2024 : −70 à 80 % dans les paysages
+    ///         agro-industriels européens. Aligne le slope
+    ///         <see cref="InputIntensityPenaltyAbove"/>.</item>
     ///   <item>OFB / RMT Zones humides : assèchement (nappe > 5 m sous
     ///         sol) provoque la disparition des amphibiens et
     ///         hyménoptères des mares. Justifie la décroissance

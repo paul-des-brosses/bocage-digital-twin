@@ -57,17 +57,17 @@ namespace Bocage.Tests.EditMode
             // explosion.
             // Build a shadow with profit ≈ 0:
             //   profit = yield×price − inputs − maintenance + PSE + PAC + basic CAP
-            //          = 5.5×250 − inputs − 90 + 0 + 20 + 230 = 1535 − inputs.
-            //   profit = 0  ⇔  inputs = 1535.
+            //          = 5.5×250 − inputs − 90 + 0 + 20 + 220 = 1525 − inputs.
+            //   profit = 0  ⇔  inputs = 1525.
             var scenario = new ScenarioContext(initialPseSubsidyRate: 0.0);
-            var shadow = new EcosystemModel(initialInputCost: 1535.0);
+            var shadow = new EcosystemModel(initialInputCost: 1525.0);
             // Verify the construction by computing profit on shadow.
             double shadowProfit = IntegratedProfitabilityIndicator.Compute(shadow, scenario);
             Assert.That(shadowProfit, Is.EqualTo(0.0).Within(1.0),
                 "Shadow profit should be near zero by construction. Got " + shadowProfit);
 
             // Real has +100 €/ha/yr advantage via lower input cost.
-            var real = new EcosystemModel(initialInputCost: 1435.0);
+            var real = new EcosystemModel(initialInputCost: 1425.0);
             double delta = TechDeltaIndicator.Compute(real, shadow, scenario);
             // Floor in denominator = 1, so delta ≈ +10000% if not floored.
             // The floor caps the divisor at 1 €/ha/yr, so 100 € advantage

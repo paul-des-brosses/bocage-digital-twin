@@ -65,7 +65,7 @@ MonoBehaviour:
     displayName: "Pi\xE8ge photo"
     type: 4
     onlineStatus: 1
-    observedModelVariable: 
+    observedModelVariable: FaunaPopulation
     deferredUntilStep: Etape 8
     sprite: {fileID: -2897591438096116089, guid: 79e6a67bc69c8fb4b888f82581865712, type: 3}
     worldPosition: {x: -2.63, y: -2.68}

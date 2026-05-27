@@ -8,6 +8,16 @@ namespace Bocage.SimulationCore.Rules
     /// Hedgerows grow continuously when conditions allow. Growth rate is
     /// modulated by water table depth: ample shallow water accelerates
     /// growth, drought (deep water table) slows or stops it.
+    /// <para>
+    /// Calibration : <c>AnnualGrowthMetersPerHectare = 0.5</c> est un proxy
+    /// de densification fonctionnelle (allongement de discontinuités +
+    /// densification visible), pas une mesure d'allongement linéaire stricto
+    /// sensu — une haie existante s'épaissit et se densifie plus qu'elle ne
+    /// s'allonge. La fourchette AFAC pour la régénération naturelle en
+    /// contexte favorable est 0,2–0,4 m/ha/an ; 0,5 est volontairement dans
+    /// le haut de fourchette pour un bocage percheron bien géré. Limite
+    /// documentée dans BACKLOG.md.
+    /// </para>
     /// </summary>
     public sealed class HedgerowGrowthRule : IRule
     {

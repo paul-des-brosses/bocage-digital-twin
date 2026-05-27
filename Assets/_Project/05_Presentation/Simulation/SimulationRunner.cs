@@ -68,6 +68,7 @@ namespace Bocage.Presentation.Simulation
         private EventLog _eventLog;
         private RecommendationEngine _recommendationEngine;
         private DecisionJournal _decisionJournal;
+        private FaunaSensorReader _faunaSensorReader;
 
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
@@ -145,6 +146,12 @@ namespace Bocage.Presentation.Simulation
             _eventLog = new EventLog();
             _recommendationEngine = new RecommendationEngine();
             _decisionJournal = new DecisionJournal();
+            // Fresh SeededRandom built from the same master seed: the
+            // engine owns its own master internally, so giving the fauna
+            // sensor an independent SeededRandom (with the same seed)
+            // means its derived "fauna-sensors" sub-stream is reproducible
+            // and isolated from every other sub-system.
+            _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -192,7 +199,10 @@ namespace Bocage.Presentation.Simulation
 
                 _engine.Tick();
                 _currentDay++;
-                _eventDetector.Detect(_engine.Model, _eventLog);
+                _eventDetector.Detect(
+                    _engine.Model,
+                    _eventLog,
+                    _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
                 PublishRecommendations();
                 // TickCompleted fires BEFORE PublishIndicators so that
                 // the shadow runner (subscriber) advances its own engine
@@ -243,6 +253,11 @@ namespace Bocage.Presentation.Simulation
             _eventLog = new EventLog();
             _recommendationEngine = new RecommendationEngine();
             _decisionJournal = new DecisionJournal();
+            // Re-instantiate so the fauna sensor noise sequence restarts
+            // from day 0 in lockstep with the engine. Otherwise the
+            // existing instance's internal state would have advanced and
+            // the rebuilt trajectory would no longer be deterministic.
+            _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
 
             PublishIndicators();
             // Rebuild does NOT touch the ticking state — the caller
@@ -285,7 +300,10 @@ namespace Bocage.Presentation.Simulation
             {
                 _engine.Tick();
                 _currentDay++;
-                _eventDetector.Detect(_engine.Model, _eventLog);
+                _eventDetector.Detect(
+                    _engine.Model,
+                    _eventLog,
+                    _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
                 PublishRecommendations();
                 TickCompleted?.Invoke();
             }

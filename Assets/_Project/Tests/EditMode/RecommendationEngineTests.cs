@@ -19,14 +19,10 @@ namespace Bocage.Tests.EditMode
     {
         // ---------------- Dispatch ----------------
 
-        [Test]
-        public void ChalaraEvent_produces_PlantHedgesRecommendation()
-        {
-            var ev = new HedgeChalaraEvent(detectedOnDay: 100, hedgerowDensityMetersPerHectare: 55.0);
-            var rec = RecommendationEngine.TryProduceFor(ev);
-            Assert.IsInstanceOf<PlantHedgesRecommendation>(rec);
-            Assert.AreEqual(100, rec.IssuedOnDay);
-        }
+        // Sub-étape 10b: the chalara → PlantHedgesRecommendation dispatch
+        // was retired alongside the HedgeChalaraEvent emission. The
+        // event class and the recommendation type are kept dormant
+        // (cf. backlog #16), so the dispatch test is removed too.
 
         [Test]
         public void DroughtEvent_produces_IrrigationAdviceRecommendation()
@@ -52,7 +48,7 @@ namespace Bocage.Tests.EditMode
             var engine = new RecommendationEngine();
             var log = new EventLog();
             var journal = new DecisionJournal();
-            log.Append(new HedgeChalaraEvent(10, 55));
+            log.Append(new FaunaAcousticAnomalyEvent(10, 0.3));
             log.Append(new DroughtProlongedEvent(20, 6.0, 30));
 
             var recs = engine.ProduceRecommendations(log, journal);
@@ -65,7 +61,7 @@ namespace Bocage.Tests.EditMode
             var engine = new RecommendationEngine();
             var log = new EventLog();
             var journal = new DecisionJournal();
-            var ev = new HedgeChalaraEvent(10, 55);
+            var ev = new FaunaAcousticAnomalyEvent(10, 0.3);
             log.Append(ev);
 
             // First pass: produces 1 rec, append it.

@@ -12,31 +12,31 @@ namespace Bocage.Tests.EditMode
         {
             // Defaults: CropYield 5.5, InputCost 1200, MaintenanceCost 90, hedge 90.
             // Scenario PseSubsidyRate 0.50. PacHedgeBonus 20 (forfait).
-            // Basic CAP payment 230 (DPB + greening + écorégime).
-            // profit = 5.5*250 - 1200 - 90 + 90*0.5 + 20 + 230
-            //        = 1375 - 1200 - 90 + 45 + 20 + 230 = 380
+            // Basic CAP payment 220 (DPB + redistributif + écorégime base, sub-étape 10b doc audit).
+            // profit = 5.5*250 - 1200 - 90 + 90*0.5 + 20 + 220
+            //        = 1375 - 1200 - 90 + 45 + 20 + 220 = 370
             var model = new EcosystemModel();
             var scenario = new ScenarioContext(initialPseSubsidyRate: 0.50);
             double profit = IntegratedProfitabilityIndicator.Compute(model, scenario);
-            Assert.AreEqual(380.0, profit, 1e-6);
+            Assert.AreEqual(370.0, profit, 1e-6);
         }
 
         [Test]
         public void Compute_at_baseline_without_pse()
         {
             // Without PSE but with PAC bonus and basic CAP:
-            // profit = 1375 - 1200 - 90 + 0 + 20 + 230 = 335
+            // profit = 1375 - 1200 - 90 + 0 + 20 + 220 = 325
             var model = new EcosystemModel();
             var scenario = new ScenarioContext(initialPseSubsidyRate: 0.0);
             double profit = IntegratedProfitabilityIndicator.Compute(model, scenario);
-            Assert.AreEqual(335.0, profit, 1e-6);
+            Assert.AreEqual(325.0, profit, 1e-6);
         }
 
         [Test]
         public void Compute_basic_cap_payment_always_credited_even_without_hedges()
         {
             // Even with no hedges and zero PSE, the basic CAP payment
-            // (230 €/ha) is always credited — it's a flat support
+            // (220 €/ha) is always credited — it's a flat support
             // independent of farm structure. The PAC bonus haie is
             // however zero (no hedges to credit).
             var model = new EcosystemModel(
@@ -44,8 +44,8 @@ namespace Bocage.Tests.EditMode
                 initialMaintenanceCost: 0.0);
             var scenario = new ScenarioContext(initialPseSubsidyRate: 0.0);
             double profit = IntegratedProfitabilityIndicator.Compute(model, scenario);
-            // profit = 1375 - 1200 - 0 + 0 + 0 (no PAC haie bonus) + 230 = 405
-            Assert.AreEqual(405.0, profit, 1e-6);
+            // profit = 1375 - 1200 - 0 + 0 + 0 (no PAC haie bonus) + 220 = 395
+            Assert.AreEqual(395.0, profit, 1e-6);
         }
 
         [Test]

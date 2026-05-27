@@ -146,9 +146,13 @@ plausibilité, dernière révision.
 - **PacHedgeBonusEurosPerHectare** : 20 €/ha
   - Source : Chambre Agriculture Pays de la Loire — Bonus haie PAC 2025,
     forfait par hectare de SAU lorsque haies présentes
-- **BasicCapPaymentEurosPerHectare** : 230 €/ha
-  - DPB 128 €/ha (moyenne nationale 2025 Ministère Agriculture)
-    + paiement vert ~40 €/ha + écorégime ~60 €/ha
+- **BasicCapPaymentEurosPerHectare** : 220 €/ha
+  - DPB Hexagone ~127,67 €/ha + paiement redistributif ~48 €/ha
+    (sur les 52 premiers ha) + écorégime base ~45 €/ha
+  - Le paiement vert PAC 2014-2020 est supprimé depuis 2022 et
+    remplacé par l'écorégime à partir de 2023 (Légifrance, arrêté
+    du 25 novembre 2025). Sources : Légifrance + Leandri Conseils
+    2025 (sub-étape 10b doc audit).
   - C'est l'**amortisseur principal du revenu agricole français**.
     Sans cette aide forfaitaire, la majorité des fermes céréalières
     seraient déficitaires sur leur seule production (cf. RICA Agreste
@@ -164,8 +168,11 @@ plausibilité, dernière révision.
     (RICA Agreste 2024 + DPB) ; négative possible sous mauvaise
     conjoncture climatique ; +1000-1500 atteignable sous pratique
     bocagère vertueuse + MAEC max + PSE max.
-- **Dernière révision** : 2026-05-21 (ajout CAP basic payment 230 €/ha,
-  bornes display étendues à +1500)
+- **Dernière révision** : 2026-05-27 (audit doc sub-étape 10b : CAP
+  basic payment recalé à 220 €/ha avec nouvelle décomposition DPB +
+  redistributif + écorégime base ; sources Légifrance + Leandri 2025).
+  Révision précédente : 2026-05-21 (ajout CAP basic payment, bornes
+  display étendues à +1500).
 
 ---
 
@@ -191,7 +198,7 @@ réalité du Perche agricole.
 CropYield     = 5.5 t/ha   × 1 × 1 × 1 × 1 = 5.5 t/ha
 InputCost     = 1200 €/ha/an × 1 × 1 × 1 = 1200 €/ha/an
 Maintenance   = 1.0 × 90 m/ha = 90 €/ha/an
-profit = 5.5×250 − 1200 − 90 + 0 + 20 + 230 = 335 €/ha/an
+profit = 5.5×250 − 1200 − 90 + 0 + 20 + 220 = 325 €/ha/an
 ```
 
 ✅ Cohérent avec RICA Agreste 2024 RCAI 200-350 €/ha (céréales mixtes
@@ -276,10 +283,10 @@ compte de la dérive du `WaterTableDepth` vers ~2.2 m (faible) :
 ```
 CropYield target = 5.5 × 0.996 × 0.94 = 5.15 t/ha → −87 €/ha/an
 InputCost target = 1200 × 1.04 = 1248 €/ha/an → +48 €/ha/an
-profit = 5.15×250 − 1248 − 90 + 0 + 20 + 230 = 200 €/ha/an
+profit = 5.15×250 − 1248 − 90 + 0 + 20 + 220 = 190 €/ha/an
 ```
 
-→ Perte de **−135 €/ha/an** au global (335 → 200). Sensibilité forte
+→ Perte de **−135 €/ha/an** au global (325 → 190). Sensibilité forte
 mais conforme aux projections INRAE (5-7 % perte rendement par °C
 pour céréales tempérées + 3-5 % surcharge intrants).
 
@@ -312,6 +319,7 @@ fenêtre de plausibilité. Lancer ces tests via Test Runner > EditMode
 | 2026-05-21 (Étape 7c.1 Option 3) | Refactor scenario : 6 params physiques avec unités réelles, source par paramètre dans la doc inline. |
 | 2026-05-21 (Étape 7c calibration) | Recalibration sourcée : `BaselineTonnesPerHectare 5→5.5`, `BaselineEurosPerHectarePerYear 400→1200`, `MaintenancePerMeterPerYear 0.30→1.0`, bell curve reformulée pour ne pas double-compter l'effet bocage, PAC hedge bonus +20€/ha ajouté à l'indicateur. |
 | 2026-05-21 (Étape 7c CAP) | Ajout `BasicCapPaymentEurosPerHectare = 230 €/ha` (DPB national 2025 + paiement vert + écorégime). Baseline neutre passe de 105 à 335 €/ha/an, cohérent avec RICA Agreste 2024. Plage anomalie T° resserrée à `[-2, +5]` °C. Sliders à valeur numérique visible en remplacement des FloatField/IntegerField. Quatre scénarios-types validés par simulation contre la calibration. |
+| 2026-05-27 (Sub-étape 10b doc audit) | Audit externe : `BasicCapPaymentEurosPerHectare 230 → 220 €/ha`. Décomposition révisée : DPB Hexagone 127,67 + paiement redistributif 48 (sur 52 premiers ha) + écorégime base 45. Le paiement vert PAC 2014-2020 était supprimé depuis 2022 et remplacé par l'écorégime à partir de 2023 (arrêté Légifrance du 25 novembre 2025). Baseline neutre 335 → 325 €/ha/an (toujours dans la fenêtre RICA Agreste 2024 200-350). Sensibilité +1 °C inchangée en delta (−135 €/ha/an). Sources sciences faune également remises à jour (Constant et al. 1976 pour passereaux ; Hallmann 2017 + MNHN 2024 pour insectes en remplacement d'IPBES 2019). |
 
 ---
 
