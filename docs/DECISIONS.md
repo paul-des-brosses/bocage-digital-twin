@@ -787,3 +787,96 @@ agrégeant la densité courante et les événements actifs de l'EventLog
 **Alternative écartée** : variable d'état `HedgerowHealth` mise à
 jour par une `HedgeHealthDynamicsRule` — surdimensionné pour le
 besoin actuel, alourdit le modèle.
+
+---
+
+### 43. AutoAction `ReduceInputs` applique son effet directement sur le modèle réel, pas via le scénario partagé
+
+**Contexte** : à la sub-étape 8c.3, l'auto-action `ReduceInputs`
+(consommée par la recommandation du même nom + le bouton manuel
+homonyme) doit traduire un arbitrage agriculteur « réduire les
+intrants ponctuellement » en effet mécanique sur l'état simulé. La
+voie naturelle serait de **baisser
+`ScenarioContext.InputIntensityFactor`** : c'est le canal scénario
+prévu pour modeler l'intensité des pratiques agricoles, et tout
+l'aval (CropYieldDynamicsRule, InputCostDynamicsRule,
+FaunaDynamicsRule) le consomme déjà.
+
+**Tension architecturale** : le `ScenarioContext` est **partagé par
+référence entre la run réelle et la shadow run**
+(cf. `ShadowSimulationRunner` qui passe la même instance pour
+garantir la non-divergence due au scénario). Si l'auto-action
+modifiait `InputIntensityFactor`, la shadow run subirait
+mécaniquement le même changement, et le KPI TechDelta — défini
+comme « écart de rentabilité entre real et shadow » — s'annulerait
+de fait. Le shadow run cesserait alors d'être le « scénario sans
+décisions tech » que la thèse du DT prétend mesurer.
+
+**Décision** : `AutoActionPipeline.ApplyOne` pour `ReduceInputs`
+n'altère **pas** le `ScenarioContext`. Elle injecte ses effets
+directement sur les variables d'état d'`EcosystemModel` du run
+réel :
+- `+0.05 × ratio` sur `FaunaPopulation` (boost ponctuel insectes)
+- `−200 × ratio €/ha/an` sur `InputCost` (économie immédiate
+  intrants évités)
+
+Le `ratio` étant la magnitude utilisateur divisée par la valeur
+de référence (`ReduceInputsRecommendation.IntensityCutPerStep`).
+La shadow run, qui partage le scénario mais a son propre
+`EcosystemModel`, n'est pas touchée → la divergence est capturée
+par TechDelta.
+
+**Raison** :
+- Conserver la sémantique du shadow run comme « jumeau sans
+  décisions tech » est non négociable pour la crédibilité du KPI
+  central de l'étape 8.
+- L'effet visé (boost faune + baisse coût) est sourcé : IPBES 2019
+  (rebound faune après cessation pesticides), CIVAM grandes
+  cultures (économies d'intrants conventionnels).
+- L'alternative « cloner le ScenarioContext et baisser
+  l'`InputIntensityFactor` sur la copie réelle uniquement » casse
+  l'invariant d'unicité du scénario partagé documenté en
+  ARCHITECTURE.md et impose une dérive de signatures à travers
+  toute la pile.
+
+**Conséquence opérationnelle** :
+- L'effet sur la rentabilité passe par `InputCost` plutôt que par
+  l'enchaînement scénarique. C'est une approximation : le vrai
+  effet « réduction intensité » se propagerait aussi via
+  `CropYieldDynamicsRule` (rendement légèrement abaissé) et via
+  les coûts récurrents des années suivantes. Ici la baisse est
+  one-shot ponctuelle sur la variable d'état.
+- Limitation assumée : si l'utilisateur empile plusieurs auto-actions
+  `ReduceInputs`, l'`InputCost` peut descendre arbitrairement bas
+  (clamp à 0). La règle économique le rattrape sur les ticks
+  suivants en tirant vers la cible scénario, mais le pic transitoire
+  est un artéfact connu.
+- Documenté dans le XML doc d'`AutoActionPipeline.ApplyOne` et
+  rappelé dans le commentaire de classe.
+
+**Chemin de sortie (post-MVP)** : introduire un canal d'ajustement
+spécifique au run réel, du type
+`EcosystemModel.RealRunTechAdjustment` (vecteur structuré, par
+exemple `{ inputIntensityDelta, hedgeDensityDelta, … }`), que les
+règles biophysiques consultent en plus du scénario partagé. La
+shadow run l'ignore. `ReduceInputs` modifie alors un delta
+sémantiquement clair (`inputIntensityDelta -= 0.2`) qui propage
+proprement via les règles existantes. Estimation : 0.5–1 jour de
+refactor, à arbitrer post-publication ; couvre aussi l'item
+BACKLOG #9 (capital d'investissement) qui souffre d'une tension
+similaire.
+
+**Alternatives écartées** :
+- *Modifier `InputIntensityFactor` du scénario partagé* : casse
+  TechDelta (la shadow voit la même baisse).
+- *Cloner `ScenarioContext` pour donner à chaque run le sien et
+  ne baisser l'intensité que sur le clone réel* : viole l'invariant
+  d'unicité du scénario (ARCHITECTURE.md §3 — un seul `ScenarioContext`
+  par session, source de vérité unique pour les leviers
+  agriculteur/cadre). Pollue les signatures de la chaîne sensor
+  → recommendation → outcome avec une notion de « scenario contexte
+  appartenant à qui ».
+- *Repousser `ReduceInputs` au backlog jusqu'à ce que le canal
+  `RealRunTechAdjustment` existe* : prive l'Étape 8 d'une des trois
+  recos honnêtes qui démontrent la chaîne capteur → reco → impact,
+  et donc d'un quart de sa valeur démonstrative.
