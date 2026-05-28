@@ -285,6 +285,11 @@ Pipeline :
 3. Placement dans `Assets/_Project/05_Presentation/Scene/Sprites/` dans
    le sous-dossier thématique adéquat.
 4. Sources brutes archivées dans `Sprites/Source/`.
+5. **Crunch compression sur l'override Web** — OBLIGATOIRE pour chaque
+   nouveau sprite (réglage par-sprite, Unity ne l'active pas par défaut).
+   Format `DXT1/DXT5 Crunched`, Quality 50. Détails et pièges dans
+   `docs/ASSETS_LIST.md §6 étape 7`. Sans cette étape, la taille du
+   build WebGL gonfle de ×3-4 sur la part textures.
 
 ---
 

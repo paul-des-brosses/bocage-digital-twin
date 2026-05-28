@@ -199,6 +199,26 @@ caractères latins étendus (accents français, €).
    complet (source → destination → taille cible) est la source de
    vérité dans la table `SPRITES` de ce script.
 6. Validation visuelle DA avant intégration.
+7. **Configuration d'import Unity — Crunch compression sur l'override
+   Web** : OBLIGATOIRE pour chaque nouveau sprite. Unity ne l'active
+   pas par défaut, c'est un réglage par-sprite.
+   - Sélectionne le PNG dans le Project window.
+   - Inspector → onglet plateforme **Web** (icône globe HTML5, à droite
+     des onglets Default / Standalone / Android).
+   - Coche **Override for Web**.
+   - **Format** : `DXT1 Crunched` (sprite opaque) ou `DXT5 Crunched`
+     (sprite avec alpha).
+   - **Compressor Quality** : 50 (équilibre taille / artefact ; descend
+     à 30 pour les sprites de fond peu détaillés, monte à 70 pour les
+     sprites pixel-art ou à gradient fin).
+   - **Apply**.
+   - Vérifie visuellement qu'aucun artefact (bandes de couleur,
+     aplats moirés) n'apparaît dans la Scene view. Si oui, soit monte
+     la quality, soit désactive le Crunch uniquement sur ce sprite.
+
+   Cette étape divise la taille DL des textures par 3 à 4 dans le
+   build WebGL final. Elle est documentée dans `WEBGL_GOTCHAS.md` et
+   dans le rapport perf de la sub-étape 10b-perf.
 
 ### Palette Perche
 

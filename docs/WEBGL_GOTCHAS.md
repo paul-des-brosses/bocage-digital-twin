@@ -11,7 +11,11 @@ est concrètement rencontré pendant le développement.
 
 **Cause** : Unity inclut par défaut tous les assets référencés en
 `Resources/`, plus les libs runtime, plus des shaders non utilisés. La
-taille peut facilement dépasser 50-100 MB sans précaution.
+taille peut facilement dépasser 50-100 MB sans précaution. **À cela
+s'ajoute** un piège spécifique aux sprites : Unity n'active PAS
+automatiquement la compression Crunched sur les textures destinées à
+WebGL — chaque nouveau sprite importé pèse alors ×3 à ×4 son poids
+nécessaire dans le build final.
 
 **Solution**
 
@@ -20,13 +24,21 @@ taille peut facilement dépasser 50-100 MB sans précaution.
 - Pas d'assets dans `Resources/` sauf nécessité absolue (tout passer en
   références directes ou `Addressables` si besoin).
 - Shader Stripping aggressive activé.
+- **Crunch compression sur l'override Web par sprite** : pour chaque
+  PNG dans le project, Inspector → onglet Web → Override for Web →
+  Format `DXT1 Crunched` (opaque) ou `DXT5 Crunched` (alpha) →
+  Quality 50. Ce réglage est **par-sprite** et doit être refait à
+  chaque nouvel import. Cf. `docs/ASSETS_LIST.md §6 étape 7` pour la
+  procédure complète et les valeurs de qualité par catégorie.
 - Audit régulier via `Build Report Inspector`.
 
 **Impact si non résolu** : time-to-interactive > 30 s, abandon
 utilisateur sur la démo portfolio.
 
 **Comment vérifier** : `Window > Analysis > Build Report Inspector` après
-chaque build. Cible : < 30 MB compressé.
+chaque build. Cible : < 30 MB compressé. Si un sprite individuel
+ressort > 200 KB dans le rapport, vérifier qu'il a bien l'override
+Web + Crunch activé.
 
 **Notes terrain** : (à remplir si rencontré)
 
