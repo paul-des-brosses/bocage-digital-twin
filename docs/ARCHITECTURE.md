@@ -421,3 +421,193 @@ shadow.
 - Asmdef de tests référence uniquement la Couche 1 (les tests EditMode
   ne touchent pas Unity runtime).
 - Nommage : `<ClassUnderTest>Tests.cs`.
+
+---
+
+## 8. Classes prévues post-recadrage 2026-05-28 (chantiers E1-E7)
+
+Cette section liste les nouvelles classes et assets attendus par
+chantier `ROADMAP.md`. Annotations only — ne pas implémenter sans
+suivre le chantier correspondant.
+
+### 8.1 Chantier E1 — Cleanup chalara + refactor actions manuelles
+
+**Couche 03 — Decision** :
+
+- Adaptation de `SimulationRunner.ApplyManualXxx()` → instancie une
+  `IRecommendation` (`ManualPlantHedgesRecommendation`,
+  `ManualIrrigationRecommendation`, `ManualReduceInputsRecommendation`)
+  avec `DefaultVerdict = AutoAccepted` et `TriggeredByEventId = null`.
+- Convention `Id` : `manual-<action>#<day>`.
+- `RecommendationProvenance.Format()` étendu : fallback « Action
+  déclenchée par l'utilisateur le jour X » si
+  `TriggeredByEventId == null`.
+
+**Couche 02 — Sensors** :
+
+- Suppression `HedgeChalaraEvent.cs` (cf ADR #46).
+
+**Couche 04 — Indicators** :
+
+- Branche `ChalaraPenalty` retirée de `HedgerowHealthIndicator.Compute()`.
+
+### 8.2 Chantier E2 — Saisonnalité + WeatherStation
+
+**Couche 01 — Simulation Core** :
+
+- `SeasonalWeatherDataAsset.cs` : ScriptableObject `[CreateAssetMenu]`
+  avec 12 valeurs `MonthlyMeanTemperatureCelsius`, 12 valeurs
+  `MonthlyPrecipitationMm`, 12 paramètres Markov
+  `MonthlyRainParameters` (p_wet, mu, sigma).
+- `MarkovRainModel.cs` : `class MarkovRainModel { float SampleDailyRain(int month, SeededRandom rng); }`.
+- Refonte `WeatherUpdateRule` : signature inchangée, mais consomme
+  `SeasonalWeatherDataAsset` (référence injectée via le runtime),
+  applique Bernoulli(p_wet) puis LogNormal(mu, sigma) si pluvieux,
+  ajoute bruit gaussien sur T° avec sous-flux `"weather-noise"`.
+- Extension `CropYieldDynamicsRule` et `InputCostDynamicsRule` :
+  terme dépendant de `CurrentWeather` réel (canicule directe →
+  effet économique).
+
+**Couche 02 — Sensors** :
+
+- `WeatherStationReader.cs` : `class WeatherStationReader : ISensor`
+  qui mesure `CurrentWeather` avec bruit gaussien. Pas d'événement,
+  pas de reco.
+- Interface `ISensorHistory<T>` (mutualisée avec E3 et E6) :
+  sliding window 365 jours, `void Append(T sample); IReadOnlyList<T> Last365Days { get; }`.
+
+**Couche 05 — Presentation** :
+
+- `MonthSelectorBinding.cs` : widget combo Jan-Déc dans section
+  « Conditions initiales ». Reset only at `CurrentDay == 0`.
+
+### 8.3 Chantier E3 — Carbone sol + EddyTower
+
+**Couche 01 — Simulation Core** :
+
+- `SoilCarbonStock` (float, tC/ha) ajouté à `EcosystemModel`, default
+  50.
+- `SoilCarbonDynamicsRule.cs` : `class SoilCarbonDynamicsRule : IRule`
+  qui applique `dC/dt = inputs − k·C` avec `k = 1/40 an⁻¹`.
+- `CoverCropsCoveragePercent`, `ResidueRestitutionPercent` ajoutés à
+  `ScenarioContext` (float 0-100).
+
+**Couche 02 — Sensors** :
+
+- `EddyTowerSensorReader.cs` : `class EddyTowerSensorReader : ISensor`
+  qui mesure flux net CO2/CH4 journalier avec bruit gaussien.
+  Sous-flux RNG `"eddy-tower"`. Stocke sliding window 365 j via
+  `ISensorHistory<float>`.
+
+**Couche 04 — Indicators** :
+
+- `SoilCarbonIndicator.cs` : lecture pure de `SoilCarbonStock`,
+  normalisation pour Hero/onglet.
+- `RC_SoilCarbonStock` (asset Data/RuntimeContainers).
+
+**Couche 05 — Presentation** :
+
+- 2 sliders « Couverts d'interculture » et « Restitution résidus »
+  dans scenario panel UXML.
+
+### 8.4 Chantier E4 — Faune visible 4 espèces
+
+**Couche 05 — Presentation** :
+
+- `FaunaSpeciesDefinition.cs` (ScriptableObject) : `Sprite[] frames`,
+  `float appearanceThreshold`, `Vector2 spawnPosition`,
+  `IdleMotionPattern motionPattern`.
+- 4 assets `FaunaSpecies_<Heron|Owl|Harrier|Swallow>.asset` dans
+  `Assets/_Project/Data/Fauna/`.
+- `FaunaPlacementDefinition.cs` (SO racine listant les espèces).
+- `FaunaPool.cs` : MonoBehaviour, pré-instancie `maxPoolSize` sprites
+  par espèce au Awake. **Pas d'Instantiate runtime** (CLAUDE.md §6).
+- `FaunaIdleMotion.cs` : composant par sprite pool member, animation
+  frame-swap (cycle 3-4 frames). Lecture `Time.time` une fois par
+  Update, math.Sin only.
+- `FaunaPoolBinding.cs` : observe `RC_BiodiversityComposite` (et
+  `RC_FaunaFactor*` après E5) → ratio actif/inactif par espèce.
+
+### 8.5 Chantier E5 — Capital + horizon + biodiv 3 facteurs
+
+**Couche 03 — Decision** :
+
+- Champ `float InvestmentCost` (€/ha) sur `IRecommendation`.
+- `ManualPlantHedgesRecommendation` calcule
+  `InvestmentCost = densité × prix_au_m_linéaire`.
+- `DecisionJournal.TotalInvestment` (somme cumulée des entrées
+  appliquées).
+
+**Couche 01 — Simulation Core** :
+
+- Refonte `FaunaDynamicsRule` : 3 facteurs (habitat, eau, intrants)
+  calculés explicitement, exposés en sortie.
+- Effet faible canicule (T° quotidienne) et effet faible carbone sol
+  (lecture `SoilCarbonStock`) intégrés.
+
+**Couche 04 — Indicators** :
+
+- `InvestmentHorizonIndicator.cs` : calcul années pour récupérer
+  l'investissement basé sur `cumulProfitDelta(t) >= InvestmentCost`.
+- `RC_FaunaFactorHabitat`, `RC_FaunaFactorWater`,
+  `RC_FaunaFactorInputs` (Data/RuntimeContainers).
+- `RC_TotalInvestment`, `RC_InvestmentHorizon`.
+- Recalibration `BiodiversityCompositeIndicator` (pondérations
+  sourcées Vigie-Nature / Hallmann 2017 / MNHN 2024).
+
+### 8.6 Chantier E6 — Panneau inspection capteurs + 3 onglets Niveau B
+
+**Couche 05 — Presentation** :
+
+- `SensorClickHandler.cs` : `MonoBehaviour` portant `IPointerClickHandler`,
+  publie un event `SensorClickedEventBus` (statique) quand un sprite
+  capteur est cliqué.
+- `SensorInspectorPanel.uxml` + `SensorInspectorPanel.uss` : panneau
+  modal réutilisable.
+- `SensorInspectorPanelBinding.cs` : reçoit `OnSensorClicked` →
+  reconfigure le contenu selon le capteur cliqué (5 layouts dédiés).
+- `SensorHistoryChart.cs` : composant graphe custom (héritant de
+  `VisualElement`) avec `generateVisualContent` callback. Lit
+  `ISensorHistory<T>`.
+- `WeatherNormalsPanelBinding.cs` : sous-panneau du
+  `SensorInspectorPanel` pour les normales mois courant/suivant
+  (lecture `SeasonalWeatherDataAsset`).
+- `OngletBiodivBinding.cs` : 5 lignes (indice composite + 3 facteurs
+  + comptage espèces visibles).
+- `OngletClimatBinding.cs` : 5 lignes (nappe + T° glissante + précip
+  glissantes + stock C + flux net CO2).
+- `OngletEconomieBinding.cs` : 7 lignes (rendement + intrants +
+  entretien + PSE + PAC + investissement cumulé + horizon).
+
+**Configuration scène** :
+
+- `Physics2DRaycaster` ajouté sur la `MainCamera`.
+- `Collider2D` ajouté sur chaque sprite capteur (5 capteurs).
+- Unity EventSystem actif dans la scène (déjà en place pour UI Toolkit
+  cliquable).
+
+### 8.7 Chantier E7 — Polish + publication
+
+Pas de nouvelle classe. Configuration build (Crunch DXT5
+conditionnel), polish UI léger, README + GIF + screenshots,
+tri docs public/privé, audit final, tag v1.0.
+
+---
+
+## 9. Récap impact architecture
+
+Le scope MVP post-recadrage **ne casse aucune architecture
+existante**. Les 5 couches restent strictement empilées, l'asmdef
+boundaries respectées. Les nouvelles classes s'insèrent dans les
+couches existantes selon leur rôle :
+
+| Couche | Nouvelles classes | Nouveaux assets |
+|---|---|---|
+| 01 | `MarkovRainModel`, `SoilCarbonDynamicsRule`, refonte `WeatherUpdateRule` + `FaunaDynamicsRule` + extensions `CropYield` / `InputCost` | `SeasonalWeatherDataAsset` |
+| 02 | `WeatherStationReader`, `EddyTowerSensorReader`, `ISensorHistory<T>` | — |
+| 03 | `Manual<Action>Recommendation` × 3, refactor `SimulationRunner.ApplyManualXxx`, champ `InvestmentCost` | — |
+| 04 | `SoilCarbonIndicator`, `InvestmentHorizonIndicator`, recalibration `BiodiversityCompositeIndicator` | `RC_SoilCarbonStock`, `RC_FaunaFactor{Habitat,Water,Inputs}`, `RC_TotalInvestment`, `RC_InvestmentHorizon` |
+| 05 | `MonthSelectorBinding`, `FaunaSpeciesDefinition` × 4 + `FaunaPool` + `FaunaIdleMotion` + `FaunaPoolBinding`, `SensorClickHandler`, `SensorInspectorPanel*`, `SensorHistoryChart`, `WeatherNormalsPanelBinding`, `OngletBiodivBinding`, `OngletClimatBinding`, `OngletEconomieBinding` | `FaunaSpecies_*.asset` × 4, `FaunaPlacement_Default.asset`, UXML/USS `SensorInspectorPanel` |
+
+Aucun retournement de dépendances. Le boundary Unity / pure C# est
+respecté intégralement.

@@ -1,657 +1,533 @@
-# ROADMAP.md — Plan de production
+# ROADMAP.md — Plan de production MVP
 
-10 étapes verticales, chacune avec un livrable démontrable. Chaque étape
-peut être un point de coupe propre si le scope déborde.
-
-**Statut global** : en finition Étape 10. Étapes 1 à 8 livrées,
-sub-étapes 9α / 9β livrées entièrement (shaders mare/prairie pilotés
-par modèle ; modulation healthT sur les haies, binding + indicateur
-+ node Shader Graph câblé). Le reste de l'Étape 9 (faune statique
-en pool, animation faune, healthT faune, particules) est **reporté
-au backlog** (cf `BACKLOG.md`) pour livrer une v1 fonctionnelle
-d'abord ; le polish visuel viendra en post-livraison.
-
-**Sub-étapes 10a et 10b (polish) livrées** :
-- 10a : audit narratif, popup loop fix sur Ignorer, supersession
-  type-level dans le journal, interventions ponctuelles manuelles
-  (3 boutons), provenance capteur → événement → reco visible.
-- 10b polish capteur : `FaunaSensorReader` (bruit gaussien),
-  detection fauna sur lecture mesurée (pas vérité modèle), retrait
-  de la détection chalara du détecteur (capteur inadapté — voir
-  `BACKLOG.md` #16), recalibration CAP basic payment.
-
-**Reste pour publication MVP** :
-- **10b-perf** : audit ProjectSettings WebGL + build mesuré.
-- **10c** : polish UI léger (alignements, hover, libellés).
-- **10d** : workflow GitHub Actions + README final + déploiement
-  GitHub Pages.
-- **10e** : audit final (primauté capteur, tests verts, backlog
-  exhaustif).
+Document réécrit le 2026-05-28 après session de recadrage externe.
+Remplace la roadmap historique en 10 étapes verticales (étapes 1 à 10
+livrées comme MVP technique, voir Annexe « Historique »).
 
 ---
 
-## Étape 1 — Bootstrap projet
+## 1. Cadre
 
-**Objectif** : repo, documentation et structure de dossiers en place.
+**Scope MVP verrouillé** : cf `CLAUDE.md` §17. Audience prioritaire =
+recruteurs tech + jury M1, cible 150 h, principe directeur « rien en
+scène ou en code ne donne le goût d'inachevé ».
 
-**Livrables**
+**Discipline opérationnelle** : cf `CLAUDE.md` §18. 8 règles
+engageantes, dont en particulier :
 
-- 9 fichiers de documentation (`README.md`, `CLAUDE.md`, `DECISIONS.md`,
-  `ARCHITECTURE.md`, `ROADMAP.md`, `WEBGL_GOTCHAS.md`,
-  `ASSETS_LIST.md`, `LICENSE`, `.gitignore`).
-- Arborescence de dossiers Unity (vide, avec `.gitkeep`).
+- Règle 1 — Branches dédiées par chantier : `feature/E{N}-{nom}`.
+- Règle 3 — Validation utilisateur avant modif majeure.
+- Règle 4 — Tests EditMode obligatoires (aucun merge sans tests verts).
+- Règle 5 — `BACKLOG.md` mis à jour à chaque chantier.
+- Règle 6 — Commits séparés code / doc.
+- Règle 8 — Compléter ou supprimer (jamais laisser en l'état).
 
-**Critère de validation**
-
-- Repo public sur GitHub avec structure visible.
-- README rendu correctement sur la page repo.
-
-**Estimation** : 0.5 jour.
-
-**Statut** : ✅ livré.
-
----
-
-## Étape 2 — Architecture squelette
-
-**Objectif** : projet Unity 6 créé, asmdef en place pour les 5 couches,
-scène `Main` avec 7 racines préfixées, bootstrap minimal.
-
-**Livrables**
-
-- Projet Unity 6 LTS configuré (URP 2D, build target WebGL).
-- 5 asmdef (`Bocage.SimulationCore`, `Bocage.Sensors`,
-  `Bocage.Decision`, `Bocage.Indicators`, `Bocage.Presentation`) avec
-  références strictes.
-- Scène `Main` avec les 7 racines préfixées `_`.
-- `_Bootstrap` MonoBehaviour qui logue "bootstrap OK" via `SimLogger`.
-- `SimLogger` à 3 niveaux fonctionnel.
-- Player Settings WebGL configurés (IL2CPP, stripping High, Brotli).
-
-**Critère de validation**
-
-- Build WebGL passe en local.
-- Hiérarchie de scène conforme.
-- Tentative d'ajout d'un `using UnityEngine;` dans la Couche 1 → erreur
-  de compilation.
-
-**Estimation** : 1 jour.
-
-**Statut** : ✅ livré.
+**Pas de stratégie de coupe pré-décidée** (cf ADR #56). Arbitrage au
+cas par cas en cas de dépassement.
 
 ---
 
-## Étape 3 — Simulation core minimaliste
+## 2. Vue d'ensemble — 7 chantiers E1-E7
 
-**Objectif** : Couche 1 fonctionnelle avec un modèle d'écosystème
-minimal et quelques règles biophysiques. Tests unitaires en place.
+Chaque étape est un chantier autonome sur sa propre branche
+`feature/E{N}-{nom}`. Estimations basses-hautes.
 
-**Livrables**
+| # | Chantier | Branche | Estimation | ADR cadrants |
+|---|---|---|---|---|
+| E1 | Cleanup chalara + refactor actions manuelles | `feature/E1-cleanup-chalara` | 5-8 h | #46, #47, #55 |
+| E2 | Saisonnalité + WeatherStation chaîne complète | `feature/E2-saisonnalite` | 16-22 h | #52 |
+| E3 | Carbone sol + EddyTower bout-en-bout | `feature/E3-carbone-sol` | 10-14 h | #48 |
+| E4 | Faune visible 4 espèces | `feature/E4-faune-visible` | 10-13 h | #49 |
+| E5 | Capital + horizon rentabilité + biodiv 3 facteurs | `feature/E5-capital-biodiv` | 12-16 h | #50, #51 |
+| E6 | Panneau inspection capteurs + 3 onglets Niveau B remplis | `feature/E6-panneau-onglets` | 22-33 h | #53, #54 |
+| E7 | Polish + publication MVP | `feature/E7-polish-publication` | 6-10 h | — |
 
-- `SimulationEngine` avec coroutine de tick (1 tick = 1 jour).
-- `EcosystemModel` avec : nappe phréatique, densité haies, météo
-  (température, précipitations).
-- 3 à 5 `BiophysicalRules` (croissance haies, dynamique nappe, impact
-  pluie sur sol).
-- `SeededRandom` avec sous-seeds par hash.
-- `ScenarioContext` avec presets initiaux.
-- `TransitioningParameter<T>` fonctionnel.
-- 5 tests EditMode minimum (déterminisme, conservation, dynamique
-  nappe).
-
-**Critère de validation**
-
-- Tests passent en EditMode.
-- Lancement Play Mode : log de progression du modèle dans la console
-  via `SimLogger`.
-
-**Estimation** : 1.5 jour.
-
-**Statut** : ✅ livré (SimulationEngine, EcosystemModel, 4 règles
-biophysiques, SeededRandom, ScenarioContext, TransitioningParameter,
-6 fichiers de tests EditMode).
+**Total estimé : 81-116 h.** Marge confortable sur cible 150 h.
 
 ---
 
-## Étape 4 — Scène visuelle minimaliste
+## 3. Étape E1 — Cleanup chalara + refactor actions manuelles
 
-**Objectif** : scène 2D affiche un paysage statique reconnaissable du
-Perche.
+**Branche** : `feature/E1-cleanup-chalara`.
+**ADR cadrants** : #46 (purge chalara), #47 (refactor actions
+manuelles via journal), #55 (pattern rationale).
+**Estimation** : 5-8 h.
+**Pré-requis** : aucun (chantier d'entrée).
 
-**Livrables**
+### Livrables
 
-- Sprites background, midground, foreground en place (versions
-  provisoires si Nanobanana pas prêt).
-- Composition de scène avec ordre de rendu correct.
-- Shader sky (gradient ciel) en Shader Graph, paramétrable.
-- Caméra orthographique fixe configurée.
-- Composition validée en Play Mode.
+**Cleanup chalara (DNF 2)** :
 
-**Note d'architecture** (cf DECISIONS.md #36, #37, #38) : composition
-data-driven via `SceneCompositionDefinition` (ScriptableObject) lu par
-`SceneAssembler` au boot ; tous les shaders runtime sont des Shader
-Graph (`SG_Sky` à l'Étape 4, puis `SG_Hedgerow`, `SG_Pond`, `SG_Meadow`
-à l'Étape 5+) ; 7 sorting layers déclarés (Sky → FX).
+- Suppression `Assets/_Project/02_Sensors/Events/HedgeChalaraEvent.cs`.
+- Suppression branche pénalité chalara dans
+  `HedgerowHealthIndicator.Compute()` + constante `ChalaraPenalty`.
+- Suppression branche `case HedgeChalaraEvent` dans
+  `RecommendationProvenance.SensorDisplayFor()`.
+- Réécriture des 6 tests EditMode utilisant `HedgeChalaraEvent` :
+  remplacer `hedge-chalara#NN` par `drought-prolonged#NN` et
+  `PlantHedgesRecommendation` par `IrrigationAdviceRecommendation`
+  comme fixture (préserve la couverture sur supersession et dedup).
+- BACKLOG : items #14 et #16 historiques remplacés par item
+  « Cadre santé végétale complet ».
 
-**Critère de validation**
+**Astuce** : le stash `stash@{0}` contient des patches cleanup
+chalara partiels récupérables via `git stash show -p stash@{0}` à
+utiliser pour ne pas refaire le travail.
 
-- Scène lisible, esthétiquement cohérente avec la direction artistique.
-- Build WebGL toujours fonctionnel.
+**Refactor actions manuelles via journal (DNF 3 / ADR #47)** :
 
-**Estimation** : 1.5 jour.
+- `SimulationRunner.ApplyManualXxx()` → créent une `IRecommendation`
+  avec `DefaultVerdict = AutoAccepted` et l'ajoutent au journal via
+  `DecisionJournal.Append()`.
+- `AutoActionPipeline.Apply()` reste seul à modifier le modèle.
+- Convention `Id` : `manual-plant-hedges#<day>` /
+  `manual-irrigation#<day>` / `manual-reduce-inputs#<day>`.
+- Convention `TriggeredByEventId = null` + fallback
+  `RecommendationProvenance.Format()` « Action déclenchée par
+  l'utilisateur le jour X ».
+- Cumulables (manuelle = AutoAccepted, pas de supersession des
+  autres entrées du même type).
 
-**Statut** : ✅ livré.
+**Pattern rationale uniforme (ADR #55)** :
 
-**Ajouts d'architecture en cours de route** :
-- `Camera.rect` viewport pour scène centrée + marges UI sur les 4 côtés
-  (à remplir à l'Étape 6) ; appliqué en Edit Mode via `[ExecuteAlways]`
-  pour parité Edit/Play du cadrage.
-- Workflow `Rebuild from Composition` ↔ `Capture Scene → Composition`
-  via inspector custom : l'artiste manipule les sprites dans la Scene
-  view (W = move, R = scale) et capture les transforms vers le
-  ScriptableObject. Source de vérité = l'asset.
-- Sous-dossier `_Scene_Visual/Composition` pour les sprites spawnés ;
-  le `Sky` (sprite + Shader Graph) reste sibling de `Composition` pour
-  ne pas se faire nettoyer au boot.
-- `ScenicElement.scale` est `Vector2` (non-uniforme) pour gérer les
-  sprites bandeaux type `grass_border` sans déformer les autres.
+- Réécriture des libellés des 3 actions manuelles + 2 recos auto au
+  pattern « Title court + Rationale d'action concrète + ligne
+  `Effet modélisé : ...` ». Wordings exacts dans ADR #55.
+- Pour les 2 recos auto : ligne supplémentaire `Déclenché par : ...`.
 
----
+### Tests EditMode
 
-## Étape 5 — Liaison simu-visuel + 1er Hero KPI
+- 6 tests `DecisionJournalTests` adaptés (cf cleanup).
+- 1 nouveau test : action manuelle correctement journalisée comme
+  `AutoAccepted` avec `TriggeredByEventId == null`.
+- 1 nouveau test : 2 actions manuelles du même type cumulent leurs
+  effets sans supersession.
 
-**Objectif** : démontrer le pipeline complet sur un seul indicateur.
+### Critère de validation
 
-**Livrables**
-
-- ScriptableObject observable `RC_HedgerowDensity`.
-- `HedgerowDensityIndicator` (Couche 4) qui lit
-  `EcosystemModel.HedgerowDensity` et écrit dans le ScriptableObject.
-- `HedgerowDensityBinding` (Couche 5) qui écoute le SO et met à jour un
-  texte UI.
-- Affichage du KPI à l'écran avec valeur qui évolue en simulation.
-- Shader haies (Couche 5) module la couleur des sprites haies en
-  fonction du SO.
-
-**Critère de validation**
-
-- Démo : on lance la simu, le KPI bouge, les haies à l'écran réagissent
-  visuellement à l'évolution de la densité.
-
-**Estimation** : 1 jour.
-
-**Statut** : ✅ livré (`HedgerowDensityIndicator` Couche 4, SO observable
-`RC_HedgerowDensity` avec asmdef dédié `Bocage.Data.RuntimeContainers`,
-`SimulationRunner` coroutine de tick, UI Toolkit Dashboard avec
-`HedgerowDensityLabelBinding`, Shader Graph `SG_Hedgerow` (Lerp +
-Multiply pour conserver le détail texture), `HedgerowShaderBinding`
-data-driven via scan par préfixe de nom sous le spawnRoot, 6 tests
-EditMode supplémentaires).
-
-**Ajouts d'architecture en cours de route** :
-- Nouvel asmdef `Bocage.Data.RuntimeContainers` dans
-  `Assets/_Project/Data/RuntimeContainers/` pour isoler les
-  ScriptableObjects observables. Référencé par Presentation.
-- `ScenicElement.material` (champ `Material` optionnel) ajouté à la
-  composition data-driven et capturé par l'inspector custom. Sans ça,
-  le SceneAssembler respawnait les sprites avec Sprite-Default à chaque
-  Play, écrasant les matériaux assignés manuellement.
-- `HedgerowShaderBinding` ne référence plus les `SpriteRenderer` un à
-  un (fragile : refs détruites au respawn). Il prend un transform
-  spawnRoot + un tableau de préfixes de nom (`hedge_`, `pollard_`),
-  scanne à `Start` après que SceneAssembler a fini.
+- Tous tests EditMode verts.
+- Démo : clic « Planter haies » + clic « Planter haies » →
+  2 entrées journal, densité +60 m/ha.
+- Démo : reco auto sécheresse → popup affiche rationale au format
+  uniforme avec ligne `Effet modélisé : ...` et `Déclenché par : ...`.
+- Aucune trace résiduelle de `chalara` dans le code (audit grep).
 
 ---
 
-## Étape 6 — UI complète et Hero KPIs
+## 4. Étape E2 — Saisonnalité + WeatherStation chaîne complète
 
-**Objectif** : tableau de bord complet en place avec les Hero KPIs
-honnêtes câblés et l'architecture UI prête à accueillir les KPIs
-reportés (cf DECISIONS.md #40).
+**Branche** : `feature/E2-saisonnalite`.
+**ADR cadrant** : #52.
+**Estimation** : 16-22 h (16 h base + 3 h extension CropYield/InputCost
++ 6-10 h niveau 3 Markov).
+**Pré-requis** : E1 mergé (clean baseline).
 
-**Sous-étape 6a — Backend KPIs honnêtes** : ✅ livré.
-- Indicateur Couche 4 `WaterTableIndicator` (lecture directe de
-  `EcosystemModel.WaterTableDepth`, normalisation inversée).
-- Container `RC_WaterTableDepth` (pattern observable).
-- Extension `SimulationRunner` (2 slots de publication, 1 par KPI
-  honnête).
-- Binding `WaterTableLabelBinding` (UI Toolkit, fail-soft tant que le
-  label UXML n'existe pas).
-- 6 tests EditMode sur l'indicateur.
+### Livrables
 
-**Sous-étape 6b — Dashboard étoffé** :
-- Layout dark mode complet (Garamond + JetBrains Mono).
-- Hero strip à 5 cartouches dans l'ordre fixé par DECISIONS.md #39 :
-  `Haies → Nappe → Biodiversité → Rentabilité → Delta tech`. Les 2
-  premières affichent les valeurs honnêtes ; les 3 dernières sont des
-  placeholders "à venir" libellés avec l'étape d'arrivée (7 ou 8).
-- 3 panneaux Niveau B (Biodiversité, Climat & ressources, Économie).
-  Les colonnes affichent uniquement les sous-indicateurs honnêtes
-  câblables aujourd'hui (la valeur Nappe ré-utilisée dans Climat &
-  ressources). Les autres lignes sont placeholders "à venir".
-- Tooltips Garamond italique sur hover des cartouches.
-- Bandeau d'avertissement si fenêtre < 1280 px.
+**Données saisonnières (CALIBRATION.md)** :
 
-**Sous-étape 6c — Capteurs et liste capteurs** : ✅ livré.
-- 5 sprites capteurs (piézomètre, station météo, tour de covariance,
-  acoustique, piège photo) intégrés dans la scène via le système
-  data-driven `SensorPlacementDefinition` SO + `SensorVisualPlacer`
-  (calqué sur le pattern composition/SceneAssembler).
-- 2 capteurs marqués Online (piézo → WaterTableDepth, météo →
-  CurrentWeather), 3 marqués Deferred (cf DECISIONS.md #40 — refus
-  d'inventer une variable mesurée).
-- La minimap vectorielle initialement prévue est remplacée par un
-  panneau "Capteurs déployés" listant chaque capteur avec dot statut,
-  nom, type et variable observée (ou étape d'arrivée pour Deferred).
-  Rationale : la scène étant visible derrière l'UI, une carte
-  spatiale dupliquait l'info ; une liste structurée est plus dense.
-- Hover sync bidirectionnel via `SensorHoverEventBus` statique
-  (CLAUDE.md §6) : pointer entre un sprite scène scale 1.0 → 1.15
-  et highlight la rangée correspondante, et inverse.
+- Encodage des normales Météo-France 1991-2020 station
+  Mortagne-au-Perche (61) : 12 valeurs T° + 12 valeurs précip.
+- Paramètres Markov mensuels : `p_wet` (probabilité jour pluvieux),
+  `mu` et `sigma` (paramètres log-normale intensité).
+- Détails dans `docs/CALIBRATION.md`.
 
-**Critère de validation**
+**Couche 01 — Simulation Core** :
 
-- Toute l'UI est en place et lisible.
-- Build WebGL < 30 MB toujours respecté.
-- Démo : 2 KPIs honnêtes bougent au tick, 3 placeholders affichent
-  proprement "à venir Étape 7" / "à venir Étape 8".
-- Aucun chiffre inventé à l'écran (cf principe de primauté du
-  capteur, CLAUDE.md §9).
+- `SeasonalWeatherDataAsset.cs` : ScriptableObject contenant les
+  12 valeurs T° + 12 valeurs précip + paramètres Markov mensuels.
+- `MarkovRainModel.cs` : chaîne Markov ON/OFF + log-normale intensité,
+  sous-flux RNG dédié `"markov-rain"`.
+- Refonte `WeatherUpdateRule` :
+  1. Lit `SeasonalWeatherDataAsset[mois courant]`.
+  2. Applique anomalies scenario (TemperatureAnomalyC,
+     PrecipitationAnomalyPercent).
+  3. Tire Bernoulli(p_wet) → jour pluvieux ou sec.
+  4. Si pluvieux : LogNormal(mu, sigma) → mm/jour.
+  5. T° : T_mois + bruit gaussien (σ = 2 °C), sous-flux RNG
+     `"weather-noise"`.
+- Extension `CropYieldDynamicsRule` + `InputCostDynamicsRule` à la
+  météo journalière (option a) : terme dépendant de la météo réelle,
+  pas seulement des anomalies scenario (canicule WeatherStation →
+  effet économique direct).
 
-**KPIs reportés et leurs étapes d'arrivée** (cf DECISIONS.md #40) :
-- `IntegratedProfitability` → arrive à l'Étape 7 quand le modèle
-  expose `CropYield`, `InputCost`, `MaintenanceCost`.
-- `BiodiversityComposite` → arrive à l'Étape 8 quand le modèle
-  expose `FaunaPopulation` (et idéalement diversité végétale).
-- `TechDelta` → arrive à l'Étape 8 quand la shadow run est câblée.
+**Couche 02 — Sensors** :
 
-**Estimation** : 6a (0.5 j) + 6b (~0.5 j) + 6c (~0.5 j) = ~1.5 j
-livrés.
+- `WeatherStationReader.cs` : mesure pure T° + précip avec bruit
+  gaussien. Pas d'événement, pas de reco.
+- Stockage sliding window 365 j (mutualisé avec E6).
 
-**Statut** : ✅ livré (6a, 6b et 6c).
+**Couche 05 — Presentation** :
 
----
+- Widget « Mois de démarrage » (combo Jan-Déc) dans section
+  « Conditions initiales » du dashboard. Reset only at `CurrentDay == 0`.
+- `MonthSelectorBinding.cs`.
 
-## Étape 7 — Système de presets et casquette Scénario
+### Tests EditMode
 
-**Objectif** : l'utilisateur peut régler le contexte scénario.
+- 4-6 tests : déterminisme Markov, distribution mensuelle plausible
+  (moyenne 12 mois ≈ normales), bornes T° plausibles (5-19 °C avec
+  bruit), reproductibilité sous-flux RNG.
 
-**Livrables**
+### Critère de validation
 
-- Scenario panel UI avec 4 curseurs (climat, pression agricole,
-  contraintes réglementaires, horizon).
-- ScriptableObjects de presets dans `Data/ScenarioPresets/`.
-- Application des presets via `TransitioningParameter<T>` (interpolation
-  7-14 jours simulés).
-- Persistance PlayerPrefs de la dernière configuration de presets.
-- Boutons play/pause/x1/x10/skip-to-end fonctionnels.
-- **Variables d'état économiques** ajoutées à `EcosystemModel` :
-  `CropYield`, `InputCost`, `MaintenanceCost`. Règles biophysiques /
-  économiques associées (rendement modulé par densité haies et nappe,
-  coûts intrants modulés par pression agricole).
-- **Hero KPI `IntegratedProfitability`** câblé honnêtement : indicateur
-  Couche 4 + container `RC_IntegratedProfitability` + binding label
-  remplaçant le placeholder "à venir Étape 7" du hero strip.
-- Tests EditMode sur les nouvelles règles économiques et l'indicateur.
-
-**Critère de validation**
-
-- Démo : modification d'un curseur → transition douce visible dans la
-  scène et les KPIs.
-- Pause / reprise / vitesses fonctionnent.
-- Le 4ème cartouche du hero strip (Rentabilité) affiche désormais une
-  valeur honnête en €/ha/an dérivée de l'état modèle.
-
-**Estimation** : 1.5 jour (était 1 j, +0.5 j pour le KPI économique
-honnête reporté depuis l'Étape 6).
-
-**Statut** : ✅ livré (sub-étapes 7a + 7b + 7c.1 + 7c.2 + 7c.3).
-Variables d'état économiques et règles biophysiques livrées en 7a,
-Hero KPI Rentabilité câblé honnêtement en 7b, refactor des inputs
-scénario en 6 paramètres physiques + calibration sourcée en 7c.1,
-système de presets avec 4 scénarios calibrés en 7c.2, contrôles de
-vitesse (pause / ×1 / ×5 / ×10 / ×20 / skip-to-end) et compteur de
-jours en 7c.3. Le panneau Scénario expose maintenant 6 sliders
-physiques avec saisie numérique précise.
+- Tests EditMode verts.
+- Démo : démarrer en janvier → T° autour 4 °C, peu de pluie ;
+  démarrer en juillet → T° autour 19 °C, pics ponctuels (Markov ON).
+- Démo : pendant un run, succession de jours secs puis épisodes
+  pluvieux (visualisable via panneau inspection WeatherStation après
+  E6).
+- Aucune régression sur les tests existants
+  (CalibrationScenarioValidationTests notamment — les 4 scénarios
+  restent dans la fenêtre de plausibilité sur 10 ans simulés).
 
 ---
 
-## Étape 8 — Système de décisions et casquette Recommandations
+## 5. Étape E3 — Carbone sol + EddyTower bout-en-bout
 
-**Objectif** : moteur de décision riche en place, recommandations
-arbitrables par l'utilisateur, comparaison shadow run fonctionnelle.
+**Branche** : `feature/E3-carbone-sol`.
+**ADR cadrant** : #48.
+**Estimation** : 10-14 h (incluant panneau inspection EddyTower).
+**Pré-requis** : E2 mergé (la dynamique carbone bénéficie de la
+température saisonnière pour la minéralisation).
 
-**Livrables**
+### Livrables
 
-- `EventDetector` (Couche 2) détecte au moins 3 types d'événements
-  (chalara, sécheresse prolongée, anomalie acoustique).
-- `RecommendationEngine` (Couche 3) produit recommandations à partir
-  des événements.
-- `OutcomeProjector` avec incertitudes (distributions) et 2 horizons
-  (court / long terme).
-- `AutoActions` appliquées en real run.
-- `DecisionJournal` append-only.
-- Decision panel UI avec recommandations à arbitrer (accepter / rejeter).
-- `ShadowSimulationRunner` opérationnel (run parallèle, mêmes seeds,
-  `applyTechActions = false`).
-- **Variable d'état `FaunaPopulation`** ajoutée à `EcosystemModel`
-  (avec couplage haie/proie/prédateur minimal). Règles de dynamique
-  associées. Tests EditMode dédiés.
-- **Hero KPI `BiodiversityComposite`** câblé honnêtement : indicateur
-  Couche 4 agrégeant `HedgerowDensity`, `WaterTableDepth` et
-  `FaunaPopulation`, container `RC_BiodiversityComposite`, binding
-  label remplaçant le placeholder "à venir Étape 8" du hero strip.
-- **Hero KPI `TechDelta`** câblé honnêtement : différence en % entre
-  l'agrégat de bien-être écosystémique de la real run et de la
-  shadow run. Container `RC_TechDelta`, binding label remplaçant le
-  placeholder "à venir Étape 8" du hero strip.
-- Vue de comparaison real vs shadow.
-- **Panneau "Conditions initiales"** : section UI dédiée pour
-  paramétrer l'état du bocage AVANT le démarrage du run :
-  `HedgerowDensity` (m/ha), `WaterTableDepth` (m), `FaunaPopulation`
-  (densité agrégée). Édition autorisée uniquement quand
-  `SimulationRunner.CurrentDay == 0` ; gelée dès le premier tick. Un
-  bouton "Réinitialiser le bocage" reconstruit `EcosystemModel` avec
-  les valeurs courantes du panneau (et remet le compteur de jours à
-  0). Cohérence visuelle : la modification de `HedgerowDensity` doit
-  recomposer le placement des sprites de haies via
-  `SceneCompositionDefinition` pour respecter le principe de
-  primauté du capteur (CLAUDE.md §9) — choix à arbitrer à
-  l'implémentation entre (a) regénérer la liste de sprites, (b)
-  modifier l'opacité du shader haies, (c) garder la composition fixe
-  et ne permettre que de petites variations numériques.
+**Couche 01 — Simulation Core** :
 
-**Critère de validation**
+- Nouvelle variable d'état `SoilCarbonStock` (tC/ha) dans
+  `EcosystemModel`, default 50.
+- `SoilCarbonDynamicsRule.cs` : modèle 1-pool `dC/dt = inputs − k·C`,
+  `k = 1/40 an⁻¹`. Détails calibration dans `docs/CALIBRATION.md`.
+- 2 nouveaux leviers dans `ScenarioContext` :
+  `CoverCropsCoveragePercent` (0-100 %),
+  `ResidueRestitutionPercent` (0-100 %).
 
-- Démo : un événement chalara apparaît, une recommandation s'affiche,
-  l'utilisateur arbitre, l'effet sur les KPIs diverge entre real et
-  shadow.
-- Outcomes projetés visibles avec barres d'incertitude.
-- Démo : changement de la densité de haies dans le panneau "Conditions
-  initiales" + clic "Réinitialiser le bocage" → la scène et les KPIs
-  reflètent le nouvel état de départ. Tentative d'édition après day=1
-  → champs grisés, message explicatif.
+**Couche 02 — Sensors** :
 
-**Estimation** : 2.5 jours (était 2 j, +0.5 j pour le panneau
-Conditions initiales).
+- `EddyTowerSensorReader.cs` : mesure flux net journalier CO2/CH4
+  avec bruit gaussien. Sous-flux RNG `"eddy-tower"`.
+- Stockage sliding window 365 j (mutualisé avec E6).
 
-**Statut** : ✅ livré (sub-étapes 8a + 8b + 8c.1 + 8c.2 + 8c.3 + 8c.4).
-Variable d'état `FaunaPopulation` + dynamique livrées en 8a. Hero KPIs
-Biodiversité (composite pondéré) et TechDelta (real vs shadow profit)
-câblés honnêtement en 8b avec `ShadowSimulationRunner` parallèle.
-`EventDetector` Couche 2 avec 3 types d'événements (chalara, drought,
-fauna acoustic) en 8c.1. `RecommendationEngine` + `OutcomeProjector`
-(2 horizons + 3-point bracket) + `DecisionJournal` append-only en 8c.2.
-`AutoActionPipeline` + Decision Panel UI (cards avec accept/reject) en
-8c.3, avec polish layout en 2 zones « Cadre extérieur » / « Espace
-agriculteur ». Panneau « Conditions initiales du bocage » + bouton
-one-click « Lancer / Réinitialiser la simulation » en 8c.4. La
-cohérence visuelle entre HedgerowDensity et SceneCompositionDefinition
-est restée à l'option (c) — composition fixe — par défaut, à
-arbitrer définitivement à l'étape 9 polish visuel.
+**Couche 04 — Indicators** :
+
+- `SoilCarbonIndicator.cs` : lecture pure de `SoilCarbonStock`,
+  normalisation pour Hero/onglet.
+- `RC_SoilCarbonStock` (Data/RuntimeContainers).
+
+**Couche 05 — Presentation** :
+
+- 2 sliders « Couverts d'interculture » et « Restitution résidus »
+  dans scenario panel.
+- Pré-câblage de l'affichage dans l'onglet Climat & Ressources (sera
+  finalisé en E6).
+- Panneau d'inspection EddyTower (chantier E6 finalise l'UI ; la
+  donnée et le sliding window sont livrés ici).
+
+### Tests EditMode
+
+- 4-5 tests : équilibre du modèle 1-pool sous inputs constants
+  (`C_eq = inputs / k`), inertie 40 ans réaliste, effet couverts
+  positif, effet résidus positif, lecture EddyTower cohérente avec
+  variations de `SoilCarbonStock`.
+
+### Critère de validation
+
+- Tests EditMode verts.
+- Démo : démarrage default 50 tC/ha + leviers couverts 50 % +
+  résidus 80 % → stock C augmente progressivement vers
+  équilibre 80-100 tC/ha sur ~30 ans simulés.
+- Démo : avec intensification intrants 2.0× et couverts 0 % →
+  stock C diminue vers 30-40 tC/ha sur ~30 ans.
+- EddyTower expose des flux journaliers cohérents (signe et amplitude
+  alignés sur le bilan stock).
 
 ---
 
-## Étape 9 — Effets visuels et faune (partiellement livrée)
+## 6. Étape E4 — Faune visible 4 espèces
 
-**Objectif** : scène vivante avec tous les sprites finaux, modulation
-visuelle pilotée par le modèle.
+**Branche** : `feature/E4-faune-visible`.
+**ADR cadrant** : #49.
+**Estimation** : 10-13 h.
+**Pré-requis** : E2 mergé (saisonnalité débloque des effets faibles
+sur fauna utilisés en E5 ; ici on travaille uniquement la couche
+visible).
 
-**Livrables originels** vs statut effectif :
+### Livrables
 
-1. ✅ Tous les sprites finaux générés via Nanobanana et post-traités
-   (faune, haies, mare, prairie, capteurs, hills_perche).
-2. ⏸ **Reporté backlog** : faune en pool (4 espèces) avec patterns
-   d'animation simples — cf `BACKLOG.md` items 1 + 2.
-3. ⏸ **Reporté backlog** : densité de faune pilotée par l'index de
-   biodiversité — cf `BACKLOG.md` item 1 (dépend de #2).
-4. ✅ **Sub-étape 9α livrée** : shaders haies (déjà livré Étape 5),
-   mare (`S_Pond`) et prairie (`S_Meadow`) pilotés par variables
-   modèle.
-5. ✅ **Sub-étape 9β livrée** : modulation `healthT` sur les haies
-   (binding + indicateur dérivé + container observable + node
-   `_HealthT` câblé dans `SG_Hedgerow.shadergraph`, livré au commit
-   `5270467`). La même modulation sur la faune reste reportée —
-   cf `BACKLOG.md` item 3.
-6. ⏸ **Reporté backlog** : particules Unity (feuilles dérivantes,
-   poussières dans la lumière) — cf `BACKLOG.md` item 4.
+**Couche 05 — Presentation** :
 
-**Sub-étape 9α — Shaders mare et prairie** : ✅ livré.
-- `SoilMoistureIndicator` (Couche 4) dérive un proxy [0,1] de
-  l'humidité du sol depuis `EcosystemModel.WaterTableDepth`.
-  Extensible plus tard si on ajoute des précipitations lissées.
-- Containers observables `RC_SoilMoisture`.
-- Shaders `S_Pond.shader` et `S_Meadow.shader` en HLSL pur (cf
-  `DECISIONS.md` #41), mêmes propriétés que SG_Hedgerow côté binding.
-- Matériaux `M_Pond.mat` et `M_Meadow.mat` avec couleurs par défaut
-  calibrées palette Perche.
-- Bindings `PondShaderBinding` et `MeadowShaderBinding` (scan par
-  préfixe de nom sous le spawnRoot, `MaterialPropertyBlock` partagé).
-- `SimulationRunner` publie les deux indicateurs après chaque tick.
-- Tests EditMode : `SoilMoistureIndicatorTests`.
+- `FaunaSpeciesDefinition.cs` (ScriptableObject par espèce) : sprite,
+  seuil d'apparition (sur `RC_BiodiversityComposite` ou
+  `RC_FaunaFactor*` après E5), position de spawn, pattern d'animation.
+- 4 assets : `FaunaSpecies_Heron.asset`, `FaunaSpecies_Owl.asset`,
+  `FaunaSpecies_Harrier.asset`, `FaunaSpecies_Swallow.asset` dans
+  `Assets/_Project/Data/Fauna/`.
+- `FaunaPlacementDefinition.cs` : SO racine listant les espèces.
+- `FaunaPool.cs` : object pooling sans Instantiate runtime (CLAUDE.md
+  §6). Awake pré-instancie `maxPoolSize` sprites par espèce sous
+  `spawnRoot` avec positions déterministes via
+  `SeededRandom.DeriveSubStream("fauna_placement")`.
+- `FaunaIdleMotion.cs` : animation frame-swap (cycle 3-4 frames).
+  Variantes par espèce : swallow/harrier oscillation horizontale
+  sinusoïdale lente, owl statique (perchée), heron sway vertical
+  très lent.
+- `FaunaPoolBinding.cs` : observe `RC_BiodiversityComposite` (et
+  `RC_FaunaFactor*` après E5) → ratio actif/inactif par espèce selon
+  courbe de réponse.
 
-**Sub-étape 9β — HealthT sur les haies** : ✅ livré complet.
-- `HedgerowHealthIndicator` (Couche 4) dérive un proxy [0,1] de la
-  santé des haies depuis la densité courante + événements actifs
-  (chalara, drought) dans une fenêtre glissante de 60 jours. Pas de
-  variable d'état (cf `DECISIONS.md` #42). Note : la détection
-  chalara a depuis été retirée du détecteur en 10b polish (cf
-  `BACKLOG.md` #16), donc seul le canal sécheresse alimente la
-  pénalité en pratique.
-- Container observable `RC_HedgerowHealth`.
-- `HedgerowShaderBinding` étendu pour pousser `_HealthT` en plus de
-  `_Density`.
-- `SG_hedgerow.shadergraph` complété avec un second Lerp qui
-  interpole entre la couleur saine (sortie du Lerp densité) et une
-  couleur stressée brun-ocre, modulée par `1 - _HealthT` via un
-  node One Minus.
-- Tests EditMode : `HedgerowHealthIndicatorTests`.
+**Sprites** :
 
-**Critère de validation 9α/9β**
+- 4 espèces × 3-4 frames partiellement disponibles dans
+  `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`. Corrections
+  finales à charge utilisateur (cf division §2 CLAUDE.md).
+- Crunch DXT5 conditionnel (cf E7).
 
-- Démo : on lance la simu ; la mare se ternit / brunit quand la
-  nappe descend, la prairie jaunit quand l'humidité baisse, les
-  haies réagissent à la densité et virent au brun-ocre quand
-  `RC_HedgerowHealth` chute.
-- Aucun chiffre inventé, aucun cycle de saison artificiel.
-- Tests EditMode passent (Couche 1 + Couche 4 indicateurs).
+### Tests EditMode
 
-**Estimation** : 0.7 jour (9α + 9β) — livré.
+- 3 tests : pool size respecté (pas d'Instantiate runtime), courbes
+  de réponse appliquées correctement (biodiv basse → faune absente,
+  biodiv haute → tous présents), déterminisme placement.
 
-**Estimation initiale** : 1.5 jour — la partie livrée couvre la
-modulation visuelle pilotée modèle pour 3 éléments (haies, mare,
-prairie). Le reste (faune en pool + animation + healthT faune +
-particules) est en backlog explicite.
+### Critère de validation
 
-**Statut** : ✅ livré pour la partie scope MVP. Items 2/3/6 du
-livrable original (faune, particules) sont formellement reportés au
-backlog avec hooks d'extension propres (binding pattern réutilisable,
-asmdef en place, DECISIONS.md à jour).
+- Tests EditMode verts.
+- Démo : biodiv chute progressive → espèces disparaissent une à une
+  selon leur seuil (hirondelle d'abord, héron en dernier ou inverse
+  selon calibration). Biodiv remonte → espèces reviennent.
+- Aucune `Instantiate`/`Destroy` runtime (Profiler).
+- Pas de modulation `_HealthT` sur faune (item BACKLOG #3 hors MVP).
 
 ---
 
-## Étape 10 — Polish logique, déploiement final, première publication
+## 7. Étape E5 — Capital + horizon rentabilité + biodiv enrichie
 
-**Objectif** : livrer un Digital Twin **fonctionnel et honnête**, pas
-joli (le polish visuel est en backlog explicite). L'accent est mis sur
-la qualité de la boucle d'utilité (à quoi sert ce DT, est-il
-démontrable en 2 minutes ?) avant la qualité esthétique.
+**Branche** : `feature/E5-capital-biodiv`.
+**ADR cadrants** : #50 (capital), #51 (biodiv 3 facteurs).
+**Estimation** : 12-16 h (6-8 h capital + 6-8 h biodiv).
+**Pré-requis** : E1 mergé (actions manuelles via journal).
 
-**Sub-étape 10a — Revue de la logique et de l'utilité du Digital Twin** : ✅ livré.
+### Livrables
 
-Audit narratif identifié 4 frictions (cf rapport agent + DECISIONS
-ADR #44), fix code livré au commit `3253a96` :
-- **Tech-delta caption** permanent sous le KPI 5 du hero strip
-  (« Réel vs run fantôme (sans décisions) »).
-- **Chaîne capteur → événement → reco visible** : nouvelle classe
-  `RecommendationProvenance` (Couche 3) qui formate
-  « Détecté jour N par <capteur> — <event summary> » sous le titre
-  popup et dans chaque rangée de l'historique.
-- **Popup loop guard sur Ignorer** : type ajouté à un set
-  `_ignoredRecommendationTypes` qui suppress l'auto-popup pour la
-  session (clear sur Validate pour permettre changement d'avis).
-- **Supersession dans le journal** : nouvelle valeur de verdict
-  `Superseded` ; un nouveau Pending de même type marque
-  automatiquement l'ancien Superseded → au plus 1 Pending par type
-  à un instant donné, la liste historique reste bornée. Sémantique
-  formalisée dans DECISIONS ADR #44.
-- **Interventions ponctuelles** (3 boutons « Replanter / Irriguer /
-  Baisser intrants pulse ») câblées à `SimulationRunner.ApplyManualXxx`
-  pour permettre à l'agriculteur de déclencher les actions sans
-  attendre un événement.
+**Capital + horizon (ADR #50)** :
 
-**Sub-étape 10b polish capteur** : ✅ livré (commit `6134e88`).
+- Champ `InvestmentCost` (€/ha) sur `IRecommendation`.
+- Calcul pour `ManualPlantHedgesRecommendation` : densité plantée ×
+  prix au m linéaire (paramétré dans `docs/CALIBRATION.md`).
+- Texte « Coût upfront estimé : X €/ha » affiché dans popup décision
+  (manuel).
+- `DecisionJournal.TotalInvestment` (somme cumulée).
+- `InvestmentHorizonIndicator.cs` (Couche 04) : calcul années pour
+  récupérer l'investissement basé sur `cumulProfitDelta(t) >=
+  InvestmentCost`.
+- `RC_TotalInvestment`, `RC_InvestmentHorizon` (Data/RuntimeContainers).
+- Pré-câblage onglet Économie (finalisé E6).
 
-- `FaunaSensorReader` (Couche 2) : bruit gaussien Poisson-style
-  combinant acoustique + piège photo, σ ∝ 1/√fauna. Reproductible
-  via un sous-flux RNG `"fauna-sensors"`.
-- `EventDetector.Detect(model, log, measuredFaunaPopulation)` :
-  l'alerte fauna se base sur la lecture MESURÉE, pas la vérité
-  modèle. Renforce le principe primauté du capteur (CLAUDE.md §9).
-- `HedgeChalaraEvent` retiré du détecteur — un piège photo IR ne
-  détecte pas un champignon parasite. Reactivation prévue via un
-  capteur adapté (NDVI drone ou enquête terrain), cf `BACKLOG.md`
-  #16. Les classes event + reco PlantHedges sont conservées.
-- `IntegratedProfitabilityIndicator` : CAP basic payment recalé
-  230 → 220 €/ha avec décomposition DPB + redistributif + écorégime
-  base (Légifrance + Leandri Conseils 2025).
+**Biodiv 3 facteurs exposés (ADR #51)** :
 
-**Sub-étape 10b-perf — Optimisation et build WebGL** : 🟠 en cours, premier build CI déclenché.
+- `FaunaDynamicsRule` refondue : 3 facteurs (habitat, eau, intrants)
+  calculés explicitement.
+- `RC_FaunaFactorHabitat`, `RC_FaunaFactorWater`,
+  `RC_FaunaFactorInputs` (Data/RuntimeContainers).
+- Effet faible météo journalière (canicule) sur fauna : pénalité au-
+  delà de seuil T° quotidien (sourcé Hallmann 2017).
+- Effet faible carbone sol sur fauna : bonus si stock C > seuil (sols
+  vivants).
+- Recalibration des pondérations du `BiodiversityCompositeIndicator`
+  sur base littérature (Vigie-Nature, Hallmann 2017, MNHN 2024).
+- `FaunaPoolBinding` (livré E4) peut maintenant observer aussi
+  `RC_FaunaFactor*` pour la sélectivité des espèces.
 
-**Réglages appliqués (commit `02ae27e`)** :
-- `ProjectSettings/ProjectSettings.asset` :
-  - `webGLCompressionFormat: 1` (Brotli activé, cohérent avec
-    `CIBuilder.cs` qui le re-force au build).
-  - `managedStrippingLevel.WebGL: 3` (stripping High pour WebGL).
-- `Assets/Settings/UniversalRP.asset` :
-  - `m_SupportsHDR: 0` (économie ~16 MB RAM GPU sur buffers FP16).
-  - `m_MainLightShadowsSupported: 0` (libère l'atlas shadow 2048×2048).
-  - `m_SupportsTerrainHoles: 0` (élimine variantes shader inutiles).
+### Tests EditMode
 
-**Réglages NON appliqués** (nécessitent l'onglet Web dans Player
-Settings, qui exige le module **WebGL Build Support** installé en
-local — actuellement non installé sur la machine de dev courante) :
-- Player Settings → Web → Default Texture Compression Format = `DXTC`.
-- Crunch Compression `DXT5 Crunched` Quality 50 sur les ~25 sprites
-  existants via Override for Web (cf `docs/ASSETS_LIST.md §6 étape 7`).
-- Estimation du gain Crunch : ÷3 à ÷4 sur la part textures, soit
-  environ −4 MB sur le build final.
+- Capital : 3 tests (calcul `InvestmentCost`, cumul
+  `TotalInvestment`, horizon calculé correctement avec fixture
+  shadow > real).
+- Biodiv : 3 tests (3 facteurs cohérents avec leur input, effet
+  canicule, effet carbone sol).
 
-**Pipeline CI/CD en place** (mis en place sur une autre machine au
-début du projet, validé encore actif) :
-- `.github/workflows/build-deploy.yml` — build Unity 6000.4.4f1 +
-  module webgl + Personal license (secrets `UNITY_EMAIL`,
-  `UNITY_PASSWORD` configurés).
-- `Assets/_Project/Editor/CIBuilder.cs` — exécute le build, force
-  Brotli + decompression fallback (le commentaire dans le code
-  documente que GitHub Pages NE sert PAS correctement le header
-  `Content-Encoding: br` → le fallback est obligatoire, c'est la
-  raison pour laquelle l'item P2 « désactiver le fallback » a été
-  écarté de l'audit).
-- Déploiement direct vers GitHub Pages via `actions/deploy-pages@v4`
-  (pas de branche `gh-pages` séparée).
-- URL publique attendue : `https://paul-des-brosses.github.io/bocage-digital-twin/`.
+### Critère de validation
 
-**Action en attente — mesure de la build CI** :
+- Tests EditMode verts.
+- Démo : clic « Planter 30 m/ha » → popup affiche « Coût upfront
+  estimé : 1500 €/ha » (densité × prix), entrée journal avec coût.
+  Après ~5-15 ans simulés (selon scénario), horizon rentabilité
+  affiche une valeur cohérente.
+- Démo onglet Biodiv (partiel) : 3 lignes facteur s'affichent ; sous
+  scénario sécheresse → composante eau chute ; sous scénario
+  intensification → composante intrants chute.
 
-Quand le workflow `Build & Deploy` du push `02e2992..02ae27e` est
-terminé sur GitHub Actions :
-1. Lire la sortie de l'étape `Show build output` (commande `du -sh`)
-   pour la taille brute du dossier `build/WebGL` côté runner.
-2. Visiter l'URL Pages, F12 → Network → Disable cache → F5 → mesurer
-   la taille DL totale + le Time-to-Interactive.
-3. Lancer la simu à ×20 pendant 60 s → vérifier la stabilité 60 FPS.
+---
 
-**Décision conditionnelle sur la base des mesures** :
-- Si taille ≤ 30 MB → 10b-perf livré, on enchaîne sur 10c. Le Crunch
-  des sprites reste un TODO documenté (`docs/ASSETS_LIST.md` +
-  `docs/WEBGL_GOTCHAS.md` + `CLAUDE.md` §13) à appliquer le jour où
-  on ajoute beaucoup de sprites.
-- Si 30 < taille ≤ 35 MB → installer module WebGL Build Support
-  local (~10 min via Unity Hub > Installs > Add modules), faire le
-  Crunch sur les sprites (~10 min batch via multi-sélection), push,
-  remesurer.
-- Si taille > 35 MB → investiguer la cause via Build Report Inspector
-  (Window > Analysis), corriger, push, remesurer.
+## 8. Étape E6 — Panneau inspection capteurs + 3 onglets Niveau B remplis
 
-**Sub-étape 10c — Polish UI léger (pas visuel)**
+**Branche** : `feature/E6-panneau-onglets`.
+**ADR cadrants** : #53 (panneau inspection), #54 (onglets).
+**Estimation** : 22-33 h (12-21 h panneau inspection + 10-12 h
+onglets).
+**Pré-requis** : E2, E3, E4, E5 mergés (toutes les variables source
+des onglets et des graphes d'inspection doivent exister).
+
+### Livrables
+
+**Panneau d'inspection capteurs (ADR #53)** :
+
+- Détection clic sur sprite 2D : ajout d'un `Collider2D` sur chaque
+  sprite capteur + `Physics2DRaycaster` sur la caméra + Unity
+  EventSystem actif.
+- Interface `ISensorHistory<T>` (Couche 02) : sliding window 365 j
+  réutilisable mutualisée avec les onglets.
+- `SensorInspectorPanel.uxml` + USS (Couche 05) : panneau modal
+  réutilisable, se reconfigure selon le capteur cliqué.
+- Composant graphe custom en `VisualElement` avec
+  `generateVisualContent` callback. Bornes claires, légendes
+  Garamond italique, valeurs JetBrains Mono.
+- 5 contenus spécifiques (cf ADR #53 tableau) :
+  Piezometer, WeatherStation, AcousticSensor, CameraTrap, EddyTower.
+- `SensorInspectorPanelBinding.cs` : reçoit `OnSensorClicked` →
+  configure et ouvre le panneau.
+- Fermeture : clic dehors, touche Échap, bouton fermer.
+- `WeatherNormalsPanelBinding.cs` : sous-panneau du
+  SensorInspectorPanel pour les normales mois courant/suivant.
+
+**3 onglets Niveau B remplis (ADR #54)** :
+
+- `OngletBiodivBinding.cs` : 5 lignes (indice composite + 3 facteurs
+  + comptage espèces visibles).
+- `OngletClimatBinding.cs` : 5 lignes (nappe + T° glissante + précip
+  glissantes + stock C + flux net CO2).
+- `OngletEconomieBinding.cs` : 7 lignes (rendement + intrants +
+  entretien + PSE + PAC + investissement cumulé + horizon).
+- USS / UXML existants enrichis.
+
+### Tests EditMode
+
+- 2 tests `ISensorHistory<T>` : enregistrement correct, sliding
+  window 365 j (anciens samples expirent).
+- 3 tests onglets (1 par onglet) : valeurs publiées dans `RC_*`
+  correctement reflétées dans les bindings (mock observable).
+
+### Critère de validation
+
+- Tests EditMode verts.
+- Démo : clic sur Piezometer → graphe nappe 365 j s'affiche avec
+  seuils. Clic sur WeatherStation → graphes T° et précip vs normales
+  mensuelles. Idem pour les 3 autres capteurs.
+- Démo : les 3 onglets Niveau B sont tous remplis avec valeurs
+  cohérentes. Aucun placeholder « à venir ».
+
+---
+
+## 9. Étape E7 — Polish + publication MVP
+
+**Branche** : `feature/E7-polish-publication`.
+**Estimation** : 6-10 h.
+**Pré-requis** : E1-E6 mergés (chantiers de fond livrés).
+
+### Livrables
+
+**Sub-étape E7.1 — Mesure build CI** :
+
+- Build CI vert post-merge E6.
+- Mesurer taille DL + TTI + FPS sur l'URL Pages déployée
+  (`https://paul-des-brosses.github.io/bocage-digital-twin/`).
+
+**Sub-étape E7.2 — Crunch DXT5 conditionnel (ADR Crunch conditionnel)** :
+
+- Si taille build ≤ 30 MB → skip Crunch, doc TODO conservée.
+- Si taille build > 30 MB → installer module WebGL Build Support
+  local, appliquer Crunch DXT5 Quality 50 sur les sprites les plus
+  lourds (priorité paysage > UI > faune) via Override for Web. Cf
+  `docs/ASSETS_LIST.md` §6 étape 7.
+- Si taille > 35 MB → investigation via Build Report Inspector,
+  correction, push, remesure.
+
+**Sub-étape E7.3 — Polish UI léger** :
 
 - Alignements, marges, contrastes, hover states (rien de fancy).
-- Bandeau viewport < 1280 px déjà en place — vérifier qu'il ne casse
-  rien en redimensionnement.
-- Pas d'animation UI complexe (cf `BACKLOG.md` item 7).
+- Bandeau viewport < 1280 px → vérifier non-régression.
+- Pas d'animation UI complexe (cf BACKLOG).
 
-**Sub-étape 10d — README + déploiement GitHub Pages** : 🟡 partiellement fait.
+**Sub-étape E7.4 — README final + capture** :
 
-- ✅ Workflow GitHub Actions opérationnel
-  (`.github/workflows/build-deploy.yml`, buildalon/unity-setup +
-  buildalon/unity-action). Note : utilise buildalon plutôt que
-  game-ci comme initialement prévu — choix fait au début du projet
-  sur l'autre machine.
-- ✅ Déploiement automatique vers GitHub Pages à chaque push sur
-  `main`. Secrets `UNITY_EMAIL` et `UNITY_PASSWORD` en place.
-- ⏳ **À faire — README finalisé** : remplacer les placeholders
-  `[TODO: live demo link]` et `[TODO: hero GIF or screenshot]` du
-  README par la vraie URL Pages (`https://paul-des-brosses.github.io/bocage-digital-twin/`)
-  et un GIF capture 10-15 s du DT en action + 2-3 screenshots.
+- Remplacer placeholders `[TODO: live demo link]` et
+  `[TODO: hero GIF or screenshot]` du README par URL Pages réelle +
+  GIF capture 10-15 s du DT en action + 2-3 screenshots.
+- README en anglais (cf ADR #31).
 
-**Sub-étape 10e — Audit final**
+**Sub-étape E7.5 — Tri docs public/privé** :
 
-- Re-vérifier que `BACKLOG.md` est exhaustif (un futur contributeur
-  doit pouvoir reprendre l'effet visuel reporté en 1 h max sans
-  reconstruire le contexte).
-- Re-vérifier qu'aucune violation de primauté du capteur n'a été
-  introduite en cours de polish.
-- Tests EditMode passent tous.
+- Créer dossier `docs-private/` (listé dans `.gitignore`) si nécessaire.
+- Décider quel doc va où (SIMULATION_OVERVIEW.md public ou privé ?
+  BACKLOG.md ?). Approche par défaut suggérée : tout en public, sauf
+  docs internes de travail.
 
-**Hors scope assumé (cf `BACKLOG.md`)** :
-- `SessionReporter` accessible depuis l'UI (item 8).
-- Animations UI léchées (item 7).
-- Tout effet visuel avancé (items 1–6).
+**Sub-étape E7.6 — Audit final** :
 
-**Critère de validation**
+- Tests EditMode tous verts.
+- Primauté capteur respectée intégralement (cf CLAUDE.md §9 statut
+  post-E2/E3).
+- `BACKLOG.md` exhaustif (un futur contributeur peut reprendre tout
+  item en < 1 h sans reconstruire le contexte).
+- Conformité CLAUDE.md (§17 scope MVP, §18 discipline).
 
-- Démo accessible publiquement sur `https://<user>.github.io/<repo>/`.
-- README en anglais (cf `DECISIONS.md` #31) avec liens vivants.
+**Sub-étape E7.7 — Tag GitHub v1.0 + release note** :
+
+- Tag `v1.0` sur le commit final de `main` après merge E7.
+- Release note GitHub résumant les chantiers E1-E7 et le scope MVP
+  livré.
+
+### Critère de validation
+
+- Démo accessible publiquement sur URL Pages.
+- README en anglais avec liens vivants (live demo + GIF +
+  screenshots).
 - Build CI vert.
-- Un visiteur du portfolio comprend l'utilité du DT en moins de 2 min
-  sans devoir lire la doc.
-
-**Estimation** : 1.5 jour (10a + 10b + 10c + 10d + 10e).
-
-**Statut** : à faire.
+- Un visiteur du portfolio comprend l'utilité du DT en moins de
+  2 min sans devoir lire la doc.
+- Tag `v1.0` poussé.
 
 ---
 
-## Total et marges
+## 10. Règle de revue à mi-parcours
 
-- Somme brute : 13 jours-équivalents IA-assistés.
-- Marge réaliste × 1.3 : **~17 jours**.
+À ~70 % du temps écoulé (cible ~105 h sur 150 h), faire un point
+d'avancement :
 
----
+- Étapes E1-E4 doivent être mergées.
+- E5 doit être en cours.
+- Si ce n'est pas le cas, **arrêter pour réviser le scope avec
+  l'utilisateur** (discipline §18 règle 2 — pas de pivot sans
+  relecture).
 
-## Stratégie de coupe en cas de dépassement
-
-Ordre de coupe (du plus acceptable au plus douloureux) — cf `CLAUDE.md`
-§17 :
-
-1. Implémentation décision **moyenne** au lieu de riche (réduire
-   incertitudes, un seul horizon).
-2. Suppression des effets visuels Niveau 3 (modulation `healthT` sur
-   faune et haies).
-3. Réduction tests unitaires de 5-10 à 3-5.
-4. Réduction sprites uniques de 15 à 10 (fusion de variantes).
-5. **NE PAS COUPER** : architecture 5 couches, organisation Git,
-   cohérence du pipeline assets, polish UI final.
+Pas de stratégie de coupe pré-décidée (cf ADR #56). Arbitrage au cas
+par cas en cohérence avec le principe directeur §17.
 
 ---
 
-## Règle d'or
+## Annexe — Historique des étapes 1-10 (MVP technique livré)
 
-À **70 % du temps écoulé**, le projet doit être à **~85 % fonctionnel**.
+Le projet a livré entre l'Étape 1 et la sub-étape 10b-perf un MVP
+technique fonctionnel (architecture 5 couches, simulation core,
+sensors, decision, indicators, presentation, build CI/CD WebGL). La
+roadmap historique en 10 étapes verticales est conservée pour
+traçabilité via `git log` et les ADRs #1 à #44.
 
-Sinon, déclencher la stratégie de coupe immédiatement, dans l'ordre
-ci-dessus. Ne pas espérer rattraper en sprint final.
+État au 2026-05-28 :
 
-Vérification recommandée à la fin de l'Étape 7 (~70 % de la roadmap) :
-si l'UI complète n'est pas en place, couper.
+- Étapes 1 à 9 livrées intégralement.
+- Sub-étape 10a livrée (audit narratif + popup loop fix + supersession
+  type-level + interventions ponctuelles + provenance capteur).
+- Sub-étape 10b livrée (FaunaSensorReader + retrait chalara du
+  détecteur + recal CAP).
+- Sub-étape 10b-perf livrée (ProjectSettings WebGL + URP réglés +
+  build CI déclenché).
+
+Ce qui restait au 2026-05-28 sous l'ancienne roadmap (10c polish UI,
+10d README final, 10e audit final) est repris dans la nouvelle étape
+**E7 — Polish + publication MVP**, augmentée des sous-étapes Crunch
+conditionnel et tri docs public/privé.
+
+Les 6 chantiers E1-E6 sont des chantiers nouveaux issus de la session
+de recadrage du 2026-05-28, qui transforment le MVP technique en MVP
+de complétude fonctionnelle (cf CLAUDE.md §17 et ADR #45).

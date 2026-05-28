@@ -246,3 +246,150 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
   pour usage futur ; elle n'est PAS appliquée au démarrage — la
   simulation boote toujours en pause pour que l'utilisateur lance
   lui-même le run.
+
+---
+
+## Câblages prévus post-recadrage 2026-05-28 (chantiers E1-E7)
+
+Cette section liste les câblages prévus par les chantiers E1-E7 de
+`docs/ROADMAP.md`. À mettre à jour au fil des livraisons en
+basculant les entrées dans la section principale ci-dessus.
+
+### Chantier E1 — Cleanup chalara + refactor actions manuelles
+
+Pas de nouveau câblage scène. Le `ManualActionsBinding` existant
+sur `_UI_Canvas` (sub-étape 10a) sera adapté pour journaliser via
+`DecisionJournal` au lieu d'appliquer directement (cf ADR #47).
+Aucun champ Inspector nouveau.
+
+### Chantier E2 — Saisonnalité + WeatherStation
+
+**Nouveau GameObject** :
+
+| GameObject enfant | Components | Références à brancher |
+|---|---|---|
+| `_Bootstrap/SimulationRunner` (extension) | + champ `SeasonalWeatherDataAsset` | → asset `SeasonalWeatherData_Mortagne.asset` (Couche 01, dossier `Assets/_Project/Data/Weather/`). |
+
+**Nouveau composant sur `_UI_Canvas`** :
+
+| Component | Champs sérialisés à brancher |
+|---|---|
+| `MonthSelectorBinding` (E2) | `Runner` → `_Bootstrap/SimulationRunner`. Combo UXML par défaut `initial-month-combo` dans section « Conditions initiales » du scenario panel. |
+
+**Nouveau RC** :
+
+| Asset | Producteur | Consommateurs |
+|---|---|---|
+| (aucun nouveau RC — la saisonnalité est consommée via `EcosystemModel.CurrentWeather` existant, étendu) | — | — |
+
+### Chantier E3 — Carbone sol + EddyTower
+
+**Nouveau composant sur `_UI_Canvas`** :
+
+| Component | Champs sérialisés à brancher |
+|---|---|
+| (Pas de binding dédié — les 2 sliders « Couverts d'interculture » et « Restitution résidus » sont ajoutés au scenario panel UXML existant, câblés via le `ScenarioControlsBinding` actuel élargi.) | — |
+
+**Nouveau RC** :
+
+| Asset | Producteur | Consommateurs |
+|---|---|---|
+| `RC_SoilCarbonStock.asset` | `SimulationRunner` | `OngletClimatBinding` (E6), `SensorInspectorPanelBinding` (E6, mode EddyTower). |
+
+### Chantier E4 — Faune visible 4 espèces
+
+**Nouveau GameObject** :
+
+| GameObject | Components | Références à brancher |
+|---|---|---|
+| `_Scene_Visual/Fauna` | `FaunaPool` (composant Couche 05) | `Placement Definition` → asset `FaunaPlacement_Default.asset`. `Spawn Root` → ce GameObject lui-même (ou enfant). `Random Seed Source` → seed maître du `SimulationRunner`. |
+| Chaque pool member (pré-instancié au Awake par `FaunaPool`) | `SpriteRenderer`, `FaunaIdleMotion` | Paramètres lus depuis `FaunaSpeciesDefinition`. |
+
+**Nouveau composant sur `_UI_Canvas`** :
+
+| Component | Champs sérialisés à brancher |
+|---|---|
+| `FaunaPoolBinding` (E4) | `Pool` → `_Scene_Visual/Fauna` (GameObject portant `FaunaPool`). `Biodiv Container` → `RC_BiodiversityComposite.asset`. `Habitat / Water / Inputs Factor Containers` → `RC_FaunaFactor{Habitat,Water,Inputs}.asset` (après E5). |
+
+**Assets ScriptableObject** (dans `Assets/_Project/Data/Fauna/`) :
+
+| Asset | Notes |
+|---|---|
+| `FaunaSpecies_Heron.asset` | Sprite frames héron, seuil apparition élevé (espèce sensible). |
+| `FaunaSpecies_Owl.asset` | Sprite frames chouette, position perchée, pas d'animation. |
+| `FaunaSpecies_Harrier.asset` | Sprite frames busard, oscillation horizontale lente. |
+| `FaunaSpecies_Swallow.asset` | Sprite frames hirondelle, oscillation horizontale lente. |
+| `FaunaPlacement_Default.asset` | SO racine listant les 4 espèces ci-dessus. |
+
+### Chantier E5 — Capital + biodiv 3 facteurs
+
+**Nouveaux RC** :
+
+| Asset | Producteur | Consommateurs |
+|---|---|---|
+| `RC_FaunaFactorHabitat.asset` | `SimulationRunner` | `OngletBiodivBinding`, `FaunaPoolBinding` (E4 finalisé). |
+| `RC_FaunaFactorWater.asset` | `SimulationRunner` | idem. |
+| `RC_FaunaFactorInputs.asset` | `SimulationRunner` | idem. |
+| `RC_TotalInvestment.asset` | `SimulationRunner` | `OngletEconomieBinding`, `DecisionPopupBinding` (affichage popup). |
+| `RC_InvestmentHorizon.asset` | `SimulationRunner` | idem. |
+
+Pas de nouveau GameObject. Les nouveaux RC sont câblés en producteur
+via `SimulationRunner` existant (slots de publication à étendre).
+
+### Chantier E6 — Panneau inspection capteurs + 3 onglets Niveau B
+
+**Configuration scène** (modifications scène `Main.unity`) :
+
+- Ajout de `Physics2DRaycaster` sur `_Camera/MainCamera` (composant
+  URP indispensable pour click sprites 2D).
+- Ajout d'un `BoxCollider2D` (size matchant le sprite) sur chacun
+  des 5 GameObjects capteurs visibles dans `_Scene_Visual` (sprites
+  `weather_station`, `piezometer`, `acoustic_sensor`, `photo_trap`,
+  `eddy_covariance_tower`).
+- Composant `SensorClickHandler` sur chacun des 5 sprites : publie
+  un event dans `SensorClickedEventBus` (statique, Couche 05) avec
+  le type de capteur cliqué.
+- L'EventSystem Unity doit être actif dans la scène (déjà en place
+  pour UI Toolkit ; vérifier).
+
+**Nouveaux composants sur `_UI_Canvas`** :
+
+| Component | Champs sérialisés à brancher |
+|---|---|
+| `SensorInspectorPanelBinding` (E6) | `Runner` → `_Bootstrap/SimulationRunner`. `Seasonal Weather Data` → asset `SeasonalWeatherData_Mortagne.asset` (pour normales mensuelles affichées en mode WeatherStation). S'abonne à `SensorClickedEventBus` pour ouvrir/configurer le panneau. |
+| `WeatherNormalsPanelBinding` (E6) | (sous-panneau du précédent — peut être merged dans `SensorInspectorPanelBinding` selon la complexité, à arbitrer à l'implémentation). |
+| `OngletBiodivBinding` (E6) | Containers : `RC_BiodiversityComposite`, `RC_FaunaFactorHabitat`, `RC_FaunaFactorWater`, `RC_FaunaFactorInputs`. `Pool` → `_Scene_Visual/Fauna` (pour comptage espèces visibles). |
+| `OngletClimatBinding` (E6) | `Runner` → `_Bootstrap/SimulationRunner` (lecture `WeatherStationReader` history + `EddyTowerSensorReader` history via sliding window). Containers : `RC_WaterTableDepth`, `RC_SoilCarbonStock`. |
+| `OngletEconomieBinding` (E6) | `Runner` → `_Bootstrap/SimulationRunner` (lecture `journal.TotalInvestment` + indicateurs). Containers : `RC_IntegratedProfitability`, `RC_TotalInvestment`, `RC_InvestmentHorizon`. |
+
+**UXML / USS** :
+
+- `Assets/_Project/05_Presentation/UI/SensorInspectorPanel.uxml` +
+  `.uss` : panneau modal réutilisable, 5 layouts par capteur.
+- `Dashboard.uxml` : 3 onglets Niveau B existants enrichis (lignes
+  supplémentaires).
+
+### Chantier E7 — Polish + publication
+
+Pas de nouveau câblage scène. Configuration build only (Crunch
+DXT5 conditionnel sur sprites lourds, cf `docs/ASSETS_LIST.md` §6
+étape 7).
+
+---
+
+## Mémo synthèse — nouveaux composants sur `_UI_Canvas` post-recadrage
+
+| Component | Chantier | ADR cadrant |
+|---|---|---|
+| `MonthSelectorBinding` | E2 | #52 |
+| `FaunaPoolBinding` | E4 | #49 |
+| `SensorInspectorPanelBinding` | E6 | #53 |
+| `WeatherNormalsPanelBinding` (optionnel, sub-panneau) | E6 | #53 |
+| `OngletBiodivBinding` | E6 | #54 |
+| `OngletClimatBinding` | E6 | #54 |
+| `OngletEconomieBinding` | E6 | #54 |
+
+Au total : 6-7 nouveaux components sur `_UI_Canvas` à l'issue de la
+roadmap E1-E7. Aucune restructuration de la hiérarchie scène (les
+7 racines préfixées `_` restent inchangées, conformes `CLAUDE.md`
+§8).

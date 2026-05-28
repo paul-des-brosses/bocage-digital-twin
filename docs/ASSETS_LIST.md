@@ -200,8 +200,8 @@ caractères latins étendus (accents français, €).
    vérité dans la table `SPRITES` de ce script.
 6. Validation visuelle DA avant intégration.
 7. **Configuration d'import Unity — Crunch compression sur l'override
-   Web** : OBLIGATOIRE pour chaque nouveau sprite. Unity ne l'active
-   pas par défaut, c'est un réglage par-sprite.
+   Web** : OBLIGATOIRE en règle générale (CLAUDE.md §13). Unity ne
+   l'active pas par défaut, c'est un réglage par-sprite.
    - Sélectionne le PNG dans le Project window.
    - Inspector → onglet plateforme **Web** (icône globe HTML5, à droite
      des onglets Default / Standalone / Android).
@@ -217,8 +217,17 @@ caractères latins étendus (accents français, €).
      la quality, soit désactive le Crunch uniquement sur ce sprite.
 
    Cette étape divise la taille DL des textures par 3 à 4 dans le
-   build WebGL final. Elle est documentée dans `WEBGL_GOTCHAS.md` et
-   dans le rapport perf de la sub-étape 10b-perf.
+   build WebGL final.
+
+   **Application conditionnelle pour le MVP courant (post-recadrage
+   2026-05-28)** : la décision Crunch DXT5 conditionnel (chantier E7
+   de `docs/ROADMAP.md`) acte qu'on mesure d'abord la taille du build
+   et le TTI à l'issue des chantiers E1-E6. Si build ≤ 30 MB et
+   TTI ≤ 10 s, le Crunch reste un TODO documenté à appliquer le jour
+   où on ajoute beaucoup de sprites. Si build > 30 MB ou TTI > 10 s,
+   application du Crunch sur les sprites les plus lourds en priorité
+   (paysage > UI > faune). Pour tout nouveau sprite ajouté
+   post-mesure, le Crunch redevient obligatoire à l'import.
 
 ### Palette Perche
 
@@ -291,3 +300,50 @@ Hiérarchie des solutions (du plus acceptable au plus douloureux) :
 **Note** : ne jamais mélanger sprites IA et sprites externes sans
 post-traitement uniformisant — la cohérence visuelle est un critère
 non-négociable de l'étape 9.
+
+---
+
+## 8. Sprites faune — état post-recadrage 2026-05-28 (chantier E4)
+
+Le chantier E4 de `docs/ROADMAP.md` (ADR #49) demande **4 espèces ×
+3-4 frames** pour l'animation frame-swap du `FaunaPool` (cf
+`docs/SCENE_WIRING.md` chantier E4).
+
+**État actuel par espèce** (au 2026-05-28) :
+
+| Espèce | Frame existante | Frames manquantes | Pattern d'animation cible |
+|---|---|---|---|
+| Hirondelle (`swallow`) | `swallow.png` (256×121, intégré v0.1-provisional) | 2-3 frames de vol | Oscillation horizontale sinusoïdale lente + très légère amplitude verticale. |
+| Chouette chevêche (`owl`) | `bird_owl_flight.png` (post-traité, à intégrer) | 0 (perchée, statique) | Pas d'animation — frame unique suffisante. |
+| Busard Saint-Martin (`harrier`) | `bird_harrier_flight.png` (post-traité, à intégrer) | 2-3 frames de glide | Oscillation horizontale sinusoïdale lente. |
+| Héron cendré (`heron`) | `heron_static.png` (post-traité, à intégrer) | 1-2 frames de sway | Sway vertical très lent (respiration). |
+
+**Charge utilisateur** (cf `CLAUDE.md` §2 division du travail) :
+
+1. **Génération** des frames supplémentaires via Nanobanana avec
+   l'image existante de chaque espèce comme seconde référence
+   ip-adapter (préserve la cohérence « même oiseau dans une autre
+   pose »).
+2. **Détourage manuel** + **post-traitement** standard via
+   `python tools/postprocess.py` (cf §6 ci-dessus).
+3. **Convention de nommage** : `<espèce>_frame_<N>.png` (par exemple
+   `swallow_frame_1.png`, `swallow_frame_2.png`,
+   `swallow_frame_3.png`). La frame existante est renommée
+   `<espèce>_frame_0.png` pour cohérence.
+4. **Placement** dans
+   `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/<espèce>/`.
+5. **Référencement** dans le ScriptableObject
+   `FaunaSpecies_<Espèce>.asset` (cf E4) : tableau `Sprite[] frames`.
+
+**Note importante** : Claude Code ne peut pas générer ces frames
+(usage Nanobanana = action manuelle utilisateur, cf CLAUDE.md §2).
+Le chantier E4 livre l'infrastructure (`FaunaPool`,
+`FaunaSpeciesDefinition`, `FaunaIdleMotion`, `FaunaPoolBinding`) et
+les assets vides ; l'utilisateur remplit les frames au fil des
+itérations.
+
+**Estimation utilisateur** : 1-2 h par espèce (génération +
+détourage + post-traitement + placement), soit 4-8 h pour les
+4 espèces. À planifier en parallèle ou avant la livraison du
+chantier E4 Claude Code (les bindings peuvent être testés sur la
+frame 0 seule comme fallback temporaire).

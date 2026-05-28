@@ -333,3 +333,175 @@ fenêtre de plausibilité. Lancer ces tests via Test Runner > EditMode
 - [Terre-Net — Rendements blé tendre Agreste 2024](https://www.terre-net.fr/cultures/article/869514/les-estimations-de-rendements-en-ble-tendre-par-departement)
 - [Prom'Haies Nouvelle-Aquitaine — Fonctions agronomiques des haies](https://www.promhaies.net/association/pourquoiplanter/fonctions-agronomiques,696/)
 - [CIVAM — Vers des systèmes économes en intrants](https://www.civam.org/civam-du-haut-bocage/actions/vers-des-systemes-de-cultures-economes-en-intrants/)
+
+---
+
+## Paramètres post-recadrage 2026-05-28 (chantiers E1-E7)
+
+Cette section regroupe les paramètres ajoutés au modèle par les
+chantiers E1-E7 de la nouvelle `ROADMAP.md`.
+
+### Saisonnalité — données mensuelles Météo-France (chantier E2)
+
+**Station** : Mortagne-au-Perche (Orne, 61).
+**Normales** : 1991-2020.
+**Source** : Météo-France (meteofrance.com/climat/normales/61293001 —
+à vérifier au moment de l'encodage du `SeasonalWeatherDataAsset`).
+
+**Valeurs indicatives** (à confirmer sur source officielle au moment
+de l'encodage de l'asset) :
+
+| Mois | T° moyenne (°C) | Précipitations cumul (mm) | p_wet | mu (log-mm) | sigma (log-mm) |
+|---|---|---|---|---|---|
+| Jan | 4,0 | 65 | 0,50 | 1,40 | 0,80 |
+| Fév | 5,0 | 55 | 0,45 | 1,40 | 0,80 |
+| Mar | 7,0 | 55 | 0,40 | 1,45 | 0,80 |
+| Avr | 10,0 | 55 | 0,40 | 1,45 | 0,80 |
+| Mai | 13,0 | 60 | 0,35 | 1,55 | 0,85 |
+| Juin | 17,0 | 50 | 0,30 | 1,60 | 0,90 |
+| Juil | 19,0 | 50 | 0,20 | 1,75 | 0,95 |
+| Août | 19,0 | 50 | 0,25 | 1,70 | 0,90 |
+| Sept | 16,0 | 55 | 0,35 | 1,60 | 0,85 |
+| Oct | 12,0 | 70 | 0,45 | 1,50 | 0,80 |
+| Nov | 7,0 | 75 | 0,55 | 1,40 | 0,80 |
+| Déc | 5,0 | 80 | 0,55 | 1,40 | 0,80 |
+
+**T° moyenne annuelle** ≈ 11,2 °C. **Précipitations annuelles cumul**
+≈ 720 mm. Cohérent avec climat océanique du Perche.
+
+**Bruit gaussien T° quotidienne** : σ = 2 °C autour de la moyenne
+mensuelle. Sous-flux RNG `"weather-noise"`.
+
+**Workflow Markov par tick (jour simulé)** :
+
+1. Tirer un Bernoulli(`p_wet[mois courant]`) → jour pluvieux ou sec.
+2. Si pluvieux : tirer un LogNormal(`mu[mois]`, `sigma[mois]`) →
+   précipitations en mm. Sous-flux RNG `"markov-rain"`.
+3. T° du jour = T_mois + N(0, σ=2).
+4. Ajouter anomalies scenario en additif sur T° et multiplicatif sur
+   précipitations.
+
+**Cohérence avec ancienne calibration** : le `BaseTemperatureC = 12 °C`
+et `BasePrecipitationMm = 2 mm/jour ≈ 730 mm/an` de l'ancienne
+`WeatherUpdateRule` correspondent bien à la moyenne annuelle des
+valeurs ci-dessus. La refonte E2 conserve l'ordre de grandeur global
+en introduisant le cycle saisonnier intramensuel.
+
+**À vérifier au moment de l'encodage** : les valeurs ci-dessus sont
+indicatives basées sur la connaissance générale du climat percheron.
+L'encodage final de `SeasonalWeatherDataAsset` doit consulter les
+normales officielles meteofrance.com et les inscrire telles quelles.
+
+**Dernière révision** : 2026-05-28 (création post-recadrage).
+
+---
+
+### Carbone sol — modèle 1-pool (chantier E3)
+
+**Modèle** : `dC/dt = inputs − k·C`.
+
+| Paramètre | Valeur | Source |
+|---|---|---|
+| `SoilCarbonStock` default | 50 tC/ha | Référence sols cultivés bocage Perche, BDAT INRAE. |
+| `k` (constante minéralisation) | 1/40 an⁻¹ | Demi-vie ~28 ans, INRAE 4 pour 1000. |
+| Input couverts d'interculture | 1,2 × CoverCropsCoveragePercent / 100 tC/ha/an | Solagro Afterres 2050. |
+| Input restitution résidus | 0,8 × ResidueRestitutionPercent / 100 tC/ha/an | Solagro Afterres 2050. |
+| Input haies (proxy) | 0,4 × HedgerowDensity / 90 tC/ha/an | AFAC-Agroforesteries (0,4 tC/ha/an stockable sous haies denses 90 m/ha). |
+
+**Équilibre attendu** : `C_eq = inputs / k`.
+
+Pour un scénario « couverts 50 % + résidus 80 % + haies 90 m/ha » :
+inputs ≈ 0,6 + 0,64 + 0,4 = 1,64 tC/ha/an → C_eq ≈ 66 tC/ha. Le
+default 50 tC/ha tend lentement vers cet équilibre sur ~30 ans
+simulés.
+
+Pour un scénario « couverts 0 % + résidus 0 % + haies 0 m/ha »
+(intensif sans bocage) : inputs ≈ 0 → C_eq → 0. Le default 50 tC/ha
+décroît lentement vers 0 sur ~150 ans simulés (avec demi-vie 28 ans).
+
+**Dernière révision** : 2026-05-28 (création post-recadrage).
+
+---
+
+### Horizon de rentabilité — prix plantation haies (chantier E5)
+
+**Action concernée** : `ManualPlantHedgesRecommendation` (action
+manuelle journalisée, cf ADR #47 + #50).
+
+| Paramètre | Valeur | Source |
+|---|---|---|
+| Prix au m linéaire plantation haies | 3-10 €/m | Réseau Haies de France, MAEC référentiel coûts plantation. |
+| Default planning ManualPlantHedges | 5 €/m (médian) | Approximation MVP. À paramétrer en `ScenarioContext` post-MVP (item BACKLOG #18 / #19 raffinement). |
+
+**Calcul `InvestmentCost`** :
+
+```
+InvestmentCost (€/ha) = magnitude_slider (m/ha) × prix_au_m (€/m)
+```
+
+Exemple : magnitude 30 m/ha × 5 €/m = 150 €/ha. Pour une exploitation
+de 100 ha hypothétique, cela représente 15 000 € upfront — chiffre
+plausible cohérent avec amendement Sénat nov. 2025.
+
+**Calcul horizon de rentabilité** :
+
+```
+À chaque tick post-action :
+  cumulProfitDelta(t) = Σ(realProfit(τ) − shadowProfit(τ)) pour τ ∈ [t_action, t]
+HorizonYears = first day où cumulProfitDelta(t) >= InvestmentCost, / 365
+```
+
+Si non atteint dans la simulation : afficher « Horizon rentabilité :
+non encore atteint » (au lieu d'une valeur NaN).
+
+**Dernière révision** : 2026-05-28 (création post-recadrage).
+
+---
+
+### Magnitudes par défaut des actions manuelles (chantier E1)
+
+**Sliders de magnitude** dans le panneau « Interventions ponctuelles »
+du décision-panel. Default + plage utilisateur.
+
+| Action | Slider | Default | Plage | Effet modélisé |
+|---|---|---|---|---|
+| `manual-plant-hedges` | densité plantée | 30 m/ha | 10-100 m/ha | `+magnitude m/ha` sur `HedgerowDensity`, `+0,01 × magnitude €/ha/an` sur `MaintenanceCost`. |
+| `manual-irrigation` | intensité | 1,5 m | 0,5-3,0 m | Remontée temporaire `−magnitude m` sur `WaterTableDepth` (plancher 0,5 m), durée 30 jours décroissants. |
+| `manual-reduce-inputs` | intensité réduction | 0,2 | 0,1-0,5 | `+0,05 × ratio` sur `FaunaPopulation` (boost ponctuel insectes), `−200 × ratio €/ha/an` sur `InputCost` (économie immédiate), durée 30 jours. |
+
+Où `ratio = magnitude / IntensityCutPerStep` (cf
+`ReduceInputsRecommendation`).
+
+Les valeurs `Effet modélisé : ...` affichées dans le popup décision
+sont les valeurs calculées au moment du clic (cf wordings exacts dans
+ADR #55).
+
+**Dernière révision** : 2026-05-28 (création post-recadrage).
+
+---
+
+### Recalibration biodiv 3 facteurs (chantier E5)
+
+L'agrégation `BiodiversityCompositeIndicator` actuelle (50 % fauna +
+30 % hedge + 20 % water inverse) est recalibrée pour exposer
+explicitement 3 facteurs au niveau onglet :
+
+| Facteur | Variable | Sources |
+|---|---|---|
+| Habitat | `RC_FaunaFactorHabitat` (dérivé `HedgerowDensity`) | Constant et al. 1976 (Réseau Haies passereaux). |
+| Eau | `RC_FaunaFactorWater` (dérivé `WaterTableDepth` + `PondWaterLevelMeters` si #23 livré) | Hallmann et al. 2017 (Krefeld), MNHN 2024. |
+| Intrants | `RC_FaunaFactorInputs` (dérivé `InputCost` + `InputIntensityFactor`) | IPBES 2019 (rebound faune cessation pesticides), MNHN 2024. |
+
+**Pondérations recalibrées** (à affiner via tests EditMode) : 40 %
+habitat, 25 % eau, 35 % intrants. Le déplacement de poids vers les
+intrants reflète la littérature post-2017 sur le déclin insectes
+attribué majoritairement aux pesticides néonicotinoïdes (Krefeld).
+
+**Effets faibles additionnels** sur `FaunaPopulation` (ADR #51) :
+
+- **Canicule** : pénalité 0,01/jour si T° > 30 °C, plafond cumul
+  −0,15 sur 30 jours (Hallmann 2017).
+- **Carbone sol** : bonus 0,02 si `SoilCarbonStock > 80 tC/ha`,
+  proxy macrofaune (INRAE).
+
+**Dernière révision** : 2026-05-28 (création post-recadrage).

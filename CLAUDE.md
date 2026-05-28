@@ -240,6 +240,19 @@ moyenne, humidité du sol, healthT d'un agent, etc.).
 Cette règle est non négociable : c'est ce qui distingue un digital twin
 d'un jeu vidéo.
 
+**Statut au 2026-05-28** : deux écarts résiduels sont identifiés et
+seront résorbés par les chantiers E2 (saisonnalité + WeatherStation) et
+E3 (carbone sol + EddyTower) de la roadmap :
+
+- Sprite **EddyTower** présent en scène sans variable d'état correspondante
+  — sera branché à `SoilCarbonStock` via `EddyTowerSensorReader` (E3).
+- Sprite **WeatherStation** sans `Reader` formel exposant la mesure —
+  sera branché via `WeatherStationReader` lecture pure (E2).
+
+Après livraison de E2 et E3, le principe est respecté intégralement : les
+5 capteurs sont bout-en-bout (mesure → indicateur affiché ou événement
+→ recommandation).
+
 ---
 
 ## 10. Audio
@@ -330,30 +343,82 @@ de cloud sync.
 
 ---
 
-## 17. Stratégie de coupe en cas de dépassement
+## 17. Scope MVP — verrouillé le 2026-05-28
 
-Si le scope déborde, ordre de coupe (du plus acceptable au plus
-douloureux) :
+Cette section consigne les décisions de cadrage actées en session de
+recadrage externe du 2026-05-28. Elle prime sur toute interprétation
+ultérieure du scope. Tout pivot doit relire cette section et engager
+une nouvelle session de recadrage (cf §18 règle 2).
 
-1. Implémentation décision **moyenne** au lieu de riche (moins
-   d'incertitudes, horizons réduits).
-2. Suppression des effets visuels Niveau 3 (modulation `healthT` sur
-   faune et haies).
-3. Réduction tests unitaires de 5-10 à 3-5.
-4. Réduction sprites uniques de 15 à 10 (fusion de variantes).
-5. **NE PAS COUPER** : architecture 5 couches, organisation Git,
-   cohérence du pipeline assets, polish UI final.
+### Audience prioritaire
+
+Recruteurs tech (Unity / WebGL / architecture logicielle) et jury de
+soutenance M1 (rigueur scientifique attendue).
+
+### Budget temps
+
+15 à 20 heures par semaine, plafond 3 mois (idéalement plus court).
+**Cible 150 h.**
+
+### Principe directeur — « complétude fonctionnelle »
+
+Le MVP n'est pas défini par un nombre de features cochées, mais par le
+critère **« rien en scène ou en code ne donne le goût d'inachevé »**.
+Concrètement :
+
+- Tout sprite visible dans la scène doit observer ou refléter une
+  variable réelle du modèle.
+- Toute mécanique implémentée doit avoir un effet observable et un
+  intérêt narratif compréhensible à cette étape (pas un « pour plus
+  tard »).
+- Toute chaîne capteur présente doit aller jusqu'au bout
+  (capteur → événement → reco OU indicateur affiché).
+- Toute recommandation présente doit avoir un déclencheur cohérent et
+  un rationale honnête.
+- Tout onglet présent doit afficher de l'info utile (ou être retiré).
+
+### Corollaire de gouvernance
+
+Pour chaque élément actuellement inachevé : **compléter ou
+supprimer/cacher**. Pas de « laisser en l'état ». Cette règle est
+reprise comme règle 8 de la §18 Discipline.
+
+### Gestion du budget
+
+**Pas de stratégie de coupe pré-décidée.** Si on dépasse 150 h,
+l'utilisateur arbitre au cas par cas en cohérence avec le principe
+directeur. La section « Stratégie de coupe en cas de dépassement »
+historiquement présente ici a été supprimée par décision DNF 13.
 
 ---
 
-## 18. En cas de doute
+## 18. Discipline — 8 règles
+
+Règles de travail engageant cette session ET toutes les sessions
+Claude Code futures sur ce projet.
+
+| # | Règle | Concrètement |
+|---|---|---|
+| 1 | Branches dédiées par chantier | Chaque chantier (saisonnalité, carbone sol, faune visible, etc.) sur sa propre branche `feature/E{N}-{nom}`. Pas de mélange code de chantiers différents. |
+| 2 | Pas de pivot stratégique sans relecture | Si l'utilisateur ou toi évoquez un changement de scope, tu relis explicitement la doc structurante (`CLAUDE.md`, `ROADMAP.md`) et signales le pivot avant d'exécuter. |
+| 3 | Validation utilisateur avant modif majeure | Toute modification importante (nouvelle classe, nouveau shader, refonte d'une règle biophysique) passe par validation explicite avant exécution. |
+| 4 | Tests EditMode obligatoires | Aucun merge sans tests verts. Aucune classe nouvelle sans test associé. |
+| 5 | BACKLOG mis à jour à chaque chantier | À la fin de chaque chantier, l'item correspondant est marqué fait/à jour dans `docs/BACKLOG.md`. |
+| 6 | Pas de modif code + doc dans le même commit | Commits séparés pour code et doc. Lisibilité git history. |
+| 7 | Pas de création `.md` sans demande explicite | Tu ne génères pas de fichier markdown spontanément. |
+| 8 | Compléter ou supprimer (jamais « laisser en l'état ») | Corollaire structurant du principe directeur §17. Aucun élément en scène/code ne reste à moitié fait. Pour tout élément inachevé : on complète, ou on supprime/cache. Jamais d'état intermédiaire. |
+
+---
+
+## 19. En cas de doute
 
 Si une décision technique semble manquer dans cette spécification,
 consulter dans l'ordre :
 
-1. `docs/DECISIONS.md` (décisions de design déjà tranchées).
-2. `docs/ARCHITECTURE.md` (détails architecturaux).
-3. Demander explicitement à l'utilisateur.
+1. §17 Scope MVP et §18 Discipline (gouvernance actuelle).
+2. `docs/DECISIONS.md` (décisions de design déjà tranchées).
+3. `docs/ARCHITECTURE.md` (détails architecturaux).
+4. Demander explicitement à l'utilisateur.
 
 **Ne pas combler de soi-même.** Une décision non documentée est une
 décision à prendre, pas une décision à improviser.

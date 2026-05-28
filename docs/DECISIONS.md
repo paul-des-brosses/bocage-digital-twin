@@ -966,3 +966,572 @@ d'auto-popup pour ne pas saouler). Les deux sont indépendants :
   détecteur doit refléter ce que les capteurs voient, pas
   l'historique des décisions). On suppress à l'étage présentation,
   pas à l'étage mesure.
+
+---
+
+### 45. Verrouillage du scope MVP par principe de complétude fonctionnelle
+
+**Contexte** : projet en finition Étape 10 (sub-étape 10b-perf). Audit
+interne identifie plusieurs chantiers ouverts hétérogènes (chalara
+dormant, EddyTower visuel sans réalité, WeatherStation sans Reader,
+3 onglets Niveau B vides, faune en backlog, capital absent, biodiv
+scalaire). Risque réel de scope creep ou son inverse (livrer un MVP au
+goût d'inachevé). Audience portfolio cible : recruteurs tech + jury
+M1, qui ont des exigences cohérentes mais distinctes.
+
+**Décision** : verrouiller le scope MVP par principe de complétude
+fonctionnelle. Audience prioritaire = recruteurs tech (Unity/WebGL/
+archi logicielle) et jury M1 (rigueur scientifique). Budget = 15-20h/
+semaine sur 3 mois max, cible 150 h. Principe directeur : « rien en
+scène ou en code ne donne le goût d'inachevé ». Corollaire :
+« compléter ou supprimer (jamais laisser en l'état) ». Détaillé dans
+`CLAUDE.md` §17 et §18.
+
+**Raison** : un portfolio honnête et un jury M1 exigent un MVP cohérent
+end-to-end, pas une accumulation de features partielles. La complétude
+fonctionnelle est ce qui crée l'effet « production-ready » recherché
+par les recruteurs et défendable scientifiquement par un jury.
+
+**Conséquence opérationnelle** : ouvre 5 chantiers fermants (ADRs #46
+à #54) déroulés sur les étapes E1-E7 de la nouvelle `ROADMAP.md`.
+Suppression de la stratégie de coupe pré-décidée (cf ADR #56).
+
+**Alternative écartée** : continuer en mode « feature après feature
+avec backlog grossissant » — résultat : MVP au goût d'inachevé,
+défendable ni en recrutement ni en soutenance.
+
+---
+
+### 46. Purge totale du code chalara
+
+**Contexte** : la détection chalara a été désactivée en sub-étape 10b
+polish capteur (le piège photo IR ne détecte pas un champignon,
+sémantiquement faux). Les classes `HedgeChalaraEvent` et
+`PlantHedgesRecommendation` ont été conservées dormantes en attente
+d'un capteur adapté (cf ancien BACKLOG #16). À l'audit de recadrage :
+avoir une seule maladie isolée (chalara, sur frêne uniquement) dans
+un modèle sans autre pathogène (rouille blé, septoriose, sclérotinia
+colza, processionnaire chêne) donne l'impression d'un modèle santé
+végétale ébauché puis abandonné.
+
+**Décision** : suppression totale du code lié à chalara. Pas de
+réintroduction en MVP.
+
+Implications mécaniques :
+
+- Suppression de `Assets/_Project/02_Sensors/Events/HedgeChalaraEvent.cs`.
+- Suppression de la branche pénalité chalara dans
+  `HedgerowHealthIndicator.Compute()` + constante `ChalaraPenalty`.
+- Suppression de la branche `case HedgeChalaraEvent` dans
+  `RecommendationProvenance.SensorDisplayFor()`.
+- 6 tests EditMode utilisant `HedgeChalaraEvent` → réécriture en
+  remplaçant les références `hedge-chalara#NN` par `drought-prolonged#NN`
+  et `PlantHedgesRecommendation` par `IrrigationAdviceRecommendation`
+  comme fixture (préserve la couverture sur supersession et dedup).
+- `docs/BACKLOG.md` : items #14 et #16 supprimés, remplacés par item
+  « Cadre santé végétale complet » conditionnel à un modèle de
+  phénologie cultures.
+
+**Raison** : conforme au principe directeur §17 (CLAUDE.md). Soit on
+remet un écosystème santé végétale d'un coup (pathologies + ravageurs
+avec capteurs adaptés), soit rien. Le compromis « chalara seul
+dormant » donne le goût d'inachevé que le MVP refuse explicitement.
+
+**Conséquence opérationnelle** : chantier E1 de la nouvelle
+`ROADMAP.md`. Le stash `stash@{0}` contient des patches cleanup
+chalara partiels récupérables via `git stash show -p stash@{0}`.
+Estimation 2-4 h (incluant réécriture tests).
+
+**Alternative écartée** : réintroduire chalara avec un capteur adapté
+(NDVI drone, enquête terrain) sans le reste de l'écosystème santé
+végétale — ouvre à nouveau le problème de la maladie isolée.
+
+---
+
+### 47. Refactor unifié des actions manuelles via le journal
+
+**Contexte** : à la sub-étape 10a, 3 boutons « interventions
+ponctuelles » (PlantHedges, Irrigation, ReduceInputs) ont été câblés
+via `SimulationRunner.ApplyManualXxx()` qui appliquent l'effet
+directement sur le modèle réel, sans passer par le `DecisionJournal`.
+Asymétrie discutable : les recos auto traversent journal + verdict +
+supersession, les actions manuelles bypass complètement. Friction
+audit recadrage : traçabilité du run réel incomplète, le futur
+`SessionReporter` ne verrait pas les actions manuelles.
+
+**Décision** : toutes les actions manuelles passent par le
+`DecisionJournal` sous forme de `IRecommendation` « manual »
+auto-acceptée. Plus de bypass direct du modèle.
+
+Implications mécaniques :
+
+- `SimulationRunner.ApplyManualXxx()` → créent une `IRecommendation`
+  avec `DefaultVerdict = AutoAccepted` et l'ajoutent au journal via
+  `DecisionJournal.Append()`.
+- `AutoActionPipeline.Apply()` reste seul à modifier le modèle (pas
+  de bypass).
+- Convention `Id` : `"manual-plant-hedges#<day>"`,
+  `"manual-irrigation#<day>"`, `"manual-reduce-inputs#<day>"`.
+- Convention `TriggeredByEventId = null`. Adapter
+  `RecommendationProvenance.Format()` : fallback « Action déclenchée
+  par l'utilisateur le jour X » si `TriggeredByEventId == null`.
+- Supersession des actions manuelles répétées : **cumulables**. Comme
+  l'action manuelle est `AutoAccepted` dès création (pas `Pending`),
+  elle ne déclenche pas la supersession des autres entrées du même
+  type. `PlantHedges` +30 m/ha puis +30 m/ha → +60 m/ha total,
+  2 entrées journal distinctes.
+- `PlantHedgesRecommendation` reste utile (côté manuel uniquement —
+  n'est plus émise par `RecommendationEngine.TryProduceFor` depuis
+  10b).
+
+**Raison** : discipline architecturale propre, traçabilité totale des
+décisions joueur, supersession applicable, plus défendable pour
+jury M1. Aligne la sémantique « auto » et « manuel » sur un même
+canal.
+
+**Conséquence opérationnelle** : chantier E1 de la nouvelle
+`ROADMAP.md`. Estimation 3-4 h (refactor + tests).
+
+**Alternative écartée** : garder le bypass actuel — viole le principe
+de traçabilité unique et complique le futur `SessionReporter`.
+
+---
+
+### 48. Modèle carbone sol 1-pool + EddyTower bout-en-bout
+
+**Contexte** : le sprite EddyTower (tour de covariance) est présent en
+scène depuis l'Étape 6c mais sans variable d'état correspondante.
+Violation pratique du principe primauté du capteur (CLAUDE.md §9).
+L'item BACKLOG #13 (variable d'état carbone sol) attendait son tour.
+À l'audit recadrage : soit on retire le sprite (perte d'un argument
+scientifique majeur), soit on le branche.
+
+**Décision** : implémenter le modèle carbone sol 1-pool dans le MVP.
+Le sprite EddyTower devient un capteur fonctionnel bout-en-bout
+(mesure → indicateur affiché, sans événement ni reco — conforme §17
+principe directeur « OU indicateur affiché »).
+
+Implications mécaniques :
+
+- Nouvelle variable d'état `SoilCarbonStock` (tC/ha) dans
+  `EcosystemModel`, default 50.
+- Nouvelle règle `SoilCarbonDynamicsRule` (Couche 01) : modèle 1-pool
+  `dC/dt = inputs − k·C`, `k = 1/40 an⁻¹` (calibration cf
+  `CALIBRATION.md`).
+- 2 nouveaux leviers dans `ScenarioContext` :
+  `CoverCropsCoveragePercent` (0-100 %) et
+  `ResidueRestitutionPercent` (0-100 %), avec sliders dans scenario
+  panel.
+- Nouveau `EddyTowerSensorReader` (Couche 02) : mesure flux net
+  journalier CO2/CH4 avec bruit gaussien. Sous-flux RNG
+  `"eddy-tower"`.
+- Nouveau `SoilCarbonIndicator` (Couche 04) + `RC_SoilCarbonStock`
+  (Data/RuntimeContainers).
+- Affichage dans onglet Climat & Ressources (cf ADR #54).
+- Panneau d'inspection EddyTower (cf ADR #53) : graphe flux journalier
+  + stock cumulé.
+- 4-5 tests EditMode.
+
+**Raison** : brancher EddyTower renforce massivement la défensibilité
+scientifique (sujet « 4 pour 1000 » INRAE, marchés volontaires CO2,
+Label Bas-Carbone). Un sprite capteur sans réalité dans le modèle est
+une violation visible du principe primauté du capteur, anti-portfolio.
+
+**Conséquence opérationnelle** : chantier E3 de la nouvelle
+`ROADMAP.md`. Sources : Solagro Afterres 2050, INRAE 4 pour 1000,
+Efese services écosystémiques, BDAT. Estimation 10-14 h (incluant
+panneau inspection EddyTower).
+
+**Alternative écartée** : retirer le sprite EddyTower — résout le
+problème de cohérence visuelle/code mais perd un argument
+scientifique majeur du DT.
+
+---
+
+### 49. Faune visible — 4 espèces en pool avec animations frame-swap
+
+**Contexte** : sans faune visible, l'indice `RC_BiodiversityComposite`
+reste un chiffre abstrait. La disparition des espèces quand la biodiv
+chute est le signal pédagogique central du sujet bocage. Items
+BACKLOG #1 + #2 reportés depuis l'Étape 9. Ébauches de sprites déjà
+disponibles dans `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`
+(4 espèces × 3-4 frames partiellement présents).
+
+**Décision** : implémenter le pool de 4 espèces visibles (héron,
+chouette, busard, hirondelle) avec animations frame-swap, courbes de
+réponse sur la biodiv.
+
+Implications mécaniques :
+
+- `FaunaSpeciesDefinition.cs` : ScriptableObject par espèce avec
+  sprites, seuil d'apparition, position de spawn, pattern d'animation.
+- `FaunaPool.cs` (Couche 05) : object pooling sans Instantiate runtime
+  (CLAUDE.md §6 conforme).
+- `FaunaIdleMotion.cs` (Couche 05) : animation frame-swap simple
+  (cycle de 3-4 frames).
+- `FaunaPoolBinding.cs` (Couche 05) : observe
+  `RC_BiodiversityComposite` + `RC_FaunaFactor*` (cf ADR #51) →
+  spawn/despawn espèces selon courbes de réponse.
+- Crunch DXT5 conditionnel sur les nouveaux sprites (cf décision
+  conditionnelle dans `docs/ROADMAP.md` chantier E7).
+- Pas de modulation `_HealthT` sur faune (item BACKLOG #3 supprimé
+  définitivement, hors MVP).
+
+**Raison** : la faune visible est l'élément qui transforme un
+dashboard d'indicateurs en un digital twin vivant. Sans elle, la
+chaîne pédagogique « intrants ↑ → biodiv ↓ → faune disparaît » reste
+abstraite. Sprites ébauchés sans intégration = goût d'inachevé
+explicitement refusé par §17.
+
+**Conséquence opérationnelle** : chantier E4 de la nouvelle
+`ROADMAP.md`. Sources : ZNIEFF Perche, ONF, PNR du Perche pour
+bestiaire et seuils. Estimation 10-13 h (sprites déjà ébauchés,
+corrections finales à charge utilisateur).
+
+**Alternative écartée** : reporter la faune en post-MVP — viole le
+principe directeur §17.
+
+---
+
+### 50. Capital d'investissement + horizon de rentabilité
+
+**Contexte** : `IntegratedProfitabilityIndicator` agrège revenus −
+coûts opérationnels + aides, sans notion de capital amortissable.
+L'action `PlantHedges` (manuel via ADR #47) est sans coût upfront
+représenté → arbitrage agriculteur faussé vers acceptation
+systématique. Item BACKLOG #9 attendait son tour. Pour un jury M1,
+c'est la critique facile : « votre modèle économique ignore le
+capital, c'est inutilisable en conseil agricole ».
+
+**Décision** : modéliser le capital d'investissement (sur PlantHedges
+uniquement, seule action avec coût upfront réel) et calculer
+l'horizon de rentabilité via shadow vs real.
+
+Implications mécaniques :
+
+- Champ `InvestmentCost` (€/ha) sur `IRecommendation` (calculé pour
+  `ManualPlantHedgesRecommendation` : densité plantée × prix au m
+  linéaire, source Réseau Haies 3-10 €/m).
+- Texte « Coût upfront estimé : X €/ha » affiché dans popup décision
+  (manuel).
+- Cumul `TotalInvestment` dans `DecisionJournal` (somme des
+  `InvestmentCost` des entrées appliquées).
+- Nouveau `InvestmentHorizonIndicator` (Couche 04) : calcul des
+  années pour récupérer l'investissement, basé sur divergence
+  rentabilité réel vs shadow.
+- Affichage : ligne « Horizon rentabilité : X ans » dans popup
+  décision et onglet Économie. « Non encore atteint » si pas atteint
+  dans la simulation.
+- Pour Irrigation et ReduceInputs manuels : `InvestmentCost = 0`
+  (action ponctuelle, coût intégré dans `InputCost`).
+
+**Raison** : la thèse centrale du DT est « convergence honnête éco/
+écolo ». Sans capital, planter est gratuit, donc trivial à accepter,
+et la thèse est faussée. L'horizon rentabilité est l'argument décisif
+d'un agriculteur réel — standard du métier (Chambre d'agriculture,
+référentiel MAEC).
+
+**Conséquence opérationnelle** : chantier E5 (groupé avec ADR #51).
+Sources : Réseau Haies de France, MAEC référentiel coûts plantation,
+FranceAgriMer prix blé/lait, Chambre d'agriculture. Estimation 6-8 h.
+
+**Alternative écartée** : reporter en post-MVP — perd la critique
+anticipable du jury M1.
+
+---
+
+### 51. Biodiv enrichie — exposition de 3 facteurs (refonte minimale)
+
+**Contexte** : `BiodiversityCompositeIndicator` agrège 50 % fauna +
+30 % hedge + 20 % water inverse, pondérations auto-justifiées sans
+citation précise. Item BACKLOG #15 (refonte biodiv) attendait son
+tour. Compromis MVP : ajouter un 4ème facteur « Diversité paysage »
+demanderait 2 nouveaux sliders scenario (`GrasslandPercent`,
+`CropDiversityIndex`) → complexité ajoutée.
+
+**Décision** : refonte limitée — pas de 4ème facteur dans le MVP.
+Exposition individuelle des 3 facteurs actuels (habitat, eau,
+intrants) via des `RC_*` distincts pour affichage onglet Biodiv.
+Recalibration des pondérations. Ajout d'effets faibles sourcés depuis
+météo journalière (canicule) et carbone sol.
+
+Implications mécaniques :
+
+- `FaunaDynamicsRule` (Couche 01) refondue : 3 facteurs (habitat, eau,
+  intrants) calculés explicitement, exposés via `RC_FaunaFactorHabitat`,
+  `RC_FaunaFactorWater`, `RC_FaunaFactorInputs`.
+- Ajout d'un effet faible météo journalière (canicule) sur fauna :
+  pénalité au-delà de seuil T° quotidien (sourcé Hallmann 2017).
+- Ajout d'un effet faible carbone sol sur fauna : bonus si stock
+  C > seuil (sols vivants = plus de macrofaune).
+- Recalibration des pondérations du `BiodiversityCompositeIndicator`
+  sur base littérature (Vigie-Nature, Hallmann 2017, MNHN 2024).
+- 3 lignes affichables dans onglet Biodiv (cf ADR #54).
+
+**Raison** : compromis raisonnable. 3 lignes affichables,
+scientifiquement défendable, sans complexité ajoutée des nouveaux
+sliders scenario qui auraient demandé un retravail UI scenario panel.
+
+**Conséquence opérationnelle** : chantier E5 (groupé avec ADR #50).
+Sources : INRAE Vigie-Nature, Constant et al. 1976 (Réseau Haies),
+Hallmann et al. 2017 (Krefeld), MNHN 2024. Estimation 6-8 h. Partie
+reportée en BACKLOG (4ème facteur Diversité paysage).
+
+**Alternative écartée** : refonte complète avec 4ème facteur +
+2 sliders — coût plus élevé sans gain MVP critique.
+
+---
+
+### 52. Saisonnalité + WeatherStation chaîne complète
+
+**Contexte** : `WeatherUpdateRule` tire chaque jour autour de moyennes
+annuelles fixes (12 °C, 2 mm/jour), sans cycle saisonnier. Le jour 1
+et le jour 180 ont la même distribution météo. Item BACKLOG #12
+attendait son tour. Manque scientifique le plus visible aux yeux
+d'un agroécologue. Sprite WeatherStation présent depuis 6c sans
+Reader formel. Audit recadrage : double problème (modèle + chaîne
+capteur incomplète) résoluble d'un coup.
+
+**Décision** : implémenter Piste J intégrale — saisonnalité avec
+données mensuelles Météo-France (station Mortagne-au-Perche 61,
+normales 1991-2020), modèle stochastique Niveau 3 (chaîne de Markov
+ON/OFF pour pluie + log-normale intensité), WeatherStation comme
+capteur de mesure pure bout-en-bout.
+
+Implications mécaniques :
+
+- `SeasonalWeatherDataAsset.cs` (Couche 01) : ScriptableObject avec
+  12 valeurs T° + 12 valeurs précip + paramètres Markov mensuels
+  (p_wet, mu, sigma).
+- Refonte `WeatherUpdateRule` : lit le mois courant + anomalies
+  scenario + tire Bernoulli(p_wet[mois]) puis LogNormal(mu[mois],
+  sigma[mois]) si pluvieux + bruit gaussien T° (σ = 2 °C). Sous-flux
+  RNG `"markov-rain"` et `"weather-noise"`.
+- Widget « Mois de démarrage » (combo Jan-Déc) dans section
+  « Conditions initiales ».
+- `WeatherStationReader` (Couche 02) : mesure pure T° + précip avec
+  bruit gaussien. Pas d'événement, pas de reco — lecture pure
+  (option a actée).
+- Cascade saisonnière gratuite : `WaterTableDynamicsRule`,
+  `HedgerowGrowthRule`, `FaunaDynamicsRule` deviennent saisonnières
+  via leurs inputs (water table notamment).
+- Extension `CropYieldDynamicsRule` + `InputCostDynamicsRule` à la
+  météo journalière (option a) : ajout d'un terme dépendant de la
+  météo réelle (canicule WeatherStation → effet direct économique).
+- Panneau « Normales climatiques mois courant + suivant » intégré au
+  panneau inspection WeatherStation (cf ADR #53).
+- Crises saisonnières (canicule, inondation) et effets visuels
+  saisonniers (ciel, prairie) en BACKLOG hors MVP.
+
+**Raison** : sans saisonnalité, le DT est défendable en démonstration
+technique mais inattaquable scientifiquement par un agroécologue.
+WeatherStation sans Reader formel viole le principe primauté du
+capteur. Résolution conjointe = haute valeur portfolio.
+
+**Conséquence opérationnelle** : chantier E2 de la nouvelle
+`ROADMAP.md`. Sources : Météo-France normales 1991-2020 station
+Mortagne-au-Perche (61), INRAE échelle BBCH, ARVALIS Eure-et-Loir.
+Estimation 16-22 h (16 h base + 3 h extension CropYield/InputCost +
+6-10 h niveau 3 Markov).
+
+**Alternative écartée** : saisonnalité moyennes annuelles + bruit
+seul (sans Markov) — moins défendable scientifiquement, le gain de
+complexité du Markov est modeste pour un bénéfice élevé en jury.
+
+---
+
+### 53. Panneau d'inspection des capteurs cliquables
+
+**Contexte** : les 5 capteurs sont visibles en scène mais ne révèlent
+leurs mesures que via les indicateurs Hero ou Niveau B agrégés. Aucun
+moyen d'inspecter directement un capteur, de voir sa série de mesures,
+de comprendre l'incertitude (acoustique fragile à faible densité par
+exemple).
+
+**Décision** : les 5 capteurs deviennent cliquables. Un panneau
+d'inspection s'ouvre au clic, avec un contenu spécifique par capteur
+(graphes des mesures historiques vs références).
+
+Contenu par capteur :
+
+| Capteur | Contenu du panneau au clic |
+|---|---|
+| Piezometer | Graphe profondeur nappe 365 j + 2 seuils (3,5 m alerte drought, 5 m critique) + compteur « jours consécutifs > 3,5 m ». |
+| WeatherStation | 2 graphes superposés : T° journalière vs normale mensuelle, précip journalière vs normale mensuelle. Affichage normales mois courant et suivant. |
+| AcousticSensor | Graphe abondance mesurée (bruitée) vs vraie abondance (modèle). Visualise l'incertitude — pédagogie acoustique fragile à faible densité. |
+| CameraTrap | Idem AcousticSensor. Permet de comprendre la fusion via `FaunaSensorReader`. |
+| EddyTower | Graphe flux journalier CO2/CH4 + stock C cumulé (cf ADR #48). |
+
+Implications mécaniques :
+
+- Détection clic sur sprite 2D : `Collider2D` + `IPointerClickHandler`
+  via Unity EventSystem + `Physics2DRaycaster` sur la caméra.
+- Stockage sliding window 365 j dans chaque `*SensorReader`
+  (mutualisé via interface `ISensorHistory<T>`, partagé avec ADR #54
+  onglets).
+- Composant `SensorInspectorPanel.uxml` (UXML + USS) réutilisable, se
+  reconfigure selon le capteur cliqué.
+- Composant graphe custom en `VisualElement` avec
+  `generateVisualContent` callback.
+- Fermeture : clic dehors, touche Échap, bouton fermer.
+- Nouveau binding `SensorInspectorPanelBinding` (Couche 05).
+
+**Raison** : transforme les capteurs de « décor instrumenté » en
+« interfaces d'inspection », aligné avec l'identité station
+d'observation du DT. Permet à un visiteur portfolio de comprendre
+l'incertitude de mesure en 2 clics, signal de maturité scientifique.
+
+**Conséquence opérationnelle** : chantier E6 (groupé avec ADR #54).
+Estimation 12-21 h (4-6 h système générique + 3-5 h graphe custom +
+5-10 h contenus 5 capteurs).
+
+**Alternative écartée** : afficher les séries de mesure dans un onglet
+dédié — moins direct, casse la spatialité du DT.
+
+---
+
+### 54. 3 onglets Niveau B tous remplis
+
+**Contexte** : les 3 panneaux Niveau B (Biodiversité, Climat &
+Ressources, Économie) sont en place depuis l'Étape 6b mais largement
+remplis de placeholders « à venir ». Friction visible : structure UI
+riche, contenu pauvre.
+
+**Décision** : les 3 onglets Niveau B sont tous remplis avec des
+sous-indicateurs riches utilisant les variables existantes + nouvelles
+(saisonnalité, carbone sol, faune visible, capital, biodiv 3 facteurs).
+
+Contenu détaillé par onglet :
+
+**Biodiversité** :
+
+| Ligne | Variable source |
+|---|---|
+| Indice composite | `BiodiversityCompositeIndicator` |
+| Composante habitat (haies) | `RC_FaunaFactorHabitat` (nouveau via ADR #51) |
+| Composante eau | `RC_FaunaFactorWater` (nouveau via ADR #51) |
+| Composante intrants | `RC_FaunaFactorInputs` (nouveau via ADR #51) |
+| Comptage espèces visibles | dérivé de `FaunaPool` (nouveau via ADR #49) |
+
+**Climat & Ressources** :
+
+| Ligne | Variable source |
+|---|---|
+| Profondeur nappe | `WaterTableDepth` (déjà) |
+| T° moyenne 365 j glissants | `CurrentWeather` history (nouveau via ADR #52) |
+| Précipitations cumulées 365 j glissants | `CurrentWeather` history (nouveau via ADR #52) |
+| Stock carbone sol | `SoilCarbonStock` (nouveau via ADR #48) |
+| Flux net CO2/CH4 | `EddyTowerSensorReader` history (nouveau via ADR #48) |
+
+**Économie** :
+
+| Ligne | Variable source |
+|---|---|
+| Rendement cultures | `CropYield` (déjà) |
+| Coût intrants | `InputCost` (déjà) |
+| Coût entretien haies | `MaintenanceCost` (déjà) |
+| Paiement PSE | calculé (déjà) |
+| Paiement PAC (DPB + redistributif + écorégime + bonus haies) | constantes (déjà) |
+| Investissement cumulé | `journal.TotalInvestment` (nouveau via ADR #50) |
+| Horizon rentabilité | `InvestmentHorizonIndicator` (nouveau via ADR #50) |
+
+Implications mécaniques :
+
+- Nouveaux bindings : `OngletBiodivBinding`, `OngletClimatBinding`,
+  `OngletEconomieBinding` (Couche 05).
+- Sliding windows 365 j pour `CurrentWeather` history et `EddyTower`
+  flux history mutualisées avec celles d'ADR #53.
+- USS / UXML existants des onglets à enrichir.
+
+**Raison** : avec toutes les pistes activées (E2-E5), on a précisément
+créé les variables qui remplissent ces onglets. Les retirer serait
+gâcher le bénéfice des décisions précédentes. Aligné avec principe
+directeur §17 « tout onglet présent doit afficher de l'info utile ».
+
+**Conséquence opérationnelle** : chantier E6 (groupé avec ADR #53).
+Estimation 10-12 h.
+
+**Alternative écartée** : remplir partiellement avec les variables
+existantes seulement — résultat : 3 onglets affichant 2-3 lignes
+chacun, goût d'inachevé refusé par §17.
+
+---
+
+### 55. Pattern rationale uniforme (action concrète + Effet modélisé)
+
+**Contexte** : 3 propositions de wording précédentes pour les recos
+avaient été rejetées car elles évoquaient des effets non modélisés
+(auxiliaires, brise-vent secondaire, résilience générale). Le
+`RecommendationPopupBinding` actuel affiche des rationales
+hétérogènes selon l'origine de la reco.
+
+**Décision** : adopter un pattern uniforme de rédaction des rationales
+pour toutes les recommandations (manuelles ET auto). Format : Title
+court (verbe + objet) + Rationale = phrase d'action concrète + ligne
+`Effet modélisé : ...` chiffrée sur les variables effectivement
+touchées. Pas d'envolée, pas de chimères non modélisées.
+
+Wordings exacts pour actions manuelles :
+
+| Reco | Title | Rationale |
+|---|---|---|
+| `manual-plant-hedges` | Planter des linéaires de haies | Plantation d'essences sur bordures de parcelles. Effet modélisé : +X m/ha de densité de haies, +Y €/ha/an de coût d'entretien proportionnel. |
+| `manual-irrigation` | Irrigation ponctuelle | Apport d'eau ciblé sur 30 jours. Effet modélisé : remontée temporaire de la nappe phréatique de X m (plancher 0,5 m). |
+| `manual-reduce-inputs` | Baisser l'intensité d'intrants | Réduction des intrants chimiques sur 30 jours. Effet modélisé : +Y de population faune, −Z €/ha de coût d'intrants. |
+
+X, Y, Z = valeurs paramétrées par le slider de magnitude au moment du
+clic.
+
+Uniformisation des recos auto (option α actée) : appliquer le même
+pattern aux 2 recos auto existantes, en ajoutant une ligne
+`Déclenché par : <événement>` en plus :
+
+- `IrrigationAdviceRecommendation` (auto) : Title « Irrigation ciblée
+  + couvert anti-évaporation » ; Rationale « Apport d'eau ciblé +
+  couverts sur 30 jours. Effet modélisé : ... Déclenché par :
+  Sécheresse prolongée détectée par le piézomètre. »
+- `ReduceInputsRecommendation` (auto) : Title « Baisser l'intensité
+  d'intrants » ; Rationale « Réduction des intrants chimiques sur
+  30 jours. Effet modélisé : ... Déclenché par : Anomalie acoustique
+  faune détectée par le capteur acoustique. »
+
+**Raison** : la ligne `Effet modélisé : ...` indique explicitement
+les limites du modèle — discipline qu'on revendique partout. Format
+uniforme = lecture immédiate par le visiteur, et garde-fou contre
+les chimères non modélisées.
+
+**Conséquence opérationnelle** : chantier E1 (couplé refactor actions
+manuelles ADR #47). Réécriture libellés. Estimation incluse dans E1.
+
+**Alternative écartée** : rationales libres au gré des recos — perd
+l'uniformité et risque la mention d'effets non modélisés.
+
+---
+
+### 56. Suppression de la stratégie de coupe pré-décidée
+
+**Contexte** : section §17 historique de `CLAUDE.md` listait un ordre
+de coupe (décision moyenne → suppression healthT → réduction tests →
+réduction sprites → ne pas couper architecture). Audit recadrage :
+le scope est verrouillé par cette session (cf ADR #45), le slack
+budget est confortable (~30-65 h sur cible 150 h), les dépassements
+historiques étaient liés à des pivots de scope (maintenant interdits
+par discipline §18 règle 2), pas à de mauvaises estimations.
+
+**Décision** : la section §17 « stratégie de coupe finale » de
+`CLAUDE.md` est supprimée. Pas de stratégie de coupe pré-décidée.
+Si on dépasse 150 h, l'utilisateur arbitre au cas par cas en
+cohérence avec le principe directeur.
+
+**Raison** : cohérent avec la règle « compléter ou supprimer » (§18
+règle 8) — on choisit de ne pas avoir cette mécanique plutôt que d'en
+avoir une à moitié. Avoir une stratégie de coupe documentée alors
+qu'on ne compte pas l'utiliser invite à l'auto-justification de
+raccourcis.
+
+**Conséquence opérationnelle** : §17 supprimé dans `CLAUDE.md`,
+remplacé par §17 Scope MVP + §18 Discipline. §18 En cas de doute
+renuméroté en §19.
+
+**Alternative écartée** : conserver une stratégie de coupe « au cas
+où » — contredit le scope verrouillé et le principe directeur.
