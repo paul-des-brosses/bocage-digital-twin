@@ -516,14 +516,63 @@ ADR #44), fix code livré au commit `3253a96` :
   230 → 220 €/ha avec décomposition DPB + redistributif + écorégime
   base (Légifrance + Leandri Conseils 2025).
 
-**Sub-étape 10b-perf — Optimisation et build WebGL** : à faire.
+**Sub-étape 10b-perf — Optimisation et build WebGL** : 🟠 en cours, premier build CI déclenché.
 
-- Vérifier la conformité aux contraintes perf (CLAUDE.md §7) :
-  IL2CPP, stripping High, Brotli, ASTC/Crunched DXT, pas de MSAA,
-  pas de DoF, pas de threads.
-- Mesurer : taille build < 30 MB compressé, TTI < 10 s sur connexion
-  résidentielle, 60 FPS stable desktop.
-- Couper si dépassement, dans l'ordre de `CLAUDE.md` §17.
+**Réglages appliqués (commit `02ae27e`)** :
+- `ProjectSettings/ProjectSettings.asset` :
+  - `webGLCompressionFormat: 1` (Brotli activé, cohérent avec
+    `CIBuilder.cs` qui le re-force au build).
+  - `managedStrippingLevel.WebGL: 3` (stripping High pour WebGL).
+- `Assets/Settings/UniversalRP.asset` :
+  - `m_SupportsHDR: 0` (économie ~16 MB RAM GPU sur buffers FP16).
+  - `m_MainLightShadowsSupported: 0` (libère l'atlas shadow 2048×2048).
+  - `m_SupportsTerrainHoles: 0` (élimine variantes shader inutiles).
+
+**Réglages NON appliqués** (nécessitent l'onglet Web dans Player
+Settings, qui exige le module **WebGL Build Support** installé en
+local — actuellement non installé sur la machine de dev courante) :
+- Player Settings → Web → Default Texture Compression Format = `DXTC`.
+- Crunch Compression `DXT5 Crunched` Quality 50 sur les ~25 sprites
+  existants via Override for Web (cf `docs/ASSETS_LIST.md §6 étape 7`).
+- Estimation du gain Crunch : ÷3 à ÷4 sur la part textures, soit
+  environ −4 MB sur le build final.
+
+**Pipeline CI/CD en place** (mis en place sur une autre machine au
+début du projet, validé encore actif) :
+- `.github/workflows/build-deploy.yml` — build Unity 6000.4.4f1 +
+  module webgl + Personal license (secrets `UNITY_EMAIL`,
+  `UNITY_PASSWORD` configurés).
+- `Assets/_Project/Editor/CIBuilder.cs` — exécute le build, force
+  Brotli + decompression fallback (le commentaire dans le code
+  documente que GitHub Pages NE sert PAS correctement le header
+  `Content-Encoding: br` → le fallback est obligatoire, c'est la
+  raison pour laquelle l'item P2 « désactiver le fallback » a été
+  écarté de l'audit).
+- Déploiement direct vers GitHub Pages via `actions/deploy-pages@v4`
+  (pas de branche `gh-pages` séparée).
+- URL publique attendue : `https://paul-des-brosses.github.io/bocage-digital-twin/`.
+
+**Action en attente — mesure de la build CI** :
+
+Quand le workflow `Build & Deploy` du push `02e2992..02ae27e` est
+terminé sur GitHub Actions :
+1. Lire la sortie de l'étape `Show build output` (commande `du -sh`)
+   pour la taille brute du dossier `build/WebGL` côté runner.
+2. Visiter l'URL Pages, F12 → Network → Disable cache → F5 → mesurer
+   la taille DL totale + le Time-to-Interactive.
+3. Lancer la simu à ×20 pendant 60 s → vérifier la stabilité 60 FPS.
+
+**Décision conditionnelle sur la base des mesures** :
+- Si taille ≤ 30 MB → 10b-perf livré, on enchaîne sur 10c. Le Crunch
+  des sprites reste un TODO documenté (`docs/ASSETS_LIST.md` +
+  `docs/WEBGL_GOTCHAS.md` + `CLAUDE.md` §13) à appliquer le jour où
+  on ajoute beaucoup de sprites.
+- Si 30 < taille ≤ 35 MB → installer module WebGL Build Support
+  local (~10 min via Unity Hub > Installs > Add modules), faire le
+  Crunch sur les sprites (~10 min batch via multi-sélection), push,
+  remesurer.
+- Si taille > 35 MB → investiguer la cause via Build Report Inspector
+  (Window > Analysis), corriger, push, remesurer.
 
 **Sub-étape 10c — Polish UI léger (pas visuel)**
 
@@ -532,14 +581,19 @@ ADR #44), fix code livré au commit `3253a96` :
   rien en redimensionnement.
 - Pas d'animation UI complexe (cf `BACKLOG.md` item 7).
 
-**Sub-étape 10d — README + déploiement GitHub Pages**
+**Sub-étape 10d — README + déploiement GitHub Pages** : 🟡 partiellement fait.
 
-- Workflow GitHub Actions (`game-ci/unity-builder`) qui build et
-  déploie sur la branche `gh-pages`.
-- README finalisé : démo link, GIF hero (capture 10–15 s du DT en
-  action), 2–3 screenshots, schéma d'architecture des 5 couches,
-  liens vers `BACKLOG.md` et `DECISIONS.md`.
-- Premier push de la démo en public.
+- ✅ Workflow GitHub Actions opérationnel
+  (`.github/workflows/build-deploy.yml`, buildalon/unity-setup +
+  buildalon/unity-action). Note : utilise buildalon plutôt que
+  game-ci comme initialement prévu — choix fait au début du projet
+  sur l'autre machine.
+- ✅ Déploiement automatique vers GitHub Pages à chaque push sur
+  `main`. Secrets `UNITY_EMAIL` et `UNITY_PASSWORD` en place.
+- ⏳ **À faire — README finalisé** : remplacer les placeholders
+  `[TODO: live demo link]` et `[TODO: hero GIF or screenshot]` du
+  README par la vraie URL Pages (`https://paul-des-brosses.github.io/bocage-digital-twin/`)
+  et un GIF capture 10-15 s du DT en action + 2-3 screenshots.
 
 **Sub-étape 10e — Audit final**
 
