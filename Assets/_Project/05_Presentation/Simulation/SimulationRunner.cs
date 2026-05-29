@@ -347,7 +347,7 @@ namespace Bocage.Presentation.Simulation
             if (_engine == null || _engine.Model == null) return;
             double magnitude = metersPerHectare < 0 ? 0 : metersPerHectare;
             _manualPlantHedgesSeq++;
-            var rec = PlantHedgesRecommendation.Manual(_currentDay, _manualPlantHedgesSeq);
+            var rec = PlantHedgesRecommendation.Manual(_currentDay, _manualPlantHedgesSeq, magnitude);
             _decisionJournal.Append(rec, _currentDay, magnitude);
             AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();
@@ -366,7 +366,7 @@ namespace Bocage.Presentation.Simulation
             if (_engine == null || _engine.Model == null) return;
             double magnitude = depthMeters < 0 ? 0 : depthMeters;
             _manualIrrigationSeq++;
-            var rec = IrrigationAdviceRecommendation.Manual(_currentDay, _manualIrrigationSeq);
+            var rec = IrrigationAdviceRecommendation.Manual(_currentDay, _manualIrrigationSeq, magnitude);
             _decisionJournal.Append(rec, _currentDay, magnitude);
             AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();
@@ -385,7 +385,7 @@ namespace Bocage.Presentation.Simulation
             if (_engine == null || _engine.Model == null) return;
             double magnitude = intensityCut < 0 ? 0 : intensityCut;
             _manualReduceInputsSeq++;
-            var rec = ReduceInputsRecommendation.Manual(_currentDay, _manualReduceInputsSeq);
+            var rec = ReduceInputsRecommendation.Manual(_currentDay, _manualReduceInputsSeq, magnitude);
             _decisionJournal.Append(rec, _currentDay, magnitude);
             AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();

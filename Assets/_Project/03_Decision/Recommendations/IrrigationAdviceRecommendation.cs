@@ -1,60 +1,87 @@
+using System.Globalization;
+
 namespace Bocage.Decision.Recommendations
 {
     /// <summary>
     /// Suggests deploying targeted irrigation / soil-cover practices in
-    /// response to a prolonged drought event. In the simplified bocage
-    /// model the action's mechanical effect is a one-off injection on
-    /// the water table (mulching + soil cover reduce evaporation;
-    /// targeted irrigation supplies the missing rainfall).
-    /// <para>
-    /// Source: Chambre d'agriculture Normandie drought protocol, RMT
-    /// Sols et Territoires recommendations on cover-cropping under
-    /// water stress.
-    /// </para>
-    /// <para>
-    /// Mechanical effect when accepted (sub-étape 8c.3 AutoAction):
-    /// reduces <c>WaterTableDepth</c> by
-    /// <see cref="WaterReliefDepthMeters"/> over a 30-day window.
-    /// </para>
+    /// response to a prolonged drought event. ADR #55 pattern uniforme :
+    /// Title court, rationale d'action concrète, ligne « Effet
+    /// modélisé : ... », et pour la voie auto une ligne supplémentaire
+    /// « Déclenché par : ... ». Two wordings coexist on this class :
+    /// auto recommendation issued by <c>RecommendationEngine</c> on a
+    /// drought event, and manual button click (ADR #47 pathway).
     /// </summary>
     public sealed class IrrigationAdviceRecommendation : IRecommendation
     {
         public const double WaterReliefDepthMeters = 1.5;
+        public const double WaterTableFloorMeters = 0.5;
+        private static readonly CultureInfo FrFr = CultureInfo.GetCultureInfo("fr-FR");
 
         public string Id { get; }
-        public string Title => "Irrigation ciblée + couvert anti-évaporation";
-        public string Rationale => "Sécheresse prolongée — apport eau et couverts pour relâcher la pression hydrique sur 30 jours.";
+        public string Title { get; }
+        public string Rationale { get; }
         public int IssuedOnDay { get; }
         public string TriggeredByEventId { get; }
         public DecisionVerdict DefaultVerdict { get; }
 
         public IrrigationAdviceRecommendation(int issuedOnDay, string triggeredByEventId)
-            : this("irrigation-advice#" + issuedOnDay, issuedOnDay, triggeredByEventId, DecisionVerdict.Pending)
+            : this(
+                id: "irrigation-advice#" + issuedOnDay,
+                title: "Irrigation ciblée + couvert anti-évaporation",
+                rationale: FormatAutoRationale(WaterReliefDepthMeters),
+                issuedOnDay: issuedOnDay,
+                triggeredByEventId: triggeredByEventId,
+                defaultVerdict: DecisionVerdict.Pending)
         {
         }
 
-        private IrrigationAdviceRecommendation(string id, int issuedOnDay, string triggeredByEventId, DecisionVerdict defaultVerdict)
+        private IrrigationAdviceRecommendation(string id, string title, string rationale,
+            int issuedOnDay, string triggeredByEventId, DecisionVerdict defaultVerdict)
         {
             Id = id;
+            Title = title;
+            Rationale = rationale;
             IssuedOnDay = issuedOnDay;
             TriggeredByEventId = triggeredByEventId;
             DefaultVerdict = defaultVerdict;
         }
 
         /// <summary>
-        /// Manual-pathway factory (ADR #47). Ships as
-        /// <see cref="DecisionVerdict.AutoAccepted"/> for the user's
-        /// « Irrigation ponctuelle » button click. See
-        /// <see cref="PlantHedgesRecommendation.Manual"/> for the
-        /// sequence-disambiguation contract.
+        /// Manual-pathway factory (ADR #47). Used when the user clicks
+        /// « Irrigation ponctuelle » with a chosen depth magnitude.
         /// </summary>
-        public static IrrigationAdviceRecommendation Manual(int day, int sequence)
+        public static IrrigationAdviceRecommendation Manual(int day, int sequence, double magnitude)
         {
             return new IrrigationAdviceRecommendation(
                 id: "manual-irrigation#" + day + "-" + sequence,
+                title: "Irrigation ponctuelle",
+                rationale: FormatManualRationale(magnitude),
                 issuedOnDay: day,
                 triggeredByEventId: null,
                 defaultVerdict: DecisionVerdict.AutoAccepted);
+        }
+
+        /// <summary>
+        /// ADR #55 auto wording : action concrète + Effet modélisé +
+        /// ligne Déclenché par (anchor capteur).
+        /// </summary>
+        public static string FormatAutoRationale(double magnitude)
+        {
+            return "Apport d'eau ciblé + couverts anti-évaporation sur 30 jours. "
+                 + "Effet modélisé : remontée temporaire de la nappe phréatique de "
+                 + magnitude.ToString("F2", FrFr) + " m (plancher " + WaterTableFloorMeters.ToString("F1", FrFr) + " m). "
+                 + "Déclenché par : Sécheresse prolongée détectée par le piézomètre.";
+        }
+
+        /// <summary>
+        /// ADR #55 manual wording : action concrète + Effet modélisé,
+        /// sans ligne Déclenché par (l'utilisateur est l'initiateur).
+        /// </summary>
+        public static string FormatManualRationale(double magnitude)
+        {
+            return "Apport d'eau ciblé sur 30 jours. "
+                 + "Effet modélisé : remontée temporaire de la nappe phréatique de "
+                 + magnitude.ToString("F2", FrFr) + " m (plancher " + WaterTableFloorMeters.ToString("F1", FrFr) + " m).";
         }
     }
 }
