@@ -42,37 +42,16 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void Recent_chalara_applies_penalty()
+        public void Recent_drought_applies_penalty()
         {
             var model = BuildModel(hedgerowDensity: 90.0, currentDay: 30);
             var log = new EventLog();
-            log.Append(new HedgeChalaraEvent(detectedOnDay: 20, hedgerowDensityMetersPerHectare: 70.0));
+            log.Append(new DroughtProlongedEvent(detectedOnDay: 20, waterTableDepthMeters: 4.0, consecutiveDryDays: 35));
 
             double baseline = HedgerowDensityIndicator.Normalize(model.HedgerowDensity);
             double withEvent = HedgerowHealthIndicator.Compute(model, log);
 
-            Assert.AreEqual(baseline - HedgerowHealthIndicator.ChalaraPenalty, withEvent, 1e-9);
-        }
-
-        [Test]
-        public void Recent_drought_applies_smaller_penalty_than_chalara()
-        {
-            var modelD = BuildModel(hedgerowDensity: 90.0, currentDay: 30);
-            var modelC = BuildModel(hedgerowDensity: 90.0, currentDay: 30);
-
-            var logD = new EventLog();
-            logD.Append(new DroughtProlongedEvent(detectedOnDay: 20, waterTableDepthMeters: 4.0, consecutiveDryDays: 35));
-
-            var logC = new EventLog();
-            logC.Append(new HedgeChalaraEvent(detectedOnDay: 20, hedgerowDensityMetersPerHectare: 70.0));
-
-            double droughtHealth = HedgerowHealthIndicator.Compute(modelD, logD);
-            double chalaraHealth = HedgerowHealthIndicator.Compute(modelC, logC);
-
-            // Chalara is the chronic structural loss; its penalty must
-            // be strictly larger so the visual output matches the
-            // calibration narrative (cf XMLdoc).
-            Assert.Greater(droughtHealth, chalaraHealth);
+            Assert.AreEqual(baseline - HedgerowHealthIndicator.DroughtPenalty, withEvent, 1e-9);
         }
 
         [Test]
@@ -82,7 +61,7 @@ namespace Bocage.Tests.EditMode
             // that is now on day 200 is well outside.
             var model = BuildModel(hedgerowDensity: 90.0, currentDay: 200);
             var log = new EventLog();
-            log.Append(new HedgeChalaraEvent(detectedOnDay: 5, hedgerowDensityMetersPerHectare: 70.0));
+            log.Append(new DroughtProlongedEvent(detectedOnDay: 5, waterTableDepthMeters: 4.0, consecutiveDryDays: 35));
 
             double baseline = HedgerowDensityIndicator.Normalize(model.HedgerowDensity);
             double withOldEvent = HedgerowHealthIndicator.Compute(model, log);
@@ -91,13 +70,12 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void Combined_events_clamp_to_zero_on_sparse_hedges()
+        public void Drought_event_clamps_to_zero_on_sparse_hedges()
         {
-            // Density baseline near 0 + both penalties pushes the raw
+            // Density baseline near 0 + drought penalty pushes the raw
             // result negative; the indicator must clamp.
             var model = BuildModel(hedgerowDensity: HedgerowDensityIndicator.MinMetersPerHectare, currentDay: 30);
             var log = new EventLog();
-            log.Append(new HedgeChalaraEvent(detectedOnDay: 25, hedgerowDensityMetersPerHectare: 40.0));
             log.Append(new DroughtProlongedEvent(detectedOnDay: 27, waterTableDepthMeters: 4.5, consecutiveDryDays: 30));
 
             double health = HedgerowHealthIndicator.Compute(model, log);

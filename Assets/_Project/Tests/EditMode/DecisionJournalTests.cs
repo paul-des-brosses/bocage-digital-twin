@@ -23,9 +23,9 @@ namespace Bocage.Tests.EditMode
         public void Append_dedups_by_triggering_event_id()
         {
             var journal = new DecisionJournal();
-            var rec1 = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "hedge-chalara#28");
+            var rec1 = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "manual#28");
             // Same event id, different rec instance → should be rejected.
-            var rec2 = new PlantHedgesRecommendation(issuedOnDay: 29, triggeredByEventId: "hedge-chalara#28");
+            var rec2 = new PlantHedgesRecommendation(issuedOnDay: 29, triggeredByEventId: "manual#28");
 
             Assert.IsTrue(journal.Append(rec1, currentDay: 28));
             Assert.IsFalse(journal.Append(rec2, currentDay: 29));
@@ -36,8 +36,8 @@ namespace Bocage.Tests.EditMode
         public void Append_supersedes_previous_pending_of_same_type()
         {
             var journal = new DecisionJournal();
-            var first = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "hedge-chalara#28");
-            var second = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "hedge-chalara#58");
+            var first = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "manual#28");
+            var second = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "manual#58");
 
             journal.Append(first, currentDay: 28);
             journal.Append(second, currentDay: 58);
@@ -60,11 +60,11 @@ namespace Bocage.Tests.EditMode
             // be touched (it carries the magnitude applied to the
             // model), and the new one comes in as a fresh Pending.
             var journal = new DecisionJournal();
-            var accepted = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "hedge-chalara#28");
+            var accepted = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "manual#28");
             journal.Append(accepted, currentDay: 28);
             journal.SetVerdict(accepted.Id, DecisionVerdict.Accepted, currentDay: 28, appliedMagnitude: 30.0);
 
-            var fresh = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "hedge-chalara#58");
+            var fresh = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "manual#58");
             journal.Append(fresh, currentDay: 58);
 
             Assert.AreEqual(DecisionVerdict.Accepted, journal.Entries[0].Verdict);
@@ -80,11 +80,11 @@ namespace Bocage.Tests.EditMode
             // stay Rejected in the audit trail, and the new Pending
             // is added cleanly.
             var journal = new DecisionJournal();
-            var rejected = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "hedge-chalara#28");
+            var rejected = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "manual#28");
             journal.Append(rejected, currentDay: 28);
             journal.SetVerdict(rejected.Id, DecisionVerdict.Rejected, currentDay: 28);
 
-            var fresh = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "hedge-chalara#58");
+            var fresh = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "manual#58");
             journal.Append(fresh, currentDay: 58);
 
             Assert.AreEqual(DecisionVerdict.Rejected, journal.Entries[0].Verdict);
@@ -99,7 +99,7 @@ namespace Bocage.Tests.EditMode
             // are different types — both should stay Pending side by
             // side.
             var journal = new DecisionJournal();
-            var hedges = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "hedge-chalara#28");
+            var hedges = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "manual#28");
             var irrig = new IrrigationAdviceRecommendation(issuedOnDay: 35, triggeredByEventId: "drought-prolonged#35");
 
             journal.Append(hedges, currentDay: 28);
@@ -111,12 +111,13 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void Three_recos_same_type_supersede_in_chain()
         {
-            // Simulates a user repeatedly ignoring chalara recos over a
-            // long run: only the LATEST one ever shows in pending.
+            // Simulates a user repeatedly ignoring manual plant-hedges
+            // recos over a long run: only the LATEST one ever shows in
+            // pending.
             var journal = new DecisionJournal();
-            var r1 = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "hedge-chalara#28");
-            var r2 = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "hedge-chalara#58");
-            var r3 = new PlantHedgesRecommendation(issuedOnDay: 88, triggeredByEventId: "hedge-chalara#88");
+            var r1 = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: "manual#28");
+            var r2 = new PlantHedgesRecommendation(issuedOnDay: 58, triggeredByEventId: "manual#58");
+            var r3 = new PlantHedgesRecommendation(issuedOnDay: 88, triggeredByEventId: "manual#88");
 
             journal.Append(r1, 28);
             journal.Append(r2, 58);

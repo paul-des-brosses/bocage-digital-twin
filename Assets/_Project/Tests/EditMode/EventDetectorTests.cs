@@ -108,9 +108,7 @@ namespace Bocage.Tests.EditMode
         {
             var detector = new EventDetector();
             var log = new EventLog();
-            // Worst case: drought + fauna collapse. Hedge dieback is no
-            // longer flagged by the detector (sub-étape 10b — the chalara
-            // event is dormant pending backlog #16).
+            // Worst case: drought + fauna collapse.
             var model = new EcosystemModel(
                 initialWaterTableDepth: 7.0,
                 initialFaunaPopulation: 0.2);
@@ -121,14 +119,12 @@ namespace Bocage.Tests.EditMode
             // are in the log under cooldown.
             for (int i = 0; i < 30; i++) detector.Detect(model, log, 0.2);
 
-            int hedgeChalara = 0, drought = 0, fauna = 0;
+            int drought = 0, fauna = 0;
             foreach (var e in log.Events)
             {
-                if (e is HedgeChalaraEvent) hedgeChalara++;
                 if (e is DroughtProlongedEvent) drought++;
                 if (e is FaunaAcousticAnomalyEvent) fauna++;
             }
-            Assert.AreEqual(0, hedgeChalara, "Detector no longer emits chalara events (sub-étape 10b).");
             Assert.AreEqual(1, drought, "Exactly one drought event under cooldown.");
             Assert.AreEqual(1, fauna, "Exactly one fauna event under cooldown.");
         }
@@ -139,11 +135,11 @@ namespace Bocage.Tests.EditMode
         public void LatestOfType_returns_most_recent_match()
         {
             var log = new EventLog();
-            log.Append(new HedgeChalaraEvent(detectedOnDay: 10, hedgerowDensityMetersPerHectare: 55.0));
-            log.Append(new HedgeChalaraEvent(detectedOnDay: 100, hedgerowDensityMetersPerHectare: 40.0));
+            log.Append(new DroughtProlongedEvent(detectedOnDay: 10, waterTableDepthMeters: 4.0, consecutiveDryDays: 30));
+            log.Append(new DroughtProlongedEvent(detectedOnDay: 100, waterTableDepthMeters: 5.0, consecutiveDryDays: 45));
             log.Append(new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3));
 
-            var latest = log.LatestOfType<HedgeChalaraEvent>();
+            var latest = log.LatestOfType<DroughtProlongedEvent>();
             Assert.IsNotNull(latest);
             Assert.AreEqual(100, latest.DetectedOnDay);
         }
@@ -152,7 +148,7 @@ namespace Bocage.Tests.EditMode
         public void LatestOfType_returns_null_when_no_match()
         {
             var log = new EventLog();
-            log.Append(new HedgeChalaraEvent(detectedOnDay: 10, hedgerowDensityMetersPerHectare: 55.0));
+            log.Append(new DroughtProlongedEvent(detectedOnDay: 10, waterTableDepthMeters: 4.0, consecutiveDryDays: 30));
             var latest = log.LatestOfType<FaunaAcousticAnomalyEvent>();
             Assert.IsNull(latest);
         }

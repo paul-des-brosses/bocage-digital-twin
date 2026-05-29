@@ -24,22 +24,22 @@ namespace Bocage.Tests.EditMode
         public void Lookup_finds_event_matching_recommendation_instance_id()
         {
             var log = new EventLog();
-            var chalara = new HedgeChalaraEvent(detectedOnDay: 28, hedgerowDensityMetersPerHectare: 70.0);
-            log.Append(chalara);
-            string instanceId = RecommendationEngine.MakeEventInstanceId(chalara);
+            var drought = new DroughtProlongedEvent(detectedOnDay: 28, waterTableDepthMeters: 4.0, consecutiveDryDays: 30);
+            log.Append(drought);
+            string instanceId = RecommendationEngine.MakeEventInstanceId(drought);
 
             var found = RecommendationProvenance.LookupEvent(instanceId, log);
 
-            Assert.AreSame(chalara, found);
+            Assert.AreSame(drought, found);
         }
 
         [Test]
         public void Lookup_returns_null_when_log_has_no_matching_event()
         {
             var log = new EventLog();
-            log.Append(new DroughtProlongedEvent(detectedOnDay: 5, waterTableDepthMeters: 4.0, consecutiveDryDays: 30));
+            log.Append(new FaunaAcousticAnomalyEvent(detectedOnDay: 5, faunaPopulation: 0.5));
 
-            var found = RecommendationProvenance.LookupEvent("hedge-chalara#28", log);
+            var found = RecommendationProvenance.LookupEvent("drought-prolonged#28", log);
 
             Assert.IsNull(found);
         }
@@ -47,7 +47,7 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void Lookup_handles_null_log_and_empty_id_gracefully()
         {
-            Assert.IsNull(RecommendationProvenance.LookupEvent("hedge-chalara#28", null));
+            Assert.IsNull(RecommendationProvenance.LookupEvent("drought-prolonged#28", null));
             Assert.IsNull(RecommendationProvenance.LookupEvent(null, new EventLog()));
             Assert.IsNull(RecommendationProvenance.LookupEvent("", new EventLog()));
         }
@@ -55,9 +55,6 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void SensorDisplay_maps_each_event_type_to_a_known_sensor()
         {
-            Assert.AreEqual("le piège photo",
-                RecommendationProvenance.SensorDisplayFor(
-                    new HedgeChalaraEvent(detectedOnDay: 1, hedgerowDensityMetersPerHectare: 70)));
             Assert.AreEqual("le piézomètre",
                 RecommendationProvenance.SensorDisplayFor(
                     new DroughtProlongedEvent(detectedOnDay: 1, waterTableDepthMeters: 4, consecutiveDryDays: 30)));
@@ -70,16 +67,16 @@ namespace Bocage.Tests.EditMode
         public void Format_with_resolved_event_yields_full_provenance_line()
         {
             var log = new EventLog();
-            var chalara = new HedgeChalaraEvent(detectedOnDay: 28, hedgerowDensityMetersPerHectare: 70);
-            log.Append(chalara);
-            string instanceId = RecommendationEngine.MakeEventInstanceId(chalara);
-            var rec = new PlantHedgesRecommendation(issuedOnDay: 28, triggeredByEventId: instanceId);
+            var drought = new DroughtProlongedEvent(detectedOnDay: 28, waterTableDepthMeters: 4.0, consecutiveDryDays: 30);
+            log.Append(drought);
+            string instanceId = RecommendationEngine.MakeEventInstanceId(drought);
+            var rec = new IrrigationAdviceRecommendation(issuedOnDay: 28, triggeredByEventId: instanceId);
 
             string line = RecommendationProvenance.Format(rec, log);
 
             StringAssert.Contains("jour 28", line);
-            StringAssert.Contains("piège photo", line);
-            StringAssert.Contains("chalara", line.ToLowerInvariant());
+            StringAssert.Contains("piézomètre", line);
+            StringAssert.Contains("sécheresse", line.ToLowerInvariant());
         }
 
         [Test]

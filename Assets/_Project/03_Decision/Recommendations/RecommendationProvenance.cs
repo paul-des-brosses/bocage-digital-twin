@@ -18,7 +18,7 @@ namespace Bocage.Decision.Recommendations
     /// <para>
     /// The lookup uses <see cref="EventLog"/> as the single source of
     /// truth: the recommendation carries an event-instance id (e.g.
-    /// "hedge-chalara#28") and we find the matching IEvent by
+    /// "drought-prolonged#28") and we find the matching IEvent by
     /// matching <c>ev.Id + "#" + ev.DetectedOnDay</c>. When the lookup
     /// fails (event log not populated, or the engine produced a rec
     /// with a synthetic id) we fall back to a less precise line so the
@@ -29,9 +29,9 @@ namespace Bocage.Decision.Recommendations
     {
         /// <summary>
         /// Returns a one-line provenance string suitable for a sub-title
-        /// label, e.g. « Détecté jour 28 par le piège photo —
-        /// Dépérissement haie compatible chalara fraxinea ». Never
-        /// returns null; on failure returns a short generic line.
+        /// label, e.g. « Détecté jour 28 par le piézomètre — Sécheresse
+        /// prolongée, nappe à 4 m sous la surface ». Never returns null;
+        /// on failure returns a short generic line.
         /// </summary>
         public static string Format(IRecommendation rec, EventLog log)
         {
@@ -85,7 +85,6 @@ namespace Bocage.Decision.Recommendations
         {
             switch (ev)
             {
-                case HedgeChalaraEvent _:        return "le piège photo";
                 case DroughtProlongedEvent _:    return "le piézomètre";
                 case FaunaAcousticAnomalyEvent _:return "le capteur acoustique";
                 default:                         return "un capteur";
@@ -105,7 +104,6 @@ namespace Bocage.Decision.Recommendations
             string typeId = sep < 0 ? instanceOrTypeId : instanceOrTypeId.Substring(0, sep);
             switch (typeId)
             {
-                case "hedge-chalara":          return "le piège photo";
                 case "drought-prolonged":      return "le piézomètre";
                 case "fauna-acoustic-anomaly": return "le capteur acoustique";
                 default:                       return "un capteur";

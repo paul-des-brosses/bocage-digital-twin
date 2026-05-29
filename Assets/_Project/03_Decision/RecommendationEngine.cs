@@ -13,10 +13,10 @@ namespace Bocage.Decision
     /// running the engine repeatedly never produces duplicates and is
     /// safe to call every tick.
     /// <para>
-    /// The mapping is currently one-to-one (chalara → plant hedges,
-    /// drought → irrigation, fauna anomaly → reduce inputs). Future
-    /// versions could produce multiple recs per event, or rank them by
-    /// urgency. Out of scope for sub-étape 8c.2.
+    /// The mapping is currently one-to-one (drought → irrigation,
+    /// fauna anomaly → reduce inputs). Future versions could produce
+    /// multiple recs per event, or rank them by urgency. Out of scope
+    /// for sub-étape 8c.2.
     /// </para>
     /// </summary>
     public sealed class RecommendationEngine
@@ -66,7 +66,7 @@ namespace Bocage.Decision
         /// Composes a stable per-occurrence id for the event by mixing
         /// its <c>Id</c> (event type) and its <c>DetectedOnDay</c>
         /// (occurrence within the run). Used as the dedup key in the
-        /// journal so the same chalara detection doesn't yield two
+        /// journal so the same drought detection doesn't yield two
         /// recommendations across re-runs of the engine.
         /// </summary>
         public static string MakeEventInstanceId(IEvent ev)

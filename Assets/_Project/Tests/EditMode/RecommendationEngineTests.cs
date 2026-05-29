@@ -19,11 +19,6 @@ namespace Bocage.Tests.EditMode
     {
         // ---------------- Dispatch ----------------
 
-        // Sub-étape 10b: the chalara → PlantHedgesRecommendation dispatch
-        // was retired alongside the HedgeChalaraEvent emission. The
-        // event class and the recommendation type are kept dormant
-        // (cf. backlog #16), so the dispatch test is removed too.
-
         [Test]
         public void DroughtEvent_produces_IrrigationAdviceRecommendation()
         {
@@ -81,10 +76,10 @@ namespace Bocage.Tests.EditMode
         public void Journal_Append_is_idempotent_per_triggering_event()
         {
             var journal = new DecisionJournal();
-            var ev = new HedgeChalaraEvent(10, 55);
+            var ev = new DroughtProlongedEvent(detectedOnDay: 10, waterTableDepthMeters: 4.0, consecutiveDryDays: 30);
             string evInstance = RecommendationEngine.MakeEventInstanceId(ev);
-            var rec1 = new PlantHedgesRecommendation(issuedOnDay: 10, triggeredByEventId: evInstance);
-            var rec2 = new PlantHedgesRecommendation(issuedOnDay: 12, triggeredByEventId: evInstance);
+            var rec1 = new IrrigationAdviceRecommendation(issuedOnDay: 10, triggeredByEventId: evInstance);
+            var rec2 = new IrrigationAdviceRecommendation(issuedOnDay: 12, triggeredByEventId: evInstance);
 
             Assert.IsTrue(journal.Append(rec1, currentDay: 10));
             Assert.IsFalse(journal.Append(rec2, currentDay: 12),

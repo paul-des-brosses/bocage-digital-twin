@@ -68,12 +68,12 @@ namespace Bocage.Presentation.Bindings
 
         // Recommendation TYPES the user has rejected this session via
         // "Ignorer". Auto-popup suppresses any new recommendation of
-        // these types (e.g. all future "plant-hedges#N" recs). The
+        // these types (e.g. all future "reduce-inputs#N" recs). The
         // recos remain in pending and accessible via the history list,
         // but they no longer interrupt the simulation flow — matches
         // the user's stated intent on Ignorer ("non définitif").
         // Without this guard, a 30-day event-detector cooldown means a
-        // rejected chalara reco re-pops every 1.5 seconds real-time at
+        // rejected reco re-pops every 1.5 seconds real-time at
         // ×20 speed, breaking the UX.
         private readonly HashSet<string> _ignoredRecommendationTypes = new HashSet<string>();
 

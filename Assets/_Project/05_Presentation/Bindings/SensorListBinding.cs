@@ -57,14 +57,6 @@ namespace Bocage.Presentation.Bindings
         [SerializeField, Tooltip("USS class for the sensor name label.")]
         private string nameLabelClass = "sensor-row-name";
 
-        // Legacy serialized field kept so existing scene wiring doesn't
-        // warn on import after the subtitle row was dropped at
-        // sub-étape 10a. The class is no longer referenced from code.
-        // TODO post-10a: remove this field once the scene asset has
-        // been saved without it.
-        [SerializeField, HideInInspector]
-        private string subtitleLabelClass = "sensor-row-subtitle";
-
         [SerializeField, Tooltip("USS class applied to a row while it (or its scene sibling) is hovered.")]
         private string highlightedRowClass = "sensor-list-row--highlighted";
 

@@ -21,25 +21,17 @@ namespace Bocage.Indicators.Hero
     /// Formula (deliberately simple, tunable from data later):
     /// <code>
     /// baseline = normalized(HedgerowDensity)               // 0..1
-    /// activeChalara = recent HedgeChalaraEvent within W days
     /// activeDrought = recent DroughtProlongedEvent within W days
-    /// health = clamp01(baseline - 0.30 * activeChalara - 0.20 * activeDrought)
+    /// health = clamp01(baseline - 0.20 * activeDrought)
     /// </code>
     /// W = <see cref="EventInfluenceWindowDays"/> (60 days by default,
     /// matching the typical recovery time of a stressed but unbroken
-    /// hedge canopy per INRAE ash-dieback monitoring).
-    /// </para>
-    /// <para>
-    /// The chalara penalty is larger than the drought penalty because
-    /// chalara is a chronic structural loss (cf. HedgeChalaraEvent
-    /// calibration), whereas a prolonged drought leaves the canopy
-    /// stressed but with regenerative capacity on the next wet season.
+    /// hedge canopy after a dry summer per INRAE bocage monitoring).
     /// </para>
     /// </summary>
     public static class HedgerowHealthIndicator
     {
         public const int EventInfluenceWindowDays = 60;
-        public const double ChalaraPenalty = 0.30;
         public const double DroughtPenalty = 0.20;
 
         /// <summary>
@@ -60,12 +52,6 @@ namespace Bocage.Indicators.Hero
 
             int currentDay = model.CurrentDay;
             double penalty = 0.0;
-
-            var lastChalara = log.LatestOfType<HedgeChalaraEvent>();
-            if (lastChalara != null && (currentDay - lastChalara.DetectedOnDay) < EventInfluenceWindowDays)
-            {
-                penalty += ChalaraPenalty;
-            }
 
             var lastDrought = log.LatestOfType<DroughtProlongedEvent>();
             if (lastDrought != null && (currentDay - lastDrought.DetectedOnDay) < EventInfluenceWindowDays)

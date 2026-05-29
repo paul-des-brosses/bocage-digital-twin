@@ -1,16 +1,16 @@
 namespace Bocage.Decision.Recommendations
 {
     /// <summary>
-    /// Suggests planting fresh hedge segments (or accelerated replanting
-    /// of resistant species) in response to a hedge chalara detection.
+    /// Suggests planting fresh hedge segments to strengthen the bocage
+    /// network. Triggered exclusively by the "Replanter des haies"
+    /// manual button in the dashboard's Espace agriculteur (no
+    /// algorithmic emission from <see cref="Bocage.Decision.RecommendationEngine"/>).
     /// Source for the prescription: PNR du Perche replanting protocol
-    /// against ash dieback (Hymenoscyphus fraxineus), substituting
-    /// resistant species (charme, érable champêtre).
+    /// (charme, érable champêtre, noisetier).
     /// <para>
-    /// Mechanical effect when accepted (sub-étape 8c.3 AutoAction):
-    /// a one-off boost of <c>HedgerowDensity</c> by
-    /// <see cref="HedgeRestoreMetersPerHectare"/> over a 30-day
-    /// implementation window.
+    /// Mechanical effect when applied: a one-off boost of
+    /// <c>HedgerowDensity</c> by the user-chosen magnitude (default
+    /// <see cref="HedgeRestoreMetersPerHectare"/> m/ha).
     /// </para>
     /// </summary>
     public sealed class PlantHedgesRecommendation : IRecommendation
@@ -19,7 +19,7 @@ namespace Bocage.Decision.Recommendations
 
         public string Id { get; }
         public string Title => "Replanter des haies (essences résistantes)";
-        public string Rationale => "Chalara détecté — boost ponctuel de la trame bocagère sur 30 jours via plantation de charme/érable champêtre.";
+        public string Rationale => "Renforcer la trame bocagère via plantation d'essences locales (charme, érable champêtre, noisetier) pour gagner en résilience long terme.";
         public int IssuedOnDay { get; }
         public string TriggeredByEventId { get; }
         public DecisionVerdict DefaultVerdict => DecisionVerdict.Pending;

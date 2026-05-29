@@ -5,7 +5,7 @@ namespace Bocage.Sensors.Events
     /// behalf of the sensor layer (Couche 2). Concrete events expose
     /// their detection day, severity and a human-readable summary; the
     /// recommendation engine in Couche 3 dispatches on the runtime type
-    /// (e.g. <c>HedgeChalaraEvent</c>) to produce a fitting action.
+    /// (e.g. <c>DroughtProlongedEvent</c>) to produce a fitting action.
     /// <para>
     /// Per CLAUDE.md §9 (primauté du capteur), every event is derived
     /// from a measurable state of <see cref="Bocage.SimulationCore.Model.EcosystemModel"/> —
