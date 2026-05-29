@@ -2881,6 +2881,8 @@ MonoBehaviour:
   maecCoverageSliderName: maec-coverage-slider
   pseRateSliderName: pse-rate-slider
   horizonSliderName: horizon-slider
+  coverCropsSliderName: cover-crops-slider
+  residueRestitutionSliderName: residue-restitution-slider
   temperatureValueLabelName: temperature-anomaly-value
   precipitationValueLabelName: precipitation-anomaly-value
   hedgeRemovalValueLabelName: hedge-removal-value
@@ -2888,6 +2890,8 @@ MonoBehaviour:
   maecCoverageValueLabelName: maec-coverage-value
   pseRateValueLabelName: pse-rate-value
   horizonValueLabelName: horizon-value
+  coverCropsValueLabelName: cover-crops-value
+  residueRestitutionValueLabelName: residue-restitution-value
 --- !u!114 &1463489832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4178,6 +4182,7 @@ MonoBehaviour:
   profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
   biodiversityContainer: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
   techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
+  soilCarbonContainer: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
   soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
   hedgerowHealthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
   shadowRunner: {fileID: 2115294100}
