@@ -100,13 +100,24 @@ plausibilité, dernière révision.
 
 ### `WeatherUpdateRule`
 
-- **BaseTemperatureC** : 12.0 °C (moyenne annuelle Perche)
-- **BasePrecipitationMm** : 2.0 mm/jour (≈ 730 mm/an, conforme aux
-  normales Perche)
-- **Bruit gaussien** : σ = 3°C température, σ = 1.5 mm précipitations
-- **Source** : normales climatologiques Météo-France Eure-et-Loir / Orne
-- **Dernière révision** : 2026-05-21 (refactor pour utiliser
-  TemperatureAnomalyC et PrecipitationAnomalyPercent directement)
+- **Modèle (depuis 2026-05-29, chantier E2 / ADR #52)** : chaîne de
+  Markov ON/OFF par jour, intensité log-normale en cas de jour pluvieux,
+  paramètres mensuels Mortagne-au-Perche encodés dans
+  `SeasonalWeatherDataDefaults`. Détails complets et calibration
+  source : §Saisonnalité ci-dessous.
+- **Bruit gaussien T° quotidienne** : σ = 2 °C autour de la moyenne
+  mensuelle. Sous-flux RNG `"weather-noise"`.
+- **Bruit pluie** : porté par le tirage log-normale (pas de bruit
+  gaussien additif). Sous-flux RNG `"markov-rain"`.
+- **Source** : modélée 30 km (NEMS reanalysis) via
+  planificateur.a-contresens.net, valeurs annuelles 10,77 °C / 720 mm
+  cohérentes avec normales Météo-France couramment citées pour la zone.
+- **Dernière révision** : 2026-05-29 (refonte saisonnière, chantier E2).
+- **Historique** : avant E2, modèle à constantes annuelles
+  (`BaseTemperatureC = 12 °C`, `BasePrecipitationMm = 2 mm/jour`),
+  bruit gaussien σ = 3 °C / 1.5 mm. Refactor 2026-05-21 avait retiré
+  ces bruits gaussiens (sans cycle saisonnier, du bruit pur sans
+  structure aplatissait les seuils d'événements).
 
 ### `CropYieldDynamicsRule` — multiplicateurs
 
@@ -341,33 +352,52 @@ fenêtre de plausibilité. Lancer ces tests via Test Runner > EditMode
 Cette section regroupe les paramètres ajoutés au modèle par les
 chantiers E1-E7 de la nouvelle `ROADMAP.md`.
 
-### Saisonnalité — données mensuelles Météo-France (chantier E2)
+### Saisonnalité — données mensuelles modèlées Mortagne-au-Perche (chantier E2)
 
 **Station** : Mortagne-au-Perche (Orne, 61).
-**Normales** : 1991-2020.
-**Source** : Météo-France (meteofrance.com/climat/normales/61293001 —
-à vérifier au moment de l'encodage du `SeasonalWeatherDataAsset`).
 
-**Valeurs indicatives** (à confirmer sur source officielle au moment
-de l'encodage de l'asset) :
+**Source effectivement utilisée à l'encodage (2026-05-29)** :
+`planificateur.a-contresens.net/europe/france/normandie/mortagne_au_perche/2991704.html` —
+moyennes mensuelles dérivées du modèle global NEMS (résolution
+30 km, reanalysis). Annual T° = 10,77 °C, annual cumul précip = 720,4 mm.
+Cohérent avec les valeurs annuelles couramment citées par Météo-France
+pour la zone (10,8 °C / 720 mm).
 
-| Mois | T° moyenne (°C) | Précipitations cumul (mm) | p_wet | mu (log-mm) | sigma (log-mm) |
-|---|---|---|---|---|---|
-| Jan | 4,0 | 65 | 0,50 | 1,40 | 0,80 |
-| Fév | 5,0 | 55 | 0,45 | 1,40 | 0,80 |
-| Mar | 7,0 | 55 | 0,40 | 1,45 | 0,80 |
-| Avr | 10,0 | 55 | 0,40 | 1,45 | 0,80 |
-| Mai | 13,0 | 60 | 0,35 | 1,55 | 0,85 |
-| Juin | 17,0 | 50 | 0,30 | 1,60 | 0,90 |
-| Juil | 19,0 | 50 | 0,20 | 1,75 | 0,95 |
-| Août | 19,0 | 50 | 0,25 | 1,70 | 0,90 |
-| Sept | 16,0 | 55 | 0,35 | 1,60 | 0,85 |
-| Oct | 12,0 | 70 | 0,45 | 1,50 | 0,80 |
-| Nov | 7,0 | 75 | 0,55 | 1,40 | 0,80 |
-| Déc | 5,0 | 80 | 0,55 | 1,40 | 0,80 |
+**Source officielle visée mais inaccessible** : le portail Météo-France
+(meteofrance.com/climat/normales/61293001) renvoie un HTTP 404 au
+2026-05-29. **TODO** post-MVP : récupérer les normales officielles
+1991-2020 via le portail data.gouv.fr ou un export Météo-France
+quand l'accès est restauré, comparer aux valeurs encodées et ajuster
+si écart significatif (> 10 % sur précip mensuelles, > 0,5 °C sur
+T° mensuelles).
 
-**T° moyenne annuelle** ≈ 11,2 °C. **Précipitations annuelles cumul**
-≈ 720 mm. Cohérent avec climat océanique du Perche.
+**Valeurs encodées dans `SeasonalWeatherDataDefaults.MortagneAuPerche()`** :
+
+| Mois | T° moyenne (°C) | Précipitations cumul (mm) | Jours pluie | p_wet | mu | sigma |
+|---|---|---|---|---|---|---|
+| Jan | 4,1 | 72,0 | 15 | 0,484 | 1,25 | 0,80 |
+| Fév | 4,5 | 53,9 | 12 | 0,429 | 1,18 | 0,80 |
+| Mar | 7,1 | 58,6 | 14 | 0,452 | 1,11 | 0,80 |
+| Avr | 9,4 | 46,7 | 12 | 0,400 | 1,04 | 0,80 |
+| Mai | 13,0 | 65,6 | 13 | 0,419 | 1,30 | 0,80 |
+| Juin | 16,2 | 49,7 | 11 | 0,367 | 1,19 | 0,80 |
+| Juil | 18,3 | 50,7 | 11 | 0,355 | 1,21 | 0,80 |
+| Août | 18,2 | 42,7 | 10 | 0,323 | 1,13 | 0,80 |
+| Sept | 15,1 | 53,3 | 11 | 0,367 | 1,26 | 0,80 |
+| Oct | 11,4 | 75,1 | 14 | 0,452 | 1,36 | 0,80 |
+| Nov | 7,1 | 66,8 | 14 | 0,467 | 1,24 | 0,80 |
+| Déc | 4,8 | 85,3 | 15 | 0,484 | 1,42 | 0,80 |
+
+**Méthode de dérivation des paramètres Markov** : pour chaque mois,
+`p_wet = jours_pluie / jours_dans_le_mois` (Bernoulli direct) ;
+`mu = ln(précip_mensuel / jours_pluie) − σ²/2` (la moyenne attendue de
+la LogNormal `exp(mu + σ²/2)` retrouve par construction l'intensité
+moyenne par jour pluvieux du mois) ; `σ = 0,80` est fixé constant à
+travers les 12 mois (valeur typique des modèles d'intensité de pluie
+journalière log-normale, plage 0,6-1,0 selon la littérature). Avec
+ces paramètres, le cumul mensuel attendu
+`jours × p_wet × exp(mu + σ²/2)` redonne par construction le cumul
+observé.
 
 **Bruit gaussien T° quotidienne** : σ = 2 °C autour de la moyenne
 mensuelle. Sous-flux RNG `"weather-noise"`.
@@ -378,21 +408,40 @@ mensuelle. Sous-flux RNG `"weather-noise"`.
 2. Si pluvieux : tirer un LogNormal(`mu[mois]`, `sigma[mois]`) →
    précipitations en mm. Sous-flux RNG `"markov-rain"`.
 3. T° du jour = T_mois + N(0, σ=2).
-4. Ajouter anomalies scenario en additif sur T° et multiplicatif sur
+4. Ajouter anomalies scenario : additif sur T°, multiplicatif sur
    précipitations.
 
-**Cohérence avec ancienne calibration** : le `BaseTemperatureC = 12 °C`
-et `BasePrecipitationMm = 2 mm/jour ≈ 730 mm/an` de l'ancienne
-`WeatherUpdateRule` correspondent bien à la moyenne annuelle des
-valeurs ci-dessus. La refonte E2 conserve l'ordre de grandeur global
-en introduisant le cycle saisonnier intramensuel.
+**Cohérence avec ancienne calibration** : l'ancienne
+`WeatherUpdateRule` (constantes 12 °C / 2 mm/jour ≈ 730 mm/an)
+reproduit en première approximation les moyennes annuelles du nouvel
+encodage (10,77 °C / 720 mm) — 1,2 °C plus chaude, 10 mm/an plus
+humide, l'effet sur les fenêtres de tolérance des
+`CalibrationScenarioValidationTests` (±60 €/ha sur le profit) est
+contenu.
 
-**À vérifier au moment de l'encodage** : les valeurs ci-dessus sont
-indicatives basées sur la connaissance générale du climat percheron.
-L'encodage final de `SeasonalWeatherDataAsset` doit consulter les
-normales officielles meteofrance.com et les inscrire telles quelles.
+**Extension CropYield / InputCost à la météo journalière (ADR #52
+option a)** :
 
-**Dernière révision** : 2026-05-28 (création post-recadrage).
+| Effet | Paramètre | Valeur | Cap |
+|---|---|---|---|
+| Pénalité rendement par jour > 25 °C (fenêtre 30 j) | `HeatStressPenaltyPerDay` | 0,3 % / jour | 9 % |
+| Surcharge intrants par jour > 25 °C (fenêtre 30 j) | `HeatStressSurchargePerDay` | 0,5 % / jour | 15 % |
+
+Justification : la valeur seuil 25 °C est bien au-dessus de la
+moyenne d'été locale (~18 °C) sans atteindre le seuil canicule
+légal (30 °C, jamais observable sous +5 °C max d'anomalie réaliste à
+Mortagne). À +5 °C d'anomalie + worst case (Scénario 4), juillet
+moyen passe à 23,3 °C, les pics journaliers atteignent 26-29 °C,
+le compteur atteint 5-15 j/mois et la pénalité reste modeste
+(1,5-4,5 % sur rendement, 2,5-7,5 % sur intrants) — ce qui ne
+casse pas la fenêtre de plausibilité du test (profit < -1500 €/ha).
+Les termes sont additifs sur les pénalités d'anomalie scenario
+préexistantes (`HeatPenaltyPerDegree`, `HeatSurchargePerDegree`),
+représentant l'effet acute (canicule épisodique) à côté de l'effet
+structurel (décalage moyen annuel).
+
+**Dernière révision** : 2026-05-29 (livraison chantier E2 — encodage
+réel + extension CropYield/InputCost + clarification source).
 
 ---
 

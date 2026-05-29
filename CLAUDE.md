@@ -240,18 +240,22 @@ moyenne, humidité du sol, healthT d'un agent, etc.).
 Cette règle est non négociable : c'est ce qui distingue un digital twin
 d'un jeu vidéo.
 
-**Statut au 2026-05-28** : deux écarts résiduels sont identifiés et
-seront résorbés par les chantiers E2 (saisonnalité + WeatherStation) et
-E3 (carbone sol + EddyTower) de la roadmap :
+**Statut au 2026-05-29** : un écart résiduel reste, à résorber par le
+chantier E3 (carbone sol + EddyTower) de la roadmap :
 
 - Sprite **EddyTower** présent en scène sans variable d'état correspondante
   — sera branché à `SoilCarbonStock` via `EddyTowerSensorReader` (E3).
-- Sprite **WeatherStation** sans `Reader` formel exposant la mesure —
-  sera branché via `WeatherStationReader` lecture pure (E2).
 
-Après livraison de E2 et E3, le principe est respecté intégralement : les
-5 capteurs sont bout-en-bout (mesure → indicateur affiché ou événement
-→ recommandation).
+Le chantier E2 (saisonnalité + WeatherStation) a été livré le 2026-05-29 :
+le sprite **WeatherStation** est désormais branché à un `WeatherStationReader`
+(Couche 02) qui expose des mesures pures T° + précip avec bruit gaussien
+et une fenêtre glissante de 365 jours, alimentée par la nouvelle
+`WeatherUpdateRule` saisonnière (chaîne Markov + log-normale sur paramètres
+mensuels Mortagne-au-Perche).
+
+Après livraison de E3, le principe est respecté intégralement : les 5
+capteurs sont bout-en-bout (mesure → indicateur affiché ou événement →
+recommandation).
 
 ---
 

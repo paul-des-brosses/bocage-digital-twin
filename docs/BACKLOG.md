@@ -57,6 +57,30 @@ en backlog. Reformulée en item **#28**.
 `SG_hedgerow.shadergraph` lit la propriété `_HealthT` via un Lerp
 inséré entre le mix densité et le multiply texture.
 
+### #12 (saisonnalité météo) — Markov + normales mensuelles dans `WeatherUpdateRule`
+
+**Statut** : ✅ livré en chantier E2 (cf ADR #52) le 2026-05-29.
+`WeatherUpdateRule` lit désormais les normales mensuelles
+Mortagne-au-Perche encodées dans `SeasonalWeatherDataDefaults`
+(Couche 01, exposable via le SO `SeasonalWeatherDataAsset` en
+Couche 05) et tire chaque jour : `Bernoulli(p_wet[mois])` puis
+`LogNormal(mu[mois], sigma[mois])` pour les précipitations
+(`MarkovRainModel`, sous-flux `"markov-rain"`), et `N(T_mois, σ=2)`
+pour la T° (sous-flux `"weather-noise"`). Les anomalies scenario
+restent additives sur T° et multiplicatives sur précip. Un widget
+« Mois de démarrage » détermine la phase d'entrée du cycle, snapshoté
+par la rule à la construction du moteur (changement effectif au
+prochain `Rebuild`). Le `WeatherStationReader` (Couche 02) lit les
+mesures avec bruit gaussien (σ_T = 0.3 °C, σ_précip = 5 %
+relatif) et conserve une fenêtre glissante 365 j pour le futur
+panneau d'inspection (E6 / ADR #53). Extension `CropYieldDynamicsRule` +
+`InputCostDynamicsRule` : compteur 30 j de jours > 25 °C alimente
+un terme additionnel de pénalité (rendement) et de surcharge
+(intrants), additif sur les anomalies scenario.
+
+La **phénologie cultures** (semis, dormance, récolte, GDD) reste
+en backlog post-MVP (item #25).
+
 ---
 
 ## 4. Items reportés post-MVP (numérotation historique conservée)
