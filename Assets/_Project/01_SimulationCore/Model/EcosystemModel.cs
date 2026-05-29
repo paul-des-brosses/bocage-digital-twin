@@ -68,6 +68,32 @@ namespace Bocage.SimulationCore.Model
         /// </summary>
         public double FaunaPopulation { get; private set; }
 
+        /// <summary>
+        /// Number of days with daily mean temperature above
+        /// <see cref="HeatDayThresholdCelsius"/> over the last
+        /// <see cref="HeatDayWindowDays"/> simulated days. Updated by
+        /// <see cref="Bocage.SimulationCore.Rules.WeatherUpdateRule"/>
+        /// after each daily draw via
+        /// <see cref="RecordDailyTemperatureForWindow"/>; read by
+        /// <see cref="Bocage.SimulationCore.Rules.CropYieldDynamicsRule"/>
+        /// and
+        /// <see cref="Bocage.SimulationCore.Rules.InputCostDynamicsRule"/>
+        /// to apply an additive heat-stress term on top of the scenario
+        /// anomaly term (chantier E2 / ADR #52).
+        /// <para>
+        /// During the first 30 simulated days the buffer is still warming
+        /// up, so the count reflects only the days observed so far. After
+        /// day 30 the window is fully populated and behaves as a rolling
+        /// 30-day count.
+        /// </para>
+        /// </summary>
+        public int RecentHeatDayCount { get; private set; }
+
+        public const int HeatDayWindowDays = 30;
+        public const double HeatDayThresholdCelsius = 25.0;
+        private readonly int[] _heatDayBuffer = new int[HeatDayWindowDays];
+        private int _heatDayBufferIndex;
+
         public EcosystemModel(
             int initialDay = 0,
             Weather initialWeather = default,
@@ -126,6 +152,21 @@ namespace Bocage.SimulationCore.Model
         public void SetFaunaPopulation(double index)
         {
             FaunaPopulation = ClampNonNegative(index);
+        }
+
+        /// <summary>
+        /// Rolling-window update: registers today's daily mean temperature,
+        /// overwriting the entry that was recorded
+        /// <see cref="HeatDayWindowDays"/> days ago. Maintains
+        /// <see cref="RecentHeatDayCount"/> in O(1).
+        /// </summary>
+        public void RecordDailyTemperatureForWindow(double temperatureCelsius)
+        {
+            int newSample = temperatureCelsius > HeatDayThresholdCelsius ? 1 : 0;
+            int oldSample = _heatDayBuffer[_heatDayBufferIndex];
+            _heatDayBuffer[_heatDayBufferIndex] = newSample;
+            _heatDayBufferIndex = (_heatDayBufferIndex + 1) % HeatDayWindowDays;
+            RecentHeatDayCount = RecentHeatDayCount - oldSample + newSample;
         }
 
         private static double ClampNonNegative(double value)

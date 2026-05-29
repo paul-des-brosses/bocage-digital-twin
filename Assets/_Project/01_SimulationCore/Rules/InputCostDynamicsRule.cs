@@ -38,6 +38,15 @@ namespace Bocage.SimulationCore.Rules
         private const double HeatSurchargePerDegree = 0.04;   // 0.20 / 5°C
         private const double DroughtSurchargePerPercent = 0.00333; // 0.20 / 60%
 
+        // Acute heat-stress surcharge driven by the WeatherStation daily
+        // reading (chantier E2 / ADR #52). 0.5 %/canicule day with a
+        // 30-day window caps the surcharge at 15 % — additive on top of
+        // the scenario anomaly heat surcharge, so a worst-case scenario
+        // with sustained +5 °C anomaly AND frequent 25 °C+ peaks pays
+        // both penalties.
+        private const double HeatStressSurchargePerDay = 0.005;
+        private const double HeatStressMaxSurcharge = 0.15;
+
         public void Apply(EcosystemModel model, ScenarioContext scenario, SeededRandom rng)
         {
             double intensityFactor = scenario.InputIntensityFactor.Current;
@@ -55,7 +64,8 @@ namespace Bocage.SimulationCore.Rules
             if (heatSurcharge > 0.20) heatSurcharge = 0.20;
             double droughtSurcharge = precipAnomalyPct < 0.0 ? -precipAnomalyPct * DroughtSurchargePerPercent : 0.0;
             if (droughtSurcharge > 0.20) droughtSurcharge = 0.20;
-            double climateSurcharge = heatSurcharge + droughtSurcharge;
+            double heatStressSurcharge = ComputeHeatStressSurcharge(model.RecentHeatDayCount);
+            double climateSurcharge = heatSurcharge + droughtSurcharge + heatStressSurcharge;
 
             double target = BaselineEurosPerHectarePerYear
                             * intensityFactor
@@ -66,6 +76,21 @@ namespace Bocage.SimulationCore.Rules
             double current = model.InputCost;
             double next = current + TransitionRatePerDay * (target - current);
             model.SetInputCost(next);
+        }
+
+        /// <summary>
+        /// Acute heat-stress surcharge driven by the rolling count of days
+        /// above <see cref="EcosystemModel.HeatDayThresholdCelsius"/>
+        /// (25 °C) over the last
+        /// <see cref="EcosystemModel.HeatDayWindowDays"/> (30) days.
+        /// Linear surcharge capped at 15 %.
+        /// </summary>
+        public static double ComputeHeatStressSurcharge(int recentHeatDayCount)
+        {
+            if (recentHeatDayCount <= 0) return 0.0;
+            double surcharge = HeatStressSurchargePerDay * recentHeatDayCount;
+            if (surcharge > HeatStressMaxSurcharge) surcharge = HeatStressMaxSurcharge;
+            return surcharge;
         }
     }
 }

@@ -54,6 +54,20 @@ namespace Bocage.SimulationCore.Scenario
         public TransitioningParameter<double> MaecCoveragePercent { get; }
         public TransitioningParameter<double> PseSubsidyRate { get; }
 
+        // ---------------- Initial conditions ----------------
+        /// <summary>
+        /// Starting month at day 0 of the run, 1 = January … 12 = December.
+        /// Determines the phase of the seasonal weather model
+        /// (chantier E2 / ADR #52): day 0 always lands on the first day of
+        /// this month. The value is consumed by
+        /// <see cref="Bocage.SimulationCore.Rules.WeatherUpdateRule"/> via
+        /// <see cref="Bocage.SimulationCore.Model.SeasonalWeatherData.MonthIndexForDay"/>
+        /// and is NOT a transitioning parameter — it is an initial
+        /// condition, not a setpoint. The presenter binds it to a combo
+        /// box and only reads it at <c>CurrentDay == 0</c>.
+        /// </summary>
+        public int StartingMonth { get; set; }
+
         // ---------------- Horizon ----------------
         public int HorizonInDays { get; set; }
 
@@ -64,6 +78,7 @@ namespace Bocage.SimulationCore.Scenario
             double initialInputIntensityFactor = 1.0,
             double initialMaecCoveragePercent = 0.0,
             double initialPseSubsidyRate = 0.0,
+            int startingMonth = 1,
             int horizonInDays = 365)
         {
             TemperatureAnomalyC = TransitioningParameter.ForDouble(initialTemperatureAnomalyC);
@@ -72,6 +87,7 @@ namespace Bocage.SimulationCore.Scenario
             InputIntensityFactor = TransitioningParameter.ForDouble(initialInputIntensityFactor);
             MaecCoveragePercent = TransitioningParameter.ForDouble(initialMaecCoveragePercent);
             PseSubsidyRate = TransitioningParameter.ForDouble(initialPseSubsidyRate);
+            StartingMonth = startingMonth < 1 ? 1 : (startingMonth > 12 ? 12 : startingMonth);
             HorizonInDays = horizonInDays;
         }
 

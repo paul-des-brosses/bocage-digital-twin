@@ -63,6 +63,17 @@ namespace Bocage.SimulationCore.Rules
         // Intensification boost: ±10% around factor 1.0.
         private const double IntensityBoostPerUnit = 0.10;
 
+        // Heat-stress term, additive on top of the scenario anomaly heat
+        // penalty (chantier E2 / ADR #52). Captures the acute effect of
+        // canicule episodes on yield via the daily WeatherStation reading,
+        // which the scenario anomaly term (annual structural shift) can't
+        // represent on its own. 0.3 %/day with a 30-day window caps the
+        // penalty at 9 % — modest enough to keep the existing calibration
+        // windows valid, large enough to be visible under the worst-case
+        // scenario where July/August reach 25-29 °C peaks.
+        private const double HeatStressPenaltyPerDay = 0.003;
+        private const double HeatStressMaxPenalty = 0.09;
+
         public void Apply(EcosystemModel model, ScenarioContext scenario, SeededRandom rng)
         {
             double hedgerowEffect = ComputeHedgerowEffect(model.HedgerowDensity);
@@ -71,13 +82,34 @@ namespace Bocage.SimulationCore.Rules
                 scenario.TemperatureAnomalyC.Current,
                 scenario.PrecipitationAnomalyPercent.Current);
             double intensityEffect = ComputeIntensityEffect(scenario.InputIntensityFactor.Current);
+            double heatStressEffect = ComputeHeatStressEffect(model.RecentHeatDayCount);
 
-            double target = BaselineTonnesPerHectare * hedgerowEffect * waterEffect * climateEffect * intensityEffect;
+            double target = BaselineTonnesPerHectare
+                            * hedgerowEffect
+                            * waterEffect
+                            * climateEffect
+                            * intensityEffect
+                            * heatStressEffect;
             if (target < 0.0) target = 0.0;
 
             double current = model.CropYield;
             double next = current + TransitionRatePerDay * (target - current);
             model.SetCropYield(next);
+        }
+
+        /// <summary>
+        /// Acute heat-stress multiplier driven by the rolling count of days
+        /// above <see cref="EcosystemModel.HeatDayThresholdCelsius"/>
+        /// (25 °C) over the last
+        /// <see cref="EcosystemModel.HeatDayWindowDays"/> (30) days.
+        /// Linear penalty capped at 9 %.
+        /// </summary>
+        public static double ComputeHeatStressEffect(int recentHeatDayCount)
+        {
+            if (recentHeatDayCount <= 0) return 1.0;
+            double penalty = HeatStressPenaltyPerDay * recentHeatDayCount;
+            if (penalty > HeatStressMaxPenalty) penalty = HeatStressMaxPenalty;
+            return 1.0 - penalty;
         }
 
         /// <summary>

@@ -16,14 +16,21 @@ namespace Bocage.SimulationCore
         public static SimulationEngine Build(
             ulong masterSeed,
             EcosystemModel model = null,
-            ScenarioContext scenario = null)
+            ScenarioContext scenario = null,
+            SeasonalWeatherData seasonalWeather = null)
         {
             model = model ?? new EcosystemModel();
             scenario = scenario ?? new ScenarioContext();
+            // Default = Mortagne-au-Perche monthly normals encoded in
+            // SeasonalWeatherDataDefaults (chantier E2). Callers that
+            // build the engine with an authoring asset (e.g.
+            // SimulationRunner with a SeasonalWeatherDataAsset) pass
+            // the result of ToSeasonalWeatherData() here instead.
+            seasonalWeather = seasonalWeather ?? SeasonalWeatherDataDefaults.MortagneAuPerche();
 
             var rules = new IRule[]
             {
-                new WeatherUpdateRule(),
+                new WeatherUpdateRule(seasonalWeather, scenario.StartingMonth),
                 new WaterTableDynamicsRule(),
                 new HedgerowGrowthRule(),
                 new AgriculturalPressureImpactRule(),
