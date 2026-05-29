@@ -468,7 +468,10 @@ Pour un scénario « couverts 0 % + résidus 0 % + haies 0 m/ha »
 (intensif sans bocage) : inputs ≈ 0 → C_eq → 0. Le default 50 tC/ha
 décroît lentement vers 0 sur ~150 ans simulés (avec demi-vie 28 ans).
 
-**Dernière révision** : 2026-05-28 (création post-recadrage).
+**Dernière révision** : 2026-05-29 (livraison chantier E3 —
+implémentation `SoilCarbonDynamicsRule` Couche 01 + `EddyTowerSensorReader`
+Couche 02 + `SoilCarbonIndicator` Couche 04 + RC observable + 2 sliders
+Couche 05 + 8 tests EditMode).
 
 ---
 

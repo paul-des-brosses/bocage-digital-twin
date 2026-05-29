@@ -81,6 +81,39 @@ un terme additionnel de pénalité (rendement) et de surcharge
 La **phénologie cultures** (semis, dormance, récolte, GDD) reste
 en backlog post-MVP (item #25).
 
+### #13 — Variable d'état Carbone sol
+
+**Statut** : ✅ livré en chantier E3 (cf ADR #48) le 2026-05-29.
+
+Nouvelle variable d'état `EcosystemModel.SoilCarbonStock` (tC/ha,
+default 50 — référence BDAT INRAE sols cultivés bocage Perche).
+Dynamique 1-pool `dC/dt = inputs − k·C` avec `k = 1/40 yr⁻¹`
+(demi-vie ~28 ans, INRAE 4 pour 1000) implémentée dans
+`SoilCarbonDynamicsRule` (Couche 01, déterministe), trois inputs
+sourcés CALIBRATION.md §Carbone sol :
+
+- Couverts : `1.2 × CoverCropsCoveragePercent / 100` tC/ha/yr (Solagro
+  Afterres 2050).
+- Résidus : `0.8 × ResidueRestitutionPercent / 100` tC/ha/yr (Solagro).
+- Haies (proxy) : `0.4 × HedgerowDensity / 90` tC/ha/yr (AFAC).
+
+Deux nouveaux `TransitioningParameter<double>` dans `ScenarioContext`
+(`CoverCropsCoveragePercent`, `ResidueRestitutionPercent`) exposés en
+sliders 0-100 % dans la section « Décisions quotidiennes » du
+scenario panel.
+
+`EddyTowerSensorReader` (Couche 02) dérive le flux net journalier
+CO2 du delta `SoilCarbonStock` day-over-day, plus bruit gaussien
+σ = 1.5 kgCO2/ha/j. Convention NEE (positif = émission, négatif =
+séquestration). Sous-flux RNG `"eddy-tower"`, sliding window 365 j
+pré-allouée (mutualisable avec le panneau d'inspection E6).
+
+`SoilCarbonIndicator` (Couche 04) + `RC_SoilCarbonStock` observable
+livrés ; câblage onglet Climat & Ressources finalisé en E6 (ADR #54).
+Tests EditMode : 8 tests dans `SoilCarbonTests.cs` (équilibre,
+demi-vie, effets leviers couverts/résidus, EddyTower flux + window +
+déterminisme).
+
 ---
 
 ## 4. Items reportés post-MVP (numérotation historique conservée)

@@ -120,9 +120,11 @@ Localisation : `Assets/_Project/Data/RuntimeContainers/`
 | `RC_TechDelta.asset` ✨ | `SimulationRunner` | `TechDeltaLabelBinding` |
 | `RC_SoilMoisture.asset` ✨ (9α) | `SimulationRunner` | `MeadowShaderBinding` |
 | `RC_HedgerowHealth.asset` ✨ (9β) | `SimulationRunner` | `HedgerowShaderBinding` (slot Health Container) |
+| `RC_SoilCarbonStock.asset` ✨ (E3) | `SimulationRunner` | `OngletClimatBinding` (E6), `SensorInspectorPanelBinding` (E6, mode EddyTower) |
 
 (à compléter au fil des étapes — Biodiversity et TechDelta arrivent à
-l'étape 8, SoilMoisture et HedgerowHealth à l'étape 9.)
+l'étape 8, SoilMoisture et HedgerowHealth à l'étape 9, SoilCarbonStock
+à l'étape E3.)
 
 ---
 
@@ -140,6 +142,19 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-05-29** — Chantier E3 livré (carbone sol + EddyTower bout-en-bout).
+  Nouveau RC observable `RC_SoilCarbonStock.asset` (Couche 04, slot
+  `Soil Carbon Container` du `SimulationRunner`). `EddyTowerSensorReader`
+  instancié par le runner (lockstep avec `FaunaSensorReader` /
+  `WeatherStationReader`). Dashboard.uxml étendu : 2 sliders 0-100 %
+  ajoutés à la section « Décisions quotidiennes »
+  (`cover-crops-slider`, `residue-restitution-slider`) câblés via
+  `ScenarioControlsBinding` (push vers `ScenarioContext.CoverCropsCoveragePercent`
+  + `ResidueRestitutionPercent`). Action utilisateur Unity : créer
+  `RC_SoilCarbonStock.asset` via `Create > Bocage > Data >
+  RC_SoilCarbonStock` puis le glisser sur le nouveau slot du
+  `SimulationRunner`.
 
 - **2026-05-27** — Sub-étape 10b polish capteur livrée : nouveau
   composant `FaunaSensorReader` (Couche 2, pas de GameObject —
@@ -285,19 +300,22 @@ Aucun champ Inspector nouveau.
 |---|---|---|
 | (aucun nouveau RC — la saisonnalité est consommée via `EcosystemModel.CurrentWeather` existant, étendu) | — | — |
 
-### Chantier E3 — Carbone sol + EddyTower
+### Chantier E3 — Carbone sol + EddyTower (livré 2026-05-29)
 
-**Nouveau composant sur `_UI_Canvas`** :
+**Extension `_Bootstrap/SimulationRunner`** :
 
-| Component | Champs sérialisés à brancher |
+- Nouveau slot `Soil Carbon Container` → `RC_SoilCarbonStock.asset`
+  (créer via `Create > Bocage > Data > RC_SoilCarbonStock`, ranger
+  dans `Assets/_Project/Data/RuntimeContainers/`).
+- Le `EddyTowerSensorReader` est instancié par le runner en `Awake`
+  (et reconstruit en lockstep dans `Rebuild`) — pas de GameObject
+  dédié à câbler.
+
+**Sliders ajoutés au scenario panel** (pas de binding dédié) :
+
+| Component | Champs sérialisés |
 |---|---|
-| (Pas de binding dédié — les 2 sliders « Couverts d'interculture » et « Restitution résidus » sont ajoutés au scenario panel UXML existant, câblés via le `ScenarioControlsBinding` actuel élargi.) | — |
-
-**Nouveau RC** :
-
-| Asset | Producteur | Consommateurs |
-|---|---|---|
-| `RC_SoilCarbonStock.asset` | `SimulationRunner` | `OngletClimatBinding` (E6), `SensorInspectorPanelBinding` (E6, mode EddyTower). |
+| `ScenarioControlsBinding` (élargi) | Les 2 sliders UXML `cover-crops-slider` (0-100 %) et `residue-restitution-slider` (0-100 %) ont été ajoutés à `Dashboard.uxml` dans la section « Décisions quotidiennes ». Les noms UXML par défaut sont câblés en SerializeField — aucune action drag-and-drop nécessaire. Le binding pousse via `ScenarioContext.CoverCropsCoveragePercent.SetTarget` / `ResidueRestitutionPercent.SetTarget` avec `transitionDurationDays` (cohérent avec les 5 sliders existants). |
 
 ### Chantier E4 — Faune visible 4 espèces
 

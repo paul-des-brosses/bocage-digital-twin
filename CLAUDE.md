@@ -240,22 +240,23 @@ moyenne, humidité du sol, healthT d'un agent, etc.).
 Cette règle est non négociable : c'est ce qui distingue un digital twin
 d'un jeu vidéo.
 
-**Statut au 2026-05-29** : un écart résiduel reste, à résorber par le
-chantier E3 (carbone sol + EddyTower) de la roadmap :
+**Statut au 2026-05-29** : principe respecté intégralement après
+livraison de E2 (saisonnalité + WeatherStation) et E3 (carbone sol +
+EddyTower). Les 5 capteurs sont bout-en-bout (mesure → indicateur
+affiché ou événement → recommandation).
 
-- Sprite **EddyTower** présent en scène sans variable d'état correspondante
-  — sera branché à `SoilCarbonStock` via `EddyTowerSensorReader` (E3).
-
-Le chantier E2 (saisonnalité + WeatherStation) a été livré le 2026-05-29 :
-le sprite **WeatherStation** est désormais branché à un `WeatherStationReader`
-(Couche 02) qui expose des mesures pures T° + précip avec bruit gaussien
-et une fenêtre glissante de 365 jours, alimentée par la nouvelle
-`WeatherUpdateRule` saisonnière (chaîne Markov + log-normale sur paramètres
-mensuels Mortagne-au-Perche).
-
-Après livraison de E3, le principe est respecté intégralement : les 5
-capteurs sont bout-en-bout (mesure → indicateur affiché ou événement →
-recommandation).
+- E2 a livré le sprite **WeatherStation** branché à un
+  `WeatherStationReader` (Couche 02) qui expose des mesures pures T° +
+  précip avec bruit gaussien et une fenêtre glissante de 365 jours,
+  alimentée par la nouvelle `WeatherUpdateRule` saisonnière (chaîne
+  Markov + log-normale sur paramètres mensuels Mortagne-au-Perche).
+- E3 a livré le sprite **EddyTower** branché à un
+  `EddyTowerSensorReader` (Couche 02) qui dérive le flux net journalier
+  CO2 du delta `EcosystemModel.SoilCarbonStock` day-over-day (modèle
+  1-pool `dC/dt = inputs − k·C` calibré INRAE 4 pour 1000) avec bruit
+  gaussien et une fenêtre glissante 365 j. Convention NEE (positif =
+  émission, négatif = séquestration). Sliders « Couverts d'interculture »
+  et « Restitution des résidus » exposés en Couche 05.
 
 ---
 
