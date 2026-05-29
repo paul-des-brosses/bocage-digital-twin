@@ -544,16 +544,43 @@ explicitement 3 facteurs au niveau onglet :
 | Eau | `RC_FaunaFactorWater` (dérivé `WaterTableDepth` + `PondWaterLevelMeters` si #23 livré) | Hallmann et al. 2017 (Krefeld), MNHN 2024. |
 | Intrants | `RC_FaunaFactorInputs` (dérivé `InputCost` + `InputIntensityFactor`) | IPBES 2019 (rebound faune cessation pesticides), MNHN 2024. |
 
-**Pondérations recalibrées** (à affiner via tests EditMode) : 40 %
+**Pondérations recalibrées** (validées en chantier E5 le 2026-05-29
+via tests EditMode `BiodiversityCompositeIndicatorTests`) : 40 %
 habitat, 25 % eau, 35 % intrants. Le déplacement de poids vers les
 intrants reflète la littérature post-2017 sur le déclin insectes
 attribué majoritairement aux pesticides néonicotinoïdes (Krefeld).
 
-**Effets faibles additionnels** sur `FaunaPopulation` (ADR #51) :
+Constantes correspondantes dans
+`BiodiversityCompositeIndicator` : `HabitatWeight = 0.40`,
+`WaterWeight = 0.25`, `InputsWeight = 0.35`. Bornes de
+normalisation des 3 facteurs : habitat `[0.5, 1.4]`,
+eau `[0.5, 1.0]`, intrants `[0.4, 1.1]` — alignées sur les sorties
+des helpers `FaunaDynamicsRule.Compute{Habitat,Water,Inputs}Factor`.
+Au baseline Perche (densité 90 m/ha, nappe 2 m, intensité 1.0) le
+composite vaut ≈ 0.77 ; en hyper-bocage + bio extensif (intensité
+0.5) il sature à 1.0 ; en intensification totale (intensité ≥ 2.4)
++ collapse habitat/eau il chute sous 0.05.
+
+**Effets faibles additionnels** sur la cible fauna (ADR #51, livré
+chantier E5) :
 
 - **Canicule** : pénalité 0,01/jour si T° > 30 °C, plafond cumul
-  −0,15 sur 30 jours (Hallmann 2017).
-- **Carbone sol** : bonus 0,02 si `SoilCarbonStock > 80 tC/ha`,
-  proxy macrofaune (INRAE).
+  −0,15 sur 30 jours (Hallmann 2017). Implémenté via le compteur
+  `EcosystemModel.RecentCanicularDayCount` (miroir 30 j de
+  `RecentHeatDayCount` au seuil 25 °C). Constantes
+  `FaunaDynamicsRule.CanicularPenaltyPerDay = 0.01` et
+  `CanicularPenaltyCap = 0.15`.
+- **Carbone sol** : bonus +0,02 si `SoilCarbonStock > 80 tC/ha`,
+  proxy macrofaune (INRAE BDAT). Step function — pas de
+  lissage MVP. Constantes
+  `FaunaDynamicsRule.SoilCarbonLivingThresholdTonnesPerHectare = 80.0`
+  et `SoilCarbonBonus = 0.02`.
 
-**Dernière révision** : 2026-05-28 (création post-recadrage).
+Ces modulateurs entrent dans la cible EMA de
+`FaunaDynamicsRule.Apply` (additifs sur le produit
+`baseline × habitat × eau × intrants`) — ils ne touchent PAS le
+composite biodiv directement, qui reste fonction pure des 3 facteurs
+normalisés. Ils affectent donc le visible faune E4 (via
+`FaunaPopulation`) sans déformer l'indicateur Hero.
+
+**Dernière révision** : 2026-05-29 (validé chantier E5).

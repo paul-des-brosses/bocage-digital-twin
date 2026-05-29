@@ -143,6 +143,19 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 
 ## Journal des modifications
 
+- **2026-05-29** — Chantier E5 livré (capital + biodiv 3 facteurs).
+  5 nouveaux RC observables (`RC_TotalInvestment`,
+  `RC_InvestmentHorizon`, `RC_FaunaFactorHabitat`,
+  `RC_FaunaFactorWater`, `RC_FaunaFactorInputs`) — voir §
+  « Chantier E5 » plus haut pour les 4 étapes de câblage Unity
+  (création des 5 assets puis branchement sur les 5 nouveaux slots
+  Inspector du `SimulationRunner`). `InvestmentHorizonIndicator`
+  (Couche 04) instancié par le runner en Awake/Rebuild — pas de
+  GameObject dédié. Dashboard.uxml/uss étendus : nouveau label
+  `decision-popup-investment` dans le popup décision, masqué pour
+  Irrigation/ReduceInputs et affiché live (« Coût upfront estimé :
+  X €/ha ») pour PlantHedges.
+
 - **2026-05-29** — Chantier E3 livré (carbone sol + EddyTower bout-en-bout).
   Nouveau RC observable `RC_SoilCarbonStock.asset` (Couche 04, slot
   `Soil Carbon Container` du `SimulationRunner`). `EddyTowerSensorReader`
@@ -342,20 +355,51 @@ Aucun champ Inspector nouveau.
 | `FaunaSpecies_Swallow.asset` | Sprite frames hirondelle, oscillation horizontale lente. |
 | `FaunaPlacement_Default.asset` | SO racine listant les 4 espèces ci-dessus. |
 
-### Chantier E5 — Capital + biodiv 3 facteurs
+### Chantier E5 — Capital + biodiv 3 facteurs (livré 2026-05-29)
 
-**Nouveaux RC** :
+**Nouveaux RC à créer en `Assets/_Project/Data/RuntimeContainers/`** :
 
 | Asset | Producteur | Consommateurs |
 |---|---|---|
-| `RC_FaunaFactorHabitat.asset` | `SimulationRunner` | `OngletBiodivBinding`, `FaunaPoolBinding` (E4 finalisé). |
+| `RC_FaunaFactorHabitat.asset` | `SimulationRunner` | `OngletBiodivBinding` (E6), `FaunaPoolBinding` (E4). |
 | `RC_FaunaFactorWater.asset` | `SimulationRunner` | idem. |
 | `RC_FaunaFactorInputs.asset` | `SimulationRunner` | idem. |
-| `RC_TotalInvestment.asset` | `SimulationRunner` | `OngletEconomieBinding`, `DecisionPopupBinding` (affichage popup). |
+| `RC_TotalInvestment.asset` | `SimulationRunner` | `OngletEconomieBinding` (E6). |
 | `RC_InvestmentHorizon.asset` | `SimulationRunner` | idem. |
 
-Pas de nouveau GameObject. Les nouveaux RC sont câblés en producteur
-via `SimulationRunner` existant (slots de publication à étendre).
+**Action utilisateur Unity (5 RC à créer + brancher)** :
+
+1. Dans `Assets/_Project/Data/RuntimeContainers/`, créer 5 assets via
+   `Create > Bocage > Data > RC_FaunaFactorHabitat` (idem Water,
+   Inputs, TotalInvestment, InvestmentHorizon). Renommer chacun selon
+   la colonne « Asset » ci-dessus.
+2. Sélectionner `_Bootstrap/SimulationRunner` dans la hiérarchie.
+   Sous la nouvelle rubrique Inspector **« Capital & horizon
+   (chantier E5 / ADR #50) »**, glisser :
+   - `RC_TotalInvestment.asset` → champ `Total Investment Container`.
+   - `RC_InvestmentHorizon.asset` → champ `Investment Horizon Container`.
+3. Sous la nouvelle rubrique **« Biodiv 3 facteurs (chantier E5 / ADR #51) »**,
+   glisser :
+   - `RC_FaunaFactorHabitat.asset` → `Fauna Factor Habitat Container`.
+   - `RC_FaunaFactorWater.asset` → `Fauna Factor Water Container`.
+   - `RC_FaunaFactorInputs.asset` → `Fauna Factor Inputs Container`.
+4. Tous les 5 slots sont optional — si laissés null, la simulation
+   tourne sans erreur (seul l'affichage onglets E6 et le binding popup
+   manquent leurs sources). Conseil : brancher dès maintenant pour
+   ne pas avoir à y revenir au moment de E6.
+
+Pas de nouveau GameObject, pas de nouveau binding sur `_UI_Canvas`
+(le popup `DecisionPopupBinding` existant a été étendu pour afficher
+la ligne « Coût upfront estimé : X €/ha » sous le slider PlantHedges
+— aucune référence Inspector supplémentaire requise, le label UXML
+`decision-popup-investment` est trouvé via `Q<Label>`).
+
+**Diff Dashboard.uxml** : ajout d'un `<ui:Label name="decision-popup-investment" class="decision-popup-investment hidden" />` entre le
+slider magnitude et la rangée de boutons.
+
+**Diff Dashboard.uss** : ajout de la règle `.decision-popup-investment`
+(bordure haut + mono crème, cohérent avec
+`.decision-popup-magnitude-value`).
 
 ### Chantier E6 — Panneau inspection capteurs + 3 onglets Niveau B
 

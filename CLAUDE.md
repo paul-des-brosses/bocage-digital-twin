@@ -241,9 +241,9 @@ Cette règle est non négociable : c'est ce qui distingue un digital twin
 d'un jeu vidéo.
 
 **Statut au 2026-05-29** : principe respecté intégralement après
-livraison de E2 (saisonnalité + WeatherStation) et E3 (carbone sol +
-EddyTower). Les 5 capteurs sont bout-en-bout (mesure → indicateur
-affiché ou événement → recommandation).
+livraison de E2 (saisonnalité + WeatherStation), E3 (carbone sol +
+EddyTower) et E5 (capital + biodiv 3 facteurs). Les 5 capteurs sont
+bout-en-bout (mesure → indicateur affiché ou événement → recommandation).
 
 - E2 a livré le sprite **WeatherStation** branché à un
   `WeatherStationReader` (Couche 02) qui expose des mesures pures T° +
@@ -257,6 +257,17 @@ affiché ou événement → recommandation).
   gaussien et une fenêtre glissante 365 j. Convention NEE (positif =
   émission, négatif = séquestration). Sliders « Couverts d'interculture »
   et « Restitution des résidus » exposés en Couche 05.
+- E5 a refondu la chaîne biodiv en exposant explicitement les 3 facteurs
+  de `FaunaDynamicsRule` (habitat / eau / intrants) via 3 RC observables
+  (`RC_FaunaFactorHabitat/Water/Inputs`). La station météo et la tour
+  Eddy alimentent désormais deux modulateurs faibles sur la cible fauna :
+  pénalité canicule plafonnée −0.15 sur fenêtre 30 j de T° > 30 °C
+  (cf `RecentCanicularDayCount`, source Hallmann 2017) et bonus +0.02
+  si `SoilCarbonStock > 80 tC/ha` (sol vivant INRAE). Aucun effet
+  scénique : chaque modulation remonte à une variable d'état mesurée.
+  Côté capital, le « Coût upfront estimé » affiché dans le popup
+  PlantHedges (et le cumul `TotalInvestment` + horizon de rentabilité)
+  sont dérivés des entrées du `DecisionJournal`, pas d'un calendrier.
 
 ---
 

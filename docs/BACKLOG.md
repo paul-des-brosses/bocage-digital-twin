@@ -114,6 +114,77 @@ Tests EditMode : 8 tests dans `SoilCarbonTests.cs` (équilibre,
 demi-vie, effets leviers couverts/résidus, EddyTower flux + window +
 déterminisme).
 
+### #9 — Capital d'investissement + horizon de rentabilité
+
+**Statut** : ✅ livré en chantier E5 (cf ADR #50) le 2026-05-29.
+
+Nouveau champ `InvestmentCostEurosPerHectare` sur `IRecommendation`
+(Couche 03). Pour `PlantHedgesRecommendation` le coût est calculé
+`magnitude (m/ha) × EurosPerMeterPlanted (5 €/m)` (médiane Réseau Haies
+3-10 €/m). Pour Irrigation et ReduceInputs, le coût est forcé à 0 — ces
+actions sont des dépenses récurrentes déjà intégrées dans `InputCost` /
+`WaterTableDepth`. La valeur est bakée à la construction de la rec
+(manual factory : magnitude cliquée ; auto pathway : default magnitude).
+
+`DecisionJournal.TotalInvestmentEurosPerHectare` (Couche 03) parcourt
+les entrées Accepted/AutoAccepted et cumule via
+`PlantHedgesRecommendation.ComputeInvestmentCost(AppliedMagnitude)`.
+
+`InvestmentHorizonIndicator` (Couche 04, instance stateful) intègre
+`(realProfit − shadowProfit) / 365` par tick après la première action
+investie, et latche `HorizonReachedOnDay` au premier croisement avec
+`TotalInvestment`. Reste latché si la divergence régresse ensuite.
+Reset à chaque `Rebuild`. RCs observables `RC_TotalInvestment` +
+`RC_InvestmentHorizon` (dernier expose `IsReached` + `HorizonYears` +
+`CumulativeProfitDeltaEurosPerHa`).
+
+Affichage popup (Couche 05) : ligne « Coût upfront estimé : X €/ha »
+sous le slider, visible uniquement pour PlantHedges. Rafraîchie live
+sur slider change via `PlantHedgesRecommendation.ComputeInvestmentCost`.
+Le pré-câblage onglet Économie est livré (slots du runner exposés) —
+le binding `OngletEconomieBinding` sera ajouté en chantier E6.
+
+Tests EditMode : 10 tests `InvestmentCostTests` (per-rec cost +
+journal cumul) + 6 tests `InvestmentHorizonIndicatorTests` (idle,
+intégration, latch, Reset).
+
+### #15 (partie 3 facteurs biodiv exposés) — Refonte biodiv minimale
+
+**Statut** : ✅ livré en chantier E5 (cf ADR #51) le 2026-05-29. La
+partie 4ème facteur Diversité paysage reste en backlog post-MVP
+(item #28).
+
+`FaunaDynamicsRule` (Couche 01) refondue avec 3 facteurs explicites
+exposés en helpers publics : `ComputeHabitatFactor` (dérivé
+`HedgerowDensity`, linéaire avec cap à 1.4), `ComputeWaterFactor`
+(dérivé `WaterTableDepth`, plateau ≤ 3 m puis décroissance 8 %/m
+floor 0.5), `ComputeInputsFactor` (asymétrique sur
+`InputIntensityFactor`, floor 0.4). Ajout de deux modulateurs E5 :
+pénalité canicule plafonnée −0.15 sur fenêtre 30 j de T° > 30 °C
+(via nouveau compteur `RecentCanicularDayCount`, source Hallmann
+2017) et bonus +0.02 si `SoilCarbonStock > 80 tC/ha` (sol vivant
+INRAE, proxy macrofaune).
+
+3 RC observables (`RC_FaunaFactorHabitat/Water/Inputs`) avec canal
+raw factor + normalized01 pour les onglets et le futur
+`FaunaPoolBinding` (E4).
+
+`BiodiversityCompositeIndicator` (Couche 04) refondu en somme
+pondérée des 3 facteurs : 40 % habitat + 25 % eau + 35 % intrants
+(déplacement de poids vers intrants conforme littérature post-2017
+Krefeld/MNHN). Signature `Compute(model, scenario)`. Les helpers de
+normalisation `NormalizeHabitat/Water/Inputs` sont publics —
+réutilisés par le runner pour publier le canal normalized01 des
+3 RC. `FaunaPopulation` reste variable d'état (slow EMA E4 viz)
+mais sort du composite — supprime le double-comptage habitat/eau.
+
+Tests EditMode : `FaunaDynamicsRuleTests` étendu avec 5 tests
+canicule/SoilC + 2 tests intégrés (canicule pull-down, soilC
+lift-up). `BiodiversityCompositeIndicatorTests` réécrit pour la
+nouvelle structure (baseline ~0.77, full collapse <0.05,
+hyper-bocage+bio = 1.0, monotonicités hedge/water/inputs, 3 helpers
+de normalisation).
+
 ---
 
 ## 4. Items reportés post-MVP (numérotation historique conservée)
