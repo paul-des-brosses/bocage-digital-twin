@@ -273,6 +273,24 @@
                 <ui:Label text="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." class="scenario-control-hint" />
             </ui:VisualElement>
 
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Couverts d'interculture" class="scenario-control-label" />
+                    <ui:Label name="cover-crops-value" text="0 %" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="cover-crops-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" />
+                <ui:Label text="Part de la sole semée en couverts entre cultures. 0 = sol nu. 100 = couverts intégraux (Solagro Afterres 2050)." class="scenario-control-hint" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="scenario-control">
+                <ui:VisualElement class="scenario-control-header">
+                    <ui:Label text="Restitution des résidus" class="scenario-control-label" />
+                    <ui:Label name="residue-restitution-value" text="0 %" class="scenario-control-value" />
+                </ui:VisualElement>
+                <ui:Slider name="residue-restitution-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" />
+                <ui:Label text="Part des résidus de récolte laissés au sol (vs. exportés en paille/ensilage)." class="scenario-control-hint" />
+            </ui:VisualElement>
+
             <ui:Label text="Horizon de simulation" class="scenario-section-title scenario-section-title--decision" tooltip="Durée totale du run sur laquelle l'agriculteur veut projeter sa stratégie." />
 
             <ui:VisualElement class="scenario-control">

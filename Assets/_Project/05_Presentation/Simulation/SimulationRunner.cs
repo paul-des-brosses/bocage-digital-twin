@@ -54,6 +54,8 @@ namespace Bocage.Presentation.Simulation
         [SerializeField] private RC_IntegratedProfitability profitabilityContainer;
         [SerializeField] private RC_BiodiversityComposite biodiversityContainer;
         [SerializeField] private RC_TechDelta techDeltaContainer;
+        [SerializeField, Tooltip("Optional. Soil organic carbon Hero KPI (chantier E3 / ADR #48). Safe to leave null until the onglet Climat binding is wired in chantier E6.")]
+        private RC_SoilCarbonStock soilCarbonContainer;
 
         [Header("Derived presentation channels (sub-étape 9α / 9β)")]
         [SerializeField, Tooltip("Optional. Soil-moisture proxy consumed by S_Meadow. Derived from WaterTableDepth (SoilMoistureIndicator). Safe to leave null if the meadow shader is not in the scene yet.")]
@@ -80,6 +82,7 @@ namespace Bocage.Presentation.Simulation
         private DecisionJournal _decisionJournal;
         private FaunaSensorReader _faunaSensorReader;
         private WeatherStationReader _weatherStationReader;
+        private EddyTowerSensorReader _eddyTowerSensorReader;
         // Per-type counters for manual actions (ADR #47). Disambiguates
         // multiple clicks on the same simulated day — each click gets a
         // unique recommendation id even though the day suffix collides.
@@ -119,6 +122,17 @@ namespace Bocage.Presentation.Simulation
         /// the recorded history; nothing else is wired to it yet.
         /// </summary>
         public WeatherStationReader WeatherStation => _weatherStationReader;
+
+        /// <summary>
+        /// On-site EddyTower sensor (chantier E3 / ADR #48). Owns the
+        /// noisy reading of today's net CO2 flux derived from the
+        /// day-over-day change in <see cref="EcosystemModel.SoilCarbonStock"/>,
+        /// plus a 365-day sliding window for the inspection panel that
+        /// will be built in chantier E6 / ADR #53. Exposed so future
+        /// bindings can read the recorded flux history; nothing else
+        /// consumes it yet.
+        /// </summary>
+        public EddyTowerSensorReader EddyTower => _eddyTowerSensorReader;
 
         /// <summary>
         /// Append-only history of events emitted by the Couche 2
@@ -194,6 +208,7 @@ namespace Bocage.Presentation.Simulation
             // and isolated from every other sub-system.
             _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
             _weatherStationReader = new WeatherStationReader(new SeededRandom(masterSeed));
+            _eddyTowerSensorReader = new EddyTowerSensorReader(new SeededRandom(masterSeed));
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -246,6 +261,7 @@ namespace Bocage.Presentation.Simulation
                     _eventLog,
                     _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
                 _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
+                _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
                 PublishRecommendations();
                 // TickCompleted fires BEFORE PublishIndicators so that
                 // the shadow runner (subscriber) advances its own engine
@@ -312,6 +328,12 @@ namespace Bocage.Presentation.Simulation
             // restarts from day 0 in lockstep with the rebuilt engine so
             // the 365-day buffer is consistent with the new trajectory.
             _weatherStationReader = new WeatherStationReader(new SeededRandom(masterSeed));
+            // Same lockstep reasoning for the EddyTower: the noisy flux
+            // history restarts from day 0 with a fresh baseline so the
+            // first recorded sample is taken against the new initial
+            // SoilCarbonStock rather than against the previous run's
+            // last stock.
+            _eddyTowerSensorReader = new EddyTowerSensorReader(new SeededRandom(masterSeed));
 
             PublishIndicators();
             // Rebuild does NOT touch the ticking state — the caller
@@ -359,6 +381,7 @@ namespace Bocage.Presentation.Simulation
                     _eventLog,
                     _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
                 _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
+                _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
                 PublishRecommendations();
                 TickCompleted?.Invoke();
             }
@@ -498,6 +521,13 @@ namespace Bocage.Presentation.Simulation
                 double raw = TechDeltaIndicator.Compute(model, shadowModel, _engine.Scenario);
                 double normalized = TechDeltaIndicator.Normalize(raw);
                 techDeltaContainer.Set((float)raw, (float)normalized);
+            }
+
+            if (soilCarbonContainer != null)
+            {
+                double raw = SoilCarbonIndicator.Compute(model);
+                double normalized = SoilCarbonIndicator.Normalize(raw);
+                soilCarbonContainer.Set((float)raw, (float)normalized);
             }
 
             // ---- Derived presentation channels (sub-étape 9α / 9β) ----

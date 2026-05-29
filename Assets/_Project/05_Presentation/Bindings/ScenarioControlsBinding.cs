@@ -44,6 +44,8 @@ namespace Bocage.Presentation.Bindings
         [SerializeField] private string maecCoverageSliderName = "maec-coverage-slider";
         [SerializeField] private string pseRateSliderName = "pse-rate-slider";
         [SerializeField] private string horizonSliderName = "horizon-slider";
+        [SerializeField] private string coverCropsSliderName = "cover-crops-slider";
+        [SerializeField] private string residueRestitutionSliderName = "residue-restitution-slider";
 
         [Header("UXML element names — value labels")]
         [SerializeField] private string temperatureValueLabelName = "temperature-anomaly-value";
@@ -53,11 +55,13 @@ namespace Bocage.Presentation.Bindings
         [SerializeField] private string maecCoverageValueLabelName = "maec-coverage-value";
         [SerializeField] private string pseRateValueLabelName = "pse-rate-value";
         [SerializeField] private string horizonValueLabelName = "horizon-value";
+        [SerializeField] private string coverCropsValueLabelName = "cover-crops-value";
+        [SerializeField] private string residueRestitutionValueLabelName = "residue-restitution-value";
 
         private UIDocument _document;
-        private Slider _tempSlider, _precipSlider, _hedgeRemovalSlider, _inputIntensitySlider, _maecSlider, _pseSlider;
+        private Slider _tempSlider, _precipSlider, _hedgeRemovalSlider, _inputIntensitySlider, _maecSlider, _pseSlider, _coverCropsSlider, _residueRestitutionSlider;
         private SliderInt _horizonSlider;
-        private Label _tempLabel, _precipLabel, _hedgeRemovalLabel, _inputIntensityLabel, _maecLabel, _pseLabel, _horizonLabel;
+        private Label _tempLabel, _precipLabel, _hedgeRemovalLabel, _inputIntensityLabel, _maecLabel, _pseLabel, _horizonLabel, _coverCropsLabel, _residueRestitutionLabel;
         private bool _wiredCallbacks;
 
         private void Awake()
@@ -88,6 +92,8 @@ namespace Bocage.Presentation.Bindings
             _maecSlider = root.Q<Slider>(maecCoverageSliderName);
             _pseSlider = root.Q<Slider>(pseRateSliderName);
             _horizonSlider = root.Q<SliderInt>(horizonSliderName);
+            _coverCropsSlider = root.Q<Slider>(coverCropsSliderName);
+            _residueRestitutionSlider = root.Q<Slider>(residueRestitutionSliderName);
 
             _tempLabel = root.Q<Label>(temperatureValueLabelName);
             _precipLabel = root.Q<Label>(precipitationValueLabelName);
@@ -96,10 +102,12 @@ namespace Bocage.Presentation.Bindings
             _maecLabel = root.Q<Label>(maecCoverageValueLabelName);
             _pseLabel = root.Q<Label>(pseRateValueLabelName);
             _horizonLabel = root.Q<Label>(horizonValueLabelName);
+            _coverCropsLabel = root.Q<Label>(coverCropsValueLabelName);
+            _residueRestitutionLabel = root.Q<Label>(residueRestitutionValueLabelName);
 
             if (_tempSlider == null || _precipSlider == null || _hedgeRemovalSlider == null
                 || _inputIntensitySlider == null || _maecSlider == null || _pseSlider == null
-                || _horizonSlider == null)
+                || _horizonSlider == null || _coverCropsSlider == null || _residueRestitutionSlider == null)
             {
                 SimLogger.DebugLog("[ScenarioControlsBinding] one or more scenario sliders not found — check UXML names");
             }
@@ -120,6 +128,8 @@ namespace Bocage.Presentation.Bindings
             SetSlider(_maecSlider, _maecLabel, (float)s.MaecCoveragePercent.Current, FormatPercent);
             SetSlider(_pseSlider, _pseLabel, (float)s.PseSubsidyRate.Current, FormatPseRate);
             SetSliderInt(_horizonSlider, _horizonLabel, s.HorizonInDays, FormatHorizon);
+            SetSlider(_coverCropsSlider, _coverCropsLabel, (float)s.CoverCropsCoveragePercent.Current, FormatPercent);
+            SetSlider(_residueRestitutionSlider, _residueRestitutionLabel, (float)s.ResidueRestitutionPercent.Current, FormatPercent);
         }
 
         private void WireCallbacks()
@@ -132,6 +142,8 @@ namespace Bocage.Presentation.Bindings
             if (_maecSlider != null) _maecSlider.RegisterValueChangedCallback(OnMaecChanged);
             if (_pseSlider != null) _pseSlider.RegisterValueChangedCallback(OnPseChanged);
             if (_horizonSlider != null) _horizonSlider.RegisterValueChangedCallback(OnHorizonChanged);
+            if (_coverCropsSlider != null) _coverCropsSlider.RegisterValueChangedCallback(OnCoverCropsChanged);
+            if (_residueRestitutionSlider != null) _residueRestitutionSlider.RegisterValueChangedCallback(OnResidueRestitutionChanged);
             _wiredCallbacks = true;
         }
 
@@ -145,6 +157,8 @@ namespace Bocage.Presentation.Bindings
             if (_maecSlider != null) _maecSlider.UnregisterValueChangedCallback(OnMaecChanged);
             if (_pseSlider != null) _pseSlider.UnregisterValueChangedCallback(OnPseChanged);
             if (_horizonSlider != null) _horizonSlider.UnregisterValueChangedCallback(OnHorizonChanged);
+            if (_coverCropsSlider != null) _coverCropsSlider.UnregisterValueChangedCallback(OnCoverCropsChanged);
+            if (_residueRestitutionSlider != null) _residueRestitutionSlider.UnregisterValueChangedCallback(OnResidueRestitutionChanged);
             _wiredCallbacks = false;
         }
 
@@ -197,6 +211,20 @@ namespace Bocage.Presentation.Bindings
             if (_horizonLabel != null) _horizonLabel.text = FormatHorizon(evt.newValue);
             if (runner == null || runner.Scenario == null) return;
             runner.Scenario.HorizonInDays = evt.newValue;
+        }
+
+        private void OnCoverCropsChanged(ChangeEvent<float> evt)
+        {
+            if (_coverCropsLabel != null) _coverCropsLabel.text = FormatPercent(evt.newValue);
+            if (runner == null || runner.Scenario == null) return;
+            runner.Scenario.CoverCropsCoveragePercent.SetTarget(evt.newValue, transitionDurationDays);
+        }
+
+        private void OnResidueRestitutionChanged(ChangeEvent<float> evt)
+        {
+            if (_residueRestitutionLabel != null) _residueRestitutionLabel.text = FormatPercent(evt.newValue);
+            if (runner == null || runner.Scenario == null) return;
+            runner.Scenario.ResidueRestitutionPercent.SetTarget(evt.newValue, transitionDurationDays);
         }
 
         /// <summary>
