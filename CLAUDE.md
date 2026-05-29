@@ -132,7 +132,7 @@ feat(simulation): add deterministic seeded random with sub-seed derivation
 ### 5.2 Couche 02_Sensors
 
 - Transforme l'état simulé en mesures bruitées (modèle de capteur).
-- Détecteurs d'événements (chalara détecté, sécheresse prolongée, etc.).
+- Détecteurs d'événements (sécheresse prolongée, anomalie acoustique faune, etc.).
 - Référence Couche 1, jamais l'inverse.
 
 ### 5.3 Couche 03_Decision

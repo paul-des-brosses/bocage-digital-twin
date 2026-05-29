@@ -39,8 +39,8 @@ Perche bocage site with:
   user to arbitrate (e.g. activate auxiliary irrigation under prolonged
   drought, reduce input intensity after a fauna acoustic anomaly). Three
   manual "punctual interventions" mirror the same actions for the farmer
-  to trigger them off-event. Chalara detection is deferred to a future
-  pass with a proper visual sensor — see `docs/BACKLOG.md` #16.
+  to trigger them off-event — all of them journalled and audited through
+  the same `DecisionJournal` (ADR #47).
 - **A comparison view** showing the simulation with and without
   instrumented management, side by side.
 

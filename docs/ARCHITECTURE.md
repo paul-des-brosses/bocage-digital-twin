@@ -133,11 +133,9 @@ réaliste) et détecte les événements significatifs.
 - `EventDetector` : compare l'état du modèle (et la lecture mesurée
   fauna) à des seuils calibrés pour émettre des événements (sécheresse
   prolongée, anomalie acoustique). Cooldown par type pour éviter le
-  spam. La détection chalara est désactivée en v1 (capteur inadapté —
-  cf `BACKLOG.md` #16).
+  spam.
 - `Events/` : `IEvent` + classes d'événements concrets
-  (`DroughtProlongedEvent`, `FaunaAcousticAnomalyEvent`,
-  `HedgeChalaraEvent` conservé dormant).
+  (`DroughtProlongedEvent`, `FaunaAcousticAnomalyEvent`).
 - `EventLog` : append-only chronologique des événements émis.
 
 **Non-responsabilités**
@@ -394,8 +392,8 @@ shadow.
 
 ### Événements EventBus
 
-- Classes immutables, suffixe `Event` (ex. `ChalaraDetectedEvent`,
-  `DroughtThresholdCrossedEvent`).
+- Classes immutables, suffixe `Event` (ex. `DroughtProlongedEvent`,
+  `FaunaAcousticAnomalyEvent`).
 - Stockés dans `Assets/_Project/Events/`.
 
 ### Asmdef
@@ -430,22 +428,27 @@ Cette section liste les nouvelles classes et assets attendus par
 chantier `ROADMAP.md`. Annotations only — ne pas implémenter sans
 suivre le chantier correspondant.
 
-### 8.1 Chantier E1 — Cleanup chalara + refactor actions manuelles
+### 8.1 Chantier E1 — Cleanup chalara + refactor actions manuelles (livré 2026-05-29)
 
 **Couche 03 — Decision** :
 
-- Adaptation de `SimulationRunner.ApplyManualXxx()` → instancie une
-  `IRecommendation` (`ManualPlantHedgesRecommendation`,
-  `ManualIrrigationRecommendation`, `ManualReduceInputsRecommendation`)
-  avec `DefaultVerdict = AutoAccepted` et `TriggeredByEventId = null`.
-- Convention `Id` : `manual-<action>#<day>`.
+- `SimulationRunner.ApplyManualXxx()` route les clics utilisateurs via
+  les factories statiques `PlantHedgesRecommendation.Manual(day, seq, magnitude)`,
+  `IrrigationAdviceRecommendation.Manual(...)`, `ReduceInputsRecommendation.Manual(...)`
+  — pas de classes Manual* distinctes, les voies auto et manuelle
+  partagent la même classe avec wordings différents.
+- Convention `Id` : `manual-<action>#<day>-<sequence>` (compteur monotone
+  par type dans `SimulationRunner` pour disambiguer les clics multiples
+  le même jour).
 - `RecommendationProvenance.Format()` étendu : fallback « Action
   déclenchée par l'utilisateur le jour X » si
   `TriggeredByEventId == null`.
+- Pattern rationale uniforme ADR #55 implémenté via
+  `FormatAutoRationale` / `FormatManualRationale` sur chaque rec.
 
 **Couche 02 — Sensors** :
 
-- Suppression `HedgeChalaraEvent.cs` (cf ADR #46).
+- `HedgeChalaraEvent.cs` supprimé (ADR #46).
 
 **Couche 04 — Indicators** :
 

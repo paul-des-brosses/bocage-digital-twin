@@ -146,8 +146,8 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
   lockstep dans `Rebuild`). Modifie la signature de
   `EventDetector.Detect(model, log, measuredFaunaPopulation)` —
   l'alerte fauna se base désormais sur la lecture bruitée, pas la
-  vérité modèle. `HedgeChalaraEvent` retiré du détecteur — voir
-  BACKLOG #16 pour la réactivation via un capteur adapté.
+  vérité modèle. `HedgeChalaraEvent` retiré du détecteur en
+  préparation du chantier E1 (purge totale chalara, ADR #46).
 
 - **2026-05-26** — Sub-étape 10a livrée : ajout du composant
   `ManualActionsBinding` sur `_UI_Canvas` (interventions ponctuelles
@@ -255,11 +255,13 @@ Cette section liste les câblages prévus par les chantiers E1-E7 de
 `docs/ROADMAP.md`. À mettre à jour au fil des livraisons en
 basculant les entrées dans la section principale ci-dessus.
 
-### Chantier E1 — Cleanup chalara + refactor actions manuelles
+### Chantier E1 — Cleanup chalara + refactor actions manuelles (livré 2026-05-29)
 
-Pas de nouveau câblage scène. Le `ManualActionsBinding` existant
-sur `_UI_Canvas` (sub-étape 10a) sera adapté pour journaliser via
-`DecisionJournal` au lieu d'appliquer directement (cf ADR #47).
+Pas de nouveau câblage scène. Le `ManualActionsBinding` existant sur
+`_UI_Canvas` (sub-étape 10a) reste inchangé côté binding : il appelle
+toujours `SimulationRunner.ApplyManualXxx()`. C'est l'implémentation
+de ces méthodes qui a été refactorée pour journaliser via
+`DecisionJournal` au lieu d'appliquer directement (ADR #47).
 Aucun champ Inspector nouveau.
 
 ### Chantier E2 — Saisonnalité + WeatherStation
