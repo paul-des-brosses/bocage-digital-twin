@@ -3035,6 +3035,7 @@ MonoBehaviour:
   magnitudeLabelName: decision-popup-magnitude-label
   magnitudeSliderName: decision-popup-magnitude-slider
   magnitudeValueLabelName: decision-popup-magnitude-value
+  investmentLabelName: decision-popup-investment
   validateButtonName: decision-popup-validate-button
   ignoreButtonName: decision-popup-ignore-button
   deferButtonName: decision-popup-defer-button
@@ -4183,6 +4184,11 @@ MonoBehaviour:
   biodiversityContainer: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
   techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
   soilCarbonContainer: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
+  totalInvestmentContainer: {fileID: 11400000, guid: 690dd7e9cd25351449495fa55aca9ad3, type: 2}
+  investmentHorizonContainer: {fileID: 11400000, guid: 16decbaa7511a64449f9400e812a97bf, type: 2}
+  faunaFactorHabitatContainer: {fileID: 11400000, guid: eb4348d0290d2294e87a06c9d5799cf4, type: 2}
+  faunaFactorWaterContainer: {fileID: 11400000, guid: 4956b208ed4df5e4aa9b625d88179fc2, type: 2}
+  faunaFactorInputsContainer: {fileID: 11400000, guid: be322440217f58345b5231cbc6d85e79, type: 2}
   soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
   hedgerowHealthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
   shadowRunner: {fileID: 2115294100}
