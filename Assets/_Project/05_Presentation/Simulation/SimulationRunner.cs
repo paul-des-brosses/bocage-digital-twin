@@ -7,6 +7,7 @@ using Bocage.Sensors;
 using Bocage.SimulationCore;
 using Bocage.SimulationCore.Logging;
 using Bocage.SimulationCore.Model;
+using Bocage.SimulationCore.Rules;
 using UnityEngine;
 
 namespace Bocage.Presentation.Simulation
