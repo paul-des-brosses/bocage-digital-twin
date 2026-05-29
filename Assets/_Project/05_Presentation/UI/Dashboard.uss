@@ -701,6 +701,24 @@
     -unity-text-align: middle-right;
 }
 
+/*
+ * Upfront capital cost line (chantier E5 / ADR #50). Mono digits so
+ * the euro figure pops; same crème palette as values elsewhere. The
+ * top border separates it cleanly from the slider above so it reads
+ * as a derived consequence of the slider position. .hidden hides it
+ * for recs whose cost is always zero (Irrigation, ReduceInputs).
+ */
+.decision-popup-investment {
+    font-size: 11px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top-width: 1px;
+    border-top-color: rgba(170, 162, 145, 0.15);
+    white-space: normal;
+}
+
 .decision-popup-actions {
     flex-direction: row;
     justify-content: flex-end;

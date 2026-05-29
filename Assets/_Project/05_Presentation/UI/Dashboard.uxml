@@ -400,6 +400,16 @@
                 </ui:VisualElement>
                 <ui:Slider name="decision-popup-magnitude-slider" low-value="0" high-value="1" value="0" class="decision-popup-magnitude-slider" show-input-field="true" />
 
+                <!--
+                Upfront capital cost line (chantier E5 / ADR #50).
+                Visible only for PlantHedges recs (positive cost);
+                hidden for Irrigation, ReduceInputs and any rec whose
+                InvestmentCostFor(magnitude) returns 0. DecisionPopupBinding
+                toggles the .hidden class at ShowPopupFor and refreshes
+                the value live on slider change.
+                -->
+                <ui:Label name="decision-popup-investment" text="" class="decision-popup-investment hidden" />
+
                 <ui:VisualElement class="decision-popup-actions">
                     <ui:Button name="decision-popup-ignore-button" text="Ignorer" class="decision-popup-button decision-popup-button--ignore" tooltip="Rejette définitivement cette recommandation. Aucune action mécanique. La simulation reprend." />
                     <ui:Button name="decision-popup-defer-button" text="Voir plus tard" class="decision-popup-button decision-popup-button--defer" tooltip="Garde la recommandation en attente sans décider maintenant. Retrouvable via le bouton 'Recommandations en cours'. La simulation reprend." />

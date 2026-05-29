@@ -57,6 +57,20 @@ namespace Bocage.Presentation.Simulation
         [SerializeField, Tooltip("Optional. Soil organic carbon Hero KPI (chantier E3 / ADR #48). Safe to leave null until the onglet Climat binding is wired in chantier E6.")]
         private RC_SoilCarbonStock soilCarbonContainer;
 
+        [Header("Capital & horizon (chantier E5 / ADR #50)")]
+        [SerializeField, Tooltip("Optional. Cumulative upfront capital invested via « Replanter haies » manual actions. Safe to leave null until the popup + Économie onglet bindings are wired.")]
+        private RC_TotalInvestment totalInvestmentContainer;
+        [SerializeField, Tooltip("Optional. Horizon de rentabilité (years to recoup the total investment via real-vs-shadow profit divergence). Safe to leave null until the popup + Économie onglet bindings are wired.")]
+        private RC_InvestmentHorizon investmentHorizonContainer;
+
+        [Header("Biodiv 3 facteurs (chantier E5 / ADR #51)")]
+        [SerializeField, Tooltip("Optional. Habitat factor (derived from HedgerowDensity via FaunaDynamicsRule.ComputeHabitatFactor). Safe to leave null until the onglet Biodiv binding is wired in chantier E6.")]
+        private RC_FaunaFactorHabitat faunaFactorHabitatContainer;
+        [SerializeField, Tooltip("Optional. Water factor (derived from WaterTableDepth via FaunaDynamicsRule.ComputeWaterFactor). Safe to leave null until the onglet Biodiv binding is wired in chantier E6.")]
+        private RC_FaunaFactorWater faunaFactorWaterContainer;
+        [SerializeField, Tooltip("Optional. Inputs factor (derived from ScenarioContext.InputIntensityFactor via FaunaDynamicsRule.ComputeInputsFactor). Safe to leave null until the onglet Biodiv binding is wired in chantier E6.")]
+        private RC_FaunaFactorInputs faunaFactorInputsContainer;
+
         [Header("Derived presentation channels (sub-étape 9α / 9β)")]
         [SerializeField, Tooltip("Optional. Soil-moisture proxy consumed by S_Meadow. Derived from WaterTableDepth (SoilMoistureIndicator). Safe to leave null if the meadow shader is not in the scene yet.")]
         private RC_SoilMoisture soilMoistureContainer;
@@ -83,6 +97,12 @@ namespace Bocage.Presentation.Simulation
         private FaunaSensorReader _faunaSensorReader;
         private WeatherStationReader _weatherStationReader;
         private EddyTowerSensorReader _eddyTowerSensorReader;
+        // Cumulative profit-delta integrator for the « horizon de
+        // rentabilité » indicator (chantier E5 / ADR #50). Stateful by
+        // nature — the integral cannot be derived from a snapshot —
+        // so we own one instance per real run and reset it on Rebuild
+        // so each trajectory starts with a clean cumul.
+        private InvestmentHorizonIndicator _investmentHorizon;
         // Per-type counters for manual actions (ADR #47). Disambiguates
         // multiple clicks on the same simulated day — each click gets a
         // unique recommendation id even though the day suffix collides.
@@ -209,6 +229,7 @@ namespace Bocage.Presentation.Simulation
             _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
             _weatherStationReader = new WeatherStationReader(new SeededRandom(masterSeed));
             _eddyTowerSensorReader = new EddyTowerSensorReader(new SeededRandom(masterSeed));
+            _investmentHorizon = new InvestmentHorizonIndicator();
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -271,6 +292,7 @@ namespace Bocage.Presentation.Simulation
                 // Without this order, TechDelta would drift by an
                 // off-by-one tick under sustained scenario stress.
                 TickCompleted?.Invoke();
+                UpdateInvestmentHorizon();
                 PublishIndicators();
             }
         }
@@ -334,6 +356,7 @@ namespace Bocage.Presentation.Simulation
             // SoilCarbonStock rather than against the previous run's
             // last stock.
             _eddyTowerSensorReader = new EddyTowerSensorReader(new SeededRandom(masterSeed));
+            _investmentHorizon = new InvestmentHorizonIndicator();
 
             PublishIndicators();
             // Rebuild does NOT touch the ticking state — the caller
@@ -384,6 +407,7 @@ namespace Bocage.Presentation.Simulation
                 _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
                 PublishRecommendations();
                 TickCompleted?.Invoke();
+                UpdateInvestmentHorizon();
             }
             PublishIndicators();
             SimLogger.SimulationLog(
@@ -504,9 +528,41 @@ namespace Bocage.Presentation.Simulation
 
             if (biodiversityContainer != null)
             {
-                double raw = BiodiversityCompositeIndicator.Compute(model);
+                double raw = BiodiversityCompositeIndicator.Compute(model, _engine.Scenario);
                 double normalized = BiodiversityCompositeIndicator.Normalize(raw);
                 biodiversityContainer.Set((float)raw, (float)normalized);
+            }
+
+            // ---- 3 fauna factors (chantier E5 / ADR #51) ----
+            // Always compute when any consumer is wired; pre-E6 only the
+            // composite was published, but the onglet Biodiv (E6) and the
+            // future FaunaPoolBinding selectivity (E4) both need the
+            // factor decomposition. Cheap pure functions, no allocation.
+            if (faunaFactorHabitatContainer != null
+                || faunaFactorWaterContainer != null
+                || faunaFactorInputsContainer != null)
+            {
+                double habitatF = FaunaDynamicsRule.ComputeHabitatFactor(model.HedgerowDensity);
+                double waterF = FaunaDynamicsRule.ComputeWaterFactor(model.WaterTableDepth);
+                double inputsF = FaunaDynamicsRule.ComputeInputsFactor(_engine.Scenario.InputIntensityFactor.Current);
+                if (faunaFactorHabitatContainer != null)
+                {
+                    faunaFactorHabitatContainer.Set(
+                        (float)habitatF,
+                        (float)BiodiversityCompositeIndicator.NormalizeHabitat(habitatF));
+                }
+                if (faunaFactorWaterContainer != null)
+                {
+                    faunaFactorWaterContainer.Set(
+                        (float)waterF,
+                        (float)BiodiversityCompositeIndicator.NormalizeWater(waterF));
+                }
+                if (faunaFactorInputsContainer != null)
+                {
+                    faunaFactorInputsContainer.Set(
+                        (float)inputsF,
+                        (float)BiodiversityCompositeIndicator.NormalizeInputs(inputsF));
+                }
             }
 
             if (techDeltaContainer != null)
@@ -546,6 +602,49 @@ namespace Bocage.Presentation.Simulation
                 double normalized = HedgerowHealthIndicator.Normalize(health);
                 hedgerowHealthContainer.Set((float)health, (float)normalized);
             }
+
+            // ---- Capital + horizon (chantier E5 / ADR #50) ----
+            // _investmentHorizon is updated separately in TickLoop /
+            // FastForwardTo so the per-tick integral is only counted
+            // once per simulated day (not on manual-action publishes
+            // that happen between ticks). PublishIndicators just mirrors
+            // its current state to the observable containers.
+            if (totalInvestmentContainer != null)
+            {
+                double total = _decisionJournal != null ? _decisionJournal.TotalInvestmentEurosPerHectare : 0.0;
+                float norm = Mathf.Clamp01((float)total / RC_TotalInvestment.MaxEurosPerHectare);
+                totalInvestmentContainer.Set((float)total, norm);
+            }
+
+            if (investmentHorizonContainer != null && _investmentHorizon != null)
+            {
+                investmentHorizonContainer.Set(
+                    _investmentHorizon.IsHorizonReached,
+                    (float)_investmentHorizon.HorizonYears,
+                    (float)_investmentHorizon.CumulativeProfitDeltaEurosPerHa);
+            }
+        }
+
+        /// <summary>
+        /// Per-tick contribution of the integrated profitability delta
+        /// to the « horizon de rentabilité » accumulator (chantier E5 /
+        /// ADR #50). Called from the tick loops AFTER the real and
+        /// shadow engines have both advanced, so the two annualised
+        /// profits are taken on synchronised post-tick state. Idempotent
+        /// against a missing shadow runner: the comparison degenerates
+        /// to <c>real − real == 0</c>, which leaves the integral idle.
+        /// </summary>
+        private void UpdateInvestmentHorizon()
+        {
+            if (_investmentHorizon == null || _engine == null || _decisionJournal == null) return;
+            double totalInvestment = _decisionJournal.TotalInvestmentEurosPerHectare;
+            if (totalInvestment <= 0.0) return; // no investment yet — keep idle.
+            double realProfit = IntegratedProfitabilityIndicator.Compute(_engine.Model, _engine.Scenario);
+            var shadowModel = shadowRunner != null && shadowRunner.ShadowModel != null
+                ? shadowRunner.ShadowModel
+                : _engine.Model;
+            double shadowProfit = IntegratedProfitabilityIndicator.Compute(shadowModel, _engine.Scenario);
+            _investmentHorizon.Update(realProfit, shadowProfit, totalInvestment, _currentDay);
         }
     }
 }

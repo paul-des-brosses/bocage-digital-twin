@@ -47,6 +47,7 @@ namespace Bocage.Presentation.Bindings
         [SerializeField] private string magnitudeLabelName = "decision-popup-magnitude-label";
         [SerializeField] private string magnitudeSliderName = "decision-popup-magnitude-slider";
         [SerializeField] private string magnitudeValueLabelName = "decision-popup-magnitude-value";
+        [SerializeField] private string investmentLabelName = "decision-popup-investment";
         [SerializeField] private string validateButtonName = "decision-popup-validate-button";
         [SerializeField] private string ignoreButtonName = "decision-popup-ignore-button";
         [SerializeField] private string deferButtonName = "decision-popup-defer-button";
@@ -56,6 +57,7 @@ namespace Bocage.Presentation.Bindings
         private UIDocument _document;
         private VisualElement _overlay;
         private Label _title, _sourceEvent, _rationale, _magnitudeLabel, _magnitudeValueLabel;
+        private Label _investmentLabel;
         private VisualElement _outcomesContainer;
         private Slider _magnitudeSlider;
         private Button _validateButton, _ignoreButton, _deferButton;
@@ -135,6 +137,7 @@ namespace Bocage.Presentation.Bindings
             _magnitudeLabel = root.Q<Label>(magnitudeLabelName);
             _magnitudeSlider = root.Q<Slider>(magnitudeSliderName);
             _magnitudeValueLabel = root.Q<Label>(magnitudeValueLabelName);
+            _investmentLabel = root.Q<Label>(investmentLabelName);
             _validateButton = root.Q<Button>(validateButtonName);
             _ignoreButton = root.Q<Button>(ignoreButtonName);
             _deferButton = root.Q<Button>(deferButtonName);
@@ -343,11 +346,38 @@ namespace Bocage.Presentation.Bindings
 
             if (_magnitudeLabel != null) _magnitudeLabel.text = label;
             if (_magnitudeValueLabel != null) _magnitudeValueLabel.text = FormatMagnitude((float)def);
+            RefreshInvestmentLabel(rec, def);
         }
 
         private void OnMagnitudeChanged(ChangeEvent<float> evt)
         {
             if (_magnitudeValueLabel != null) _magnitudeValueLabel.text = FormatMagnitude(evt.newValue);
+            RefreshInvestmentLabel(_currentRecommendation, evt.newValue);
+        }
+
+        /// <summary>
+        /// Shows / hides and refreshes the « Coût upfront estimé : X €/ha »
+        /// line below the magnitude slider (chantier E5 / ADR #50). Only
+        /// <see cref="PlantHedgesRecommendation"/> contributes a non-zero
+        /// cost — the line is hidden for Irrigation and ReduceInputs whose
+        /// expense is folded into <c>InputCost</c> / <c>WaterTableDepth</c>.
+        /// Called from both <see cref="ConfigureMagnitudeSlider"/> (initial
+        /// default magnitude) and <see cref="OnMagnitudeChanged"/> (live).
+        /// </summary>
+        private void RefreshInvestmentLabel(IRecommendation rec, double magnitude)
+        {
+            if (_investmentLabel == null) return;
+            if (rec is PlantHedgesRecommendation)
+            {
+                double cost = PlantHedgesRecommendation.ComputeInvestmentCost(magnitude);
+                _investmentLabel.text = "Coût upfront estimé : " + cost.ToString("F0", Inv) + " €/ha";
+                _investmentLabel.RemoveFromClassList(HiddenClass);
+            }
+            else
+            {
+                _investmentLabel.text = "";
+                _investmentLabel.AddToClassList(HiddenClass);
+            }
         }
 
         private string FormatMagnitude(float value)
