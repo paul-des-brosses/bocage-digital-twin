@@ -95,6 +95,23 @@ namespace Bocage.SimulationCore.Model
         private int _heatDayBufferIndex;
 
         /// <summary>
+        /// Number of days with daily mean temperature above
+        /// <see cref="CanicularDayThresholdCelsius"/> over the last
+        /// <see cref="HeatDayWindowDays"/> simulated days. Tracked in
+        /// parallel with <see cref="RecentHeatDayCount"/> but at a higher
+        /// threshold (heatwave, not just hot day). Used by
+        /// <see cref="Bocage.SimulationCore.Rules.FaunaDynamicsRule"/>
+        /// to apply a small penalty on fauna when heatwaves accumulate
+        /// (chantier E5 / ADR #51 — Hallmann 2017 insect collapse
+        /// under thermal stress).
+        /// </summary>
+        public int RecentCanicularDayCount { get; private set; }
+
+        public const double CanicularDayThresholdCelsius = 30.0;
+        private readonly int[] _canicularDayBuffer = new int[HeatDayWindowDays];
+        private int _canicularDayBufferIndex;
+
+        /// <summary>
         /// Soil organic carbon stock in tonnes of carbon per hectare,
         /// tracked by the 1-pool model in
         /// <see cref="Bocage.SimulationCore.Rules.SoilCarbonDynamicsRule"/>
@@ -180,7 +197,11 @@ namespace Bocage.SimulationCore.Model
         /// Rolling-window update: registers today's daily mean temperature,
         /// overwriting the entry that was recorded
         /// <see cref="HeatDayWindowDays"/> days ago. Maintains
-        /// <see cref="RecentHeatDayCount"/> in O(1).
+        /// <see cref="RecentHeatDayCount"/> (T° > 25 °C) and
+        /// <see cref="RecentCanicularDayCount"/> (T° > 30 °C) in O(1).
+        /// The two counters share the same window length but distinct
+        /// thresholds and buffers — a 32 °C day increments both counts,
+        /// a 27 °C day increments only the heat-day count.
         /// </summary>
         public void RecordDailyTemperatureForWindow(double temperatureCelsius)
         {
@@ -189,6 +210,12 @@ namespace Bocage.SimulationCore.Model
             _heatDayBuffer[_heatDayBufferIndex] = newSample;
             _heatDayBufferIndex = (_heatDayBufferIndex + 1) % HeatDayWindowDays;
             RecentHeatDayCount = RecentHeatDayCount - oldSample + newSample;
+
+            int newCanicular = temperatureCelsius > CanicularDayThresholdCelsius ? 1 : 0;
+            int oldCanicular = _canicularDayBuffer[_canicularDayBufferIndex];
+            _canicularDayBuffer[_canicularDayBufferIndex] = newCanicular;
+            _canicularDayBufferIndex = (_canicularDayBufferIndex + 1) % HeatDayWindowDays;
+            RecentCanicularDayCount = RecentCanicularDayCount - oldCanicular + newCanicular;
         }
 
         private static double ClampNonNegative(double value)
