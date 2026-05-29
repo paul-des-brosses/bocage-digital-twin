@@ -1,5 +1,7 @@
 using Bocage.Decision;
 using Bocage.Decision.Recommendations;
+using Bocage.SimulationCore.Model;
+using Bocage.SimulationCore.Scenario;
 using NUnit.Framework;
 
 namespace Bocage.Tests.EditMode
@@ -129,6 +131,59 @@ namespace Bocage.Tests.EditMode
             Assert.AreEqual(DecisionVerdict.Pending, journal.Entries[2].Verdict);
             Assert.AreEqual(1, journal.PendingEntries.Count);
             Assert.AreSame(r3, journal.PendingEntries[0].Recommendation);
+        }
+
+        // ---------------- ADR #47 manual-action pathway ----------------
+
+        [Test]
+        public void Manual_action_lands_AutoAccepted_with_null_event_and_carries_magnitude()
+        {
+            // ADR #47 contract: manual button clicks journal as
+            // AutoAccepted recs with TriggeredByEventId=null and the
+            // user-chosen magnitude baked into the entry. They never
+            // appear in PendingEntries — straight into the resolved
+            // queue for AutoActionPipeline to apply.
+            var journal = new DecisionJournal();
+            var rec = PlantHedgesRecommendation.Manual(day: 28, sequence: 1, magnitude: 25.0);
+
+            bool ok = journal.Append(rec, currentDay: 28, initialMagnitude: 25.0);
+
+            Assert.IsTrue(ok);
+            Assert.AreEqual(1, journal.Entries.Count);
+            Assert.AreEqual(DecisionVerdict.AutoAccepted, journal.Entries[0].Verdict);
+            Assert.IsNull(rec.TriggeredByEventId);
+            Assert.AreEqual(25.0, journal.Entries[0].AppliedMagnitude, 1e-9);
+            Assert.AreEqual(0, journal.PendingEntries.Count,
+                "Manual actions must skip Pending and land directly in resolved.");
+        }
+
+        [Test]
+        public void Two_manual_actions_same_type_cumulate_their_effects_without_supersession()
+        {
+            // ADR #47 §1080-1082: PlantHedges +30 m/ha puis +30 m/ha
+            // → +60 m/ha total, 2 entrées distinctes, aucune
+            // supersession (les manuelles arrivent en AutoAccepted,
+            // pas en Pending — la mécanique de supersession ne les
+            // touche pas).
+            var journal = new DecisionJournal();
+            var model = new EcosystemModel(initialHedgerowDensity: 100.0);
+            var scenario = new ScenarioContext();
+
+            var r1 = PlantHedgesRecommendation.Manual(day: 28, sequence: 1, magnitude: 30.0);
+            var r2 = PlantHedgesRecommendation.Manual(day: 58, sequence: 2, magnitude: 30.0);
+
+            journal.Append(r1, currentDay: 28, initialMagnitude: 30.0);
+            AutoActionPipeline.Apply(journal, model, scenario, currentDay: 28);
+            journal.Append(r2, currentDay: 58, initialMagnitude: 30.0);
+            AutoActionPipeline.Apply(journal, model, scenario, currentDay: 58);
+
+            Assert.AreEqual(2, journal.Entries.Count,
+                "Both manual actions must be distinct entries.");
+            Assert.AreEqual(DecisionVerdict.AutoAccepted, journal.Entries[0].Verdict);
+            Assert.AreEqual(DecisionVerdict.AutoAccepted, journal.Entries[1].Verdict,
+                "Manual AutoAccepted entries never supersede each other.");
+            Assert.AreEqual(160.0, model.HedgerowDensity, 1e-9,
+                "Two +30 m/ha manual plant-hedges on a 100 m/ha baseline must cumulate to 160.");
         }
     }
 }
