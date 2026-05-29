@@ -200,8 +200,8 @@ caractères latins étendus (accents français, €).
    vérité dans la table `SPRITES` de ce script.
 6. Validation visuelle DA avant intégration.
 7. **Configuration d'import Unity — Crunch compression sur l'override
-   Web** : OBLIGATOIRE en règle générale (CLAUDE.md §13). Unity ne
-   l'active pas par défaut, c'est un réglage par-sprite.
+   Web** : optionnel. Unity ne l'active pas par défaut, c'est un
+   réglage par-sprite.
    - Sélectionne le PNG dans le Project window.
    - Inspector → onglet plateforme **Web** (icône globe HTML5, à droite
      des onglets Default / Standalone / Android).
@@ -219,15 +219,12 @@ caractères latins étendus (accents français, €).
    Cette étape divise la taille DL des textures par 3 à 4 dans le
    build WebGL final.
 
-   **Application conditionnelle pour le MVP courant (post-recadrage
-   2026-05-28)** : la décision Crunch DXT5 conditionnel (chantier E7
-   de `docs/ROADMAP.md`) acte qu'on mesure d'abord la taille du build
-   et le TTI à l'issue des chantiers E1-E6. Si build ≤ 30 MB et
-   TTI ≤ 10 s, le Crunch reste un TODO documenté à appliquer le jour
-   où on ajoute beaucoup de sprites. Si build > 30 MB ou TTI > 10 s,
-   application du Crunch sur les sprites les plus lourds en priorité
-   (paysage > UI > faune). Pour tout nouveau sprite ajouté
-   post-mesure, le Crunch redevient obligatoire à l'import.
+   **Stratégie MVP courante (post-recadrage 2026-05-28)** : Crunch
+   DXT5 conditionnel (chantier E7 de `docs/ROADMAP.md`). On mesure
+   d'abord la taille du build et le TTI à l'issue des chantiers
+   E1-E6. Si build ≤ 30 MB et TTI ≤ 10 s, on skip le Crunch. Si
+   build > 30 MB ou TTI > 10 s, application du Crunch sur les sprites
+   les plus lourds en priorité (paysage > UI > faune).
 
 ### Palette Perche
 

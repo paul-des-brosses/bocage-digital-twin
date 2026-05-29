@@ -24,12 +24,11 @@ nécessaire dans le build final.
 - Pas d'assets dans `Resources/` sauf nécessité absolue (tout passer en
   références directes ou `Addressables` si besoin).
 - Shader Stripping aggressive activé.
-- **Crunch compression sur l'override Web par sprite** : pour chaque
+- **Crunch compression sur l'override Web par sprite** (optionnel,
+  cf stratégie MVP `docs/ASSETS_LIST.md §6 étape 7`) : pour chaque
   PNG dans le project, Inspector → onglet Web → Override for Web →
   Format `DXT1 Crunched` (opaque) ou `DXT5 Crunched` (alpha) →
-  Quality 50. Ce réglage est **par-sprite** et doit être refait à
-  chaque nouvel import. Cf. `docs/ASSETS_LIST.md §6 étape 7` pour la
-  procédure complète et les valeurs de qualité par catégorie.
+  Quality 50. Ce réglage est **par-sprite**.
 - Audit régulier via `Build Report Inspector`.
 
 **Impact si non résolu** : time-to-interactive > 30 s, abandon
