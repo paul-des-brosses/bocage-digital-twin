@@ -1,69 +1,67 @@
 using Bocage.Indicators.Hero;
 using Bocage.SimulationCore.Model;
+using Bocage.SimulationCore.Scenario;
 using NUnit.Framework;
 
 namespace Bocage.Tests.EditMode
 {
     /// <summary>
-    /// Unit tests for <see cref="BiodiversityCompositeIndicator"/>. The
-    /// indicator is a pure read of model state + a weighted sum, so the
-    /// tests focus on (a) the weight algebra at known model states and
-    /// (b) the monotonic responses to single-variable changes.
+    /// Unit tests for the post-E5 <see cref="BiodiversityCompositeIndicator"/>,
+    /// which aggregates the three FaunaDynamicsRule factors (habitat,
+    /// eau, intrants) with weights 40/25/35 (ADR #51). Tests target
+    /// (a) the weight algebra at known scenario states, (b) the
+    /// monotonic responses to each individual factor, and (c) the
+    /// three normalisation helpers.
     /// </summary>
     public sealed class BiodiversityCompositeIndicatorTests
     {
         [Test]
         public void Compute_at_baseline_sits_near_reference_anchor()
         {
-            // Default model: hedge 90, water 2, fauna 1.0.
-            // normFauna = (1.0 - 0) / (1.5 - 0) ≈ 0.667
-            // normHedge = (90 - 40) / (150 - 40) ≈ 0.4545
-            // normWaterInv = 1 - (2 - 0.5) / (6 - 0.5) ≈ 0.727
-            // composite = 0.5 × 0.667 + 0.3 × 0.4545 + 0.2 × 0.727 ≈ 0.6155
+            // Default model + default scenario:
+            //   habitat factor = ComputeHabitatFactor(90)  = 1.000 → norm ≈ 0.5556
+            //   water factor   = ComputeWaterFactor(2)     = 1.000 → norm  = 1.0
+            //   inputs factor  = ComputeInputsFactor(1.0)  = 1.000 → norm ≈ 0.8571
+            //   composite = 0.40 × 0.5556 + 0.25 × 1.0 + 0.35 × 0.8571 ≈ 0.7722
             var model = new EcosystemModel();
-            double score = BiodiversityCompositeIndicator.Compute(model);
-            Assert.That(score, Is.EqualTo(0.6155).Within(0.01),
-                "Baseline composite should be ~0.62. Got " + score);
+            var scenario = new ScenarioContext();
+            double score = BiodiversityCompositeIndicator.Compute(model, scenario);
+            Assert.That(score, Is.EqualTo(0.7722).Within(0.005),
+                "Baseline composite should be ~0.77. Got " + score);
         }
 
         [Test]
-        public void Compute_collapsed_state_returns_low_score()
+        public void Compute_full_collapse_returns_low_score()
         {
-            // No hedges, deep water, fauna near zero.
-            // normFauna ≈ 0, normHedge clamped 0, normWaterInv clamped 0.
-            // composite ≈ 0.
+            // Habitat and water collapsed AND intensive farming → all 3
+            // factors at their floor: habitat 0.5 → norm 0, water 0.5
+            // → norm 0, inputs 0.4 → norm 0. Composite ≈ 0.
             var model = new EcosystemModel(
                 initialHedgerowDensity: 0.0,
-                initialWaterTableDepth: 10.0,
+                initialWaterTableDepth: 15.0,
                 initialFaunaPopulation: 0.05);
-            double score = BiodiversityCompositeIndicator.Compute(model);
+            var scenario = new ScenarioContext(initialInputIntensityFactor: 5.0);
+            double score = BiodiversityCompositeIndicator.Compute(model, scenario);
             Assert.That(score, Is.LessThan(0.05),
-                "Collapsed state should give a near-zero score. Got " + score);
+                "Full-collapse state should give a near-zero score. Got " + score);
         }
 
         [Test]
-        public void Compute_lush_state_returns_high_score()
+        public void Compute_full_bocage_saturates_at_one()
         {
-            // Dense hedges, shallow water, lush fauna.
-            // normFauna saturates at 1, normHedge at 1, normWaterInv at 1.
-            // composite = 0.5 + 0.3 + 0.2 = 1.0.
+            // Hyper-bocage + shallow water + bio extensive intensity 0.5:
+            //   habitat 1.4 → norm 1.0
+            //   water 1.0 → norm 1.0
+            //   inputs 1.1 → norm 1.0
+            //   composite = 1.0
             var model = new EcosystemModel(
                 initialHedgerowDensity: 200.0,
                 initialWaterTableDepth: 0.5,
                 initialFaunaPopulation: 1.5);
-            double score = BiodiversityCompositeIndicator.Compute(model);
+            var scenario = new ScenarioContext(initialInputIntensityFactor: 0.5);
+            double score = BiodiversityCompositeIndicator.Compute(model, scenario);
             Assert.That(score, Is.EqualTo(1.0).Within(1e-6),
-                "Lush state should saturate at 1.0. Got " + score);
-        }
-
-        [Test]
-        public void Compute_monotonic_in_fauna()
-        {
-            var low = new EcosystemModel(initialFaunaPopulation: 0.3);
-            var high = new EcosystemModel(initialFaunaPopulation: 1.2);
-            Assert.Less(
-                BiodiversityCompositeIndicator.Compute(low),
-                BiodiversityCompositeIndicator.Compute(high));
+                "Hyper-bocage + bio state should saturate at 1.0. Got " + score);
         }
 
         [Test]
@@ -71,20 +69,41 @@ namespace Bocage.Tests.EditMode
         {
             var sparse = new EcosystemModel(initialHedgerowDensity: 50.0);
             var dense = new EcosystemModel(initialHedgerowDensity: 130.0);
+            var scenario = new ScenarioContext();
             Assert.Less(
-                BiodiversityCompositeIndicator.Compute(sparse),
-                BiodiversityCompositeIndicator.Compute(dense));
+                BiodiversityCompositeIndicator.Compute(sparse, scenario),
+                BiodiversityCompositeIndicator.Compute(dense, scenario));
         }
 
         [Test]
         public void Compute_monotonic_inverse_in_water_depth()
         {
-            // Deeper water should DECREASE the composite (worse for fauna).
-            var shallow = new EcosystemModel(initialWaterTableDepth: 1.0);
-            var deep = new EcosystemModel(initialWaterTableDepth: 5.0);
+            // Deeper water should DECREASE the composite — the water
+            // factor declines linearly past the 3 m critical depth.
+            var shallow = new EcosystemModel(initialWaterTableDepth: 2.0);
+            var deep = new EcosystemModel(initialWaterTableDepth: 9.0);
+            var scenario = new ScenarioContext();
             Assert.Greater(
-                BiodiversityCompositeIndicator.Compute(shallow),
-                BiodiversityCompositeIndicator.Compute(deep));
+                BiodiversityCompositeIndicator.Compute(shallow, scenario),
+                BiodiversityCompositeIndicator.Compute(deep, scenario));
+        }
+
+        [Test]
+        public void Compute_monotonic_inverse_in_input_intensity()
+        {
+            // Higher input intensity should DECREASE the composite —
+            // matches the post-E5 weight shift toward intrants (35 %).
+            var model = new EcosystemModel();
+            var bio = new ScenarioContext(initialInputIntensityFactor: 0.5);
+            var conventional = new ScenarioContext(initialInputIntensityFactor: 1.0);
+            var intensive = new ScenarioContext(initialInputIntensityFactor: 2.0);
+
+            double sBio = BiodiversityCompositeIndicator.Compute(model, bio);
+            double sConv = BiodiversityCompositeIndicator.Compute(model, conventional);
+            double sInt = BiodiversityCompositeIndicator.Compute(model, intensive);
+
+            Assert.Greater(sBio, sConv, "Bio should score higher than conventional");
+            Assert.Greater(sConv, sInt, "Conventional should score higher than intensive");
         }
 
         [Test]
@@ -93,27 +112,49 @@ namespace Bocage.Tests.EditMode
             // The contract: the composite is unit-range by construction
             // because each normalised input is in [0,1] and weights sum
             // to exactly 1. Guard against future drift.
-            double sum = BiodiversityCompositeIndicator.FaunaWeight
-                       + BiodiversityCompositeIndicator.HedgerowWeight
-                       + BiodiversityCompositeIndicator.WaterWeight;
+            double sum = BiodiversityCompositeIndicator.HabitatWeight
+                       + BiodiversityCompositeIndicator.WaterWeight
+                       + BiodiversityCompositeIndicator.InputsWeight;
             Assert.AreEqual(1.0, sum, 1e-9);
         }
 
         [Test]
-        public void NormalizeFauna_at_max_index_returns_one()
+        public void NormalizeHabitat_at_baseline_returns_just_above_half()
         {
-            Assert.AreEqual(1.0,
-                BiodiversityCompositeIndicator.NormalizeFauna(
-                    BiodiversityCompositeIndicator.FaunaMaxIndex),
-                1e-9);
+            // Habitat factor at the Perche reference 90 m/ha is 1.0,
+            // which lands at (1.0 − 0.5) / (1.4 − 0.5) ≈ 0.5556 on the
+            // normalised scale.
+            Assert.AreEqual(0.5556, BiodiversityCompositeIndicator.NormalizeHabitat(1.0), 1e-3);
         }
 
         [Test]
-        public void NormalizeFauna_clamps_above_max()
+        public void NormalizeWater_at_full_factor_returns_one()
         {
-            Assert.AreEqual(1.0,
-                BiodiversityCompositeIndicator.NormalizeFauna(5.0),
-                1e-9);
+            // Water factor 1.0 maps to 1.0 (full habitat).
+            Assert.AreEqual(1.0, BiodiversityCompositeIndicator.NormalizeWater(1.0), 1e-9);
+        }
+
+        [Test]
+        public void NormalizeWater_at_floor_returns_zero()
+        {
+            // Water factor 0.5 (extreme drought floor) maps to 0.0.
+            Assert.AreEqual(0.0, BiodiversityCompositeIndicator.NormalizeWater(0.5), 1e-9);
+        }
+
+        [Test]
+        public void NormalizeInputs_at_neutral_returns_just_below_nine_tenths()
+        {
+            // Inputs factor at intensity 1.0 is 1.0, which maps to
+            // (1.0 − 0.4) / (1.1 − 0.4) ≈ 0.8571 on the normalised scale.
+            Assert.AreEqual(0.8571, BiodiversityCompositeIndicator.NormalizeInputs(1.0), 1e-3);
+        }
+
+        [Test]
+        public void NormalizeInputs_at_bio_saturates_at_one()
+        {
+            // Inputs factor 1.1 (bio extensive at intensity 0.5) is the
+            // top of the normalisation range and maps to exactly 1.0.
+            Assert.AreEqual(1.0, BiodiversityCompositeIndicator.NormalizeInputs(1.1), 1e-9);
         }
 
         [Test]

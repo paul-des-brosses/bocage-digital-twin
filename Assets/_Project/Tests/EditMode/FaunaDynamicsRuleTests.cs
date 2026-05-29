@@ -9,38 +9,40 @@ namespace Bocage.Tests.EditMode
     /// <summary>
     /// Unit tests for <see cref="FaunaDynamicsRule"/> and the
     /// <see cref="EcosystemModel.FaunaPopulation"/> state variable it
-    /// updates. Tests target both the static factor helpers (which are
-    /// pure functions and trivially verifiable) and the dynamic
-    /// convergence of the rule under a constant scenario (proves the
-    /// EMA reaches the expected equilibrium without overshooting).
+    /// updates. Covers (a) the three static factor helpers — habitat,
+    /// water, intrants — which are pure functions and trivially
+    /// verifiable, (b) the two E5 modulators (canicule, soil carbon),
+    /// (c) the dynamic convergence under a constant scenario.
     /// </summary>
     public sealed class FaunaDynamicsRuleTests
     {
         private const int TicksToReachEquilibrium = 3650; // 10 years, ample for ~1y TC
 
-        // ---------------- Static factor helpers ----------------
+        // ---------------- Habitat factor (chantier E5 rename, ADR #51) ----------------
 
         [Test]
-        public void HedgeFactor_at_zero_density_is_0_5()
+        public void HabitatFactor_at_zero_density_is_0_5()
         {
-            Assert.AreEqual(0.5, FaunaDynamicsRule.ComputeHedgeFactor(0.0), 1e-9);
+            Assert.AreEqual(0.5, FaunaDynamicsRule.ComputeHabitatFactor(0.0), 1e-9);
         }
 
         [Test]
-        public void HedgeFactor_at_baseline_density_is_1_0()
+        public void HabitatFactor_at_baseline_density_is_1_0()
         {
             // 90 m/ha = Perche reference, factor exactly 1.0 so neutral
             // scenario produces target = 1.0 and FaunaPopulation stays put.
-            Assert.AreEqual(1.0, FaunaDynamicsRule.ComputeHedgeFactor(90.0), 1e-9);
+            Assert.AreEqual(1.0, FaunaDynamicsRule.ComputeHabitatFactor(90.0), 1e-9);
         }
 
         [Test]
-        public void HedgeFactor_caps_at_1_4()
+        public void HabitatFactor_caps_at_1_4()
         {
             // Linear slope would give 1.5 at 180 m/ha; the cap prevents that.
-            Assert.AreEqual(FaunaDynamicsRule.HedgeFactorCap,
-                FaunaDynamicsRule.ComputeHedgeFactor(300.0), 1e-9);
+            Assert.AreEqual(FaunaDynamicsRule.HabitatFactorCap,
+                FaunaDynamicsRule.ComputeHabitatFactor(300.0), 1e-9);
         }
+
+        // ---------------- Water factor ----------------
 
         [Test]
         public void WaterFactor_flat_above_critical_depth()
@@ -65,30 +67,76 @@ namespace Bocage.Tests.EditMode
             Assert.AreEqual(0.5, FaunaDynamicsRule.ComputeWaterFactor(15.0), 1e-9);
         }
 
+        // ---------------- Inputs factor (chantier E5 rename, ADR #51) ----------------
+
         [Test]
-        public void InputFactor_neutral_at_intensity_one()
+        public void InputsFactor_neutral_at_intensity_one()
         {
-            Assert.AreEqual(1.0, FaunaDynamicsRule.ComputeInputFactor(1.0), 1e-9);
+            Assert.AreEqual(1.0, FaunaDynamicsRule.ComputeInputsFactor(1.0), 1e-9);
         }
 
         [Test]
-        public void InputFactor_penalises_intensification()
+        public void InputsFactor_penalises_intensification()
         {
             // intensity 2.0 → factor = 1.0 - 1.0 × 0.5 = 0.5
-            Assert.AreEqual(0.5, FaunaDynamicsRule.ComputeInputFactor(2.0), 1e-9);
+            Assert.AreEqual(0.5, FaunaDynamicsRule.ComputeInputsFactor(2.0), 1e-9);
         }
 
         [Test]
-        public void InputFactor_rewards_extensification()
+        public void InputsFactor_rewards_extensification()
         {
             // intensity 0.5 → factor = 1.0 + 0.5 × 0.2 = 1.1
-            Assert.AreEqual(1.1, FaunaDynamicsRule.ComputeInputFactor(0.5), 1e-9);
+            Assert.AreEqual(1.1, FaunaDynamicsRule.ComputeInputsFactor(0.5), 1e-9);
         }
 
         [Test]
-        public void InputFactor_floors_at_0_4_under_extreme_intensification()
+        public void InputsFactor_floors_at_0_4_under_extreme_intensification()
         {
-            Assert.AreEqual(0.4, FaunaDynamicsRule.ComputeInputFactor(5.0), 1e-9);
+            Assert.AreEqual(0.4, FaunaDynamicsRule.ComputeInputsFactor(5.0), 1e-9);
+        }
+
+        // ---------------- Canicule modulator (chantier E5 / ADR #51) ----------------
+
+        [Test]
+        public void CanicularPenalty_zero_when_no_canicular_days()
+        {
+            Assert.AreEqual(0.0, FaunaDynamicsRule.ComputeCanicularPenalty(0), 1e-9);
+        }
+
+        [Test]
+        public void CanicularPenalty_linear_below_cap()
+        {
+            // 5 canicular days × 0.01 = 0.05 penalty.
+            Assert.AreEqual(-0.05, FaunaDynamicsRule.ComputeCanicularPenalty(5), 1e-9);
+        }
+
+        [Test]
+        public void CanicularPenalty_caps_at_minus_0_15()
+        {
+            // 30 canicular days would be 0.30 raw, capped at 0.15.
+            Assert.AreEqual(-FaunaDynamicsRule.CanicularPenaltyCap,
+                FaunaDynamicsRule.ComputeCanicularPenalty(30), 1e-9);
+        }
+
+        // ---------------- Soil-carbon modulator (chantier E5 / ADR #51) ----------------
+
+        [Test]
+        public void SoilCarbonBonus_zero_below_threshold()
+        {
+            // Default soil carbon stock (50 tC/ha) is below the « sol
+            // vivant » threshold (80 tC/ha), so no bonus.
+            Assert.AreEqual(0.0, FaunaDynamicsRule.ComputeSoilCarbonBonus(50.0), 1e-9);
+            Assert.AreEqual(0.0, FaunaDynamicsRule.ComputeSoilCarbonBonus(80.0), 1e-9);
+        }
+
+        [Test]
+        public void SoilCarbonBonus_active_above_threshold()
+        {
+            // Just above threshold → bonus active. Step function.
+            Assert.AreEqual(FaunaDynamicsRule.SoilCarbonBonus,
+                FaunaDynamicsRule.ComputeSoilCarbonBonus(80.1), 1e-9);
+            Assert.AreEqual(FaunaDynamicsRule.SoilCarbonBonus,
+                FaunaDynamicsRule.ComputeSoilCarbonBonus(120.0), 1e-9);
         }
 
         // ---------------- Integrated convergence ----------------
@@ -107,7 +155,7 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void Intensive_farming_collapses_fauna_below_baseline()
         {
-            // intensity 2.0 → inputFactor 0.5. Hedges and water at baseline.
+            // intensity 2.0 → inputs factor 0.5. Hedges and water at baseline.
             // Target = 1.0 × 1.0 × 1.0 × 0.5 = 0.5. After 10 years, fauna
             // should sit close to 0.5.
             var scenario = new ScenarioContext(initialInputIntensityFactor: 2.0);
@@ -120,7 +168,7 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void Virtuous_bocage_lifts_fauna_above_baseline()
         {
-            // Bio extensive (intensity 0.5) → inputFactor 1.1.
+            // Bio extensive (intensity 0.5) → inputs factor 1.1.
             // Hedges and water at baseline → other factors = 1.0.
             // Target = 1.1. Fauna should be ~1.1 after 10 years.
             var scenario = new ScenarioContext(initialInputIntensityFactor: 0.5);
@@ -161,6 +209,43 @@ namespace Bocage.Tests.EditMode
             for (int i = 0; i < TicksToReachEquilibrium; i++) engine.Tick();
             Assert.That(engine.Model.FaunaPopulation, Is.GreaterThanOrEqualTo(0.0),
                 "FaunaPopulation must never go negative. Got " + engine.Model.FaunaPopulation);
+        }
+
+        // ---------------- E5 modulators integrated effect ----------------
+
+        [Test]
+        public void Canicule_pulls_fauna_target_below_neutral()
+        {
+            // Direct check of the rule: under neutral scenario + a model
+            // state with 10 recent canicular days, the target shifts by
+            // −0.10 — well above the EMA noise floor over 1 day.
+            var model = new EcosystemModel();
+            for (int i = 0; i < 10; i++) model.RecordDailyTemperatureForWindow(32.0);
+            Assert.AreEqual(10, model.RecentCanicularDayCount);
+
+            var scenario = new ScenarioContext();
+            var rule = new FaunaDynamicsRule();
+            double before = model.FaunaPopulation;
+            rule.Apply(model, scenario, new SeededRandom(1UL));
+            double after = model.FaunaPopulation;
+            Assert.That(after, Is.LessThan(before),
+                "Canicular days should pull fauna target below baseline. Before=" + before + " after=" + after);
+        }
+
+        [Test]
+        public void Soil_carbon_above_threshold_lifts_fauna_target()
+        {
+            // Above the « sol vivant » threshold, the rule adds +0.02 to
+            // the target. Under neutral scenario fauna sits at 1.0; the
+            // tick should pull it up by k × 0.02 toward 1.02.
+            var model = new EcosystemModel(initialSoilCarbonStock: 100.0);
+            var scenario = new ScenarioContext();
+            var rule = new FaunaDynamicsRule();
+            double before = model.FaunaPopulation;
+            rule.Apply(model, scenario, new SeededRandom(1UL));
+            double after = model.FaunaPopulation;
+            Assert.That(after, Is.GreaterThan(before),
+                "Soil-carbon bonus should lift fauna target above baseline. Before=" + before + " after=" + after);
         }
     }
 }
