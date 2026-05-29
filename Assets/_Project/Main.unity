@@ -2722,6 +2722,7 @@ GameObject:
   - component: {fileID: 1463489836}
   - component: {fileID: 1463489838}
   - component: {fileID: 1463489839}
+  - component: {fileID: 1463489840}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -2844,7 +2845,6 @@ MonoBehaviour:
   deferredModifierClass: sensor-status-dot--deferred
   textBlockClass: sensor-row-text
   nameLabelClass: sensor-row-name
-  subtitleLabelClass: sensor-row-subtitle
   highlightedRowClass: sensor-list-row--highlighted
 --- !u!114 &1463489830
 MonoBehaviour:
@@ -3025,6 +3025,7 @@ MonoBehaviour:
   runner: {fileID: 2115294099}
   overlayName: decision-popup-overlay
   titleLabelName: decision-popup-title
+  sourceEventLabelName: decision-popup-source-event
   rationaleLabelName: decision-popup-rationale
   outcomesContainerName: decision-popup-outcomes
   magnitudeLabelName: decision-popup-magnitude-label
@@ -3033,6 +3034,21 @@ MonoBehaviour:
   validateButtonName: decision-popup-validate-button
   ignoreButtonName: decision-popup-ignore-button
   deferButtonName: decision-popup-defer-button
+--- !u!114 &1463489840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61659d16fef42c2458bb39fcdeaefe06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.MonthSelectorBinding
+  runner: {fileID: 2115294099}
+  dropdownName: starting-month-dropdown
+  hintLabelName: starting-month-hint
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0
@@ -4154,6 +4170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Simulation.SimulationRunner
   masterSeed: 1
+  seasonalWeatherAsset: {fileID: 11400000, guid: d8be50f171b7b074d9929f5d35577ed0, type: 2}
   ticksPerSecond: 10
   autoStart: 1
   hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
