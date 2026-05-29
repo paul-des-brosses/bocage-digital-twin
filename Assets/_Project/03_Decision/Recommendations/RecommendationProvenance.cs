@@ -30,12 +30,23 @@ namespace Bocage.Decision.Recommendations
         /// <summary>
         /// Returns a one-line provenance string suitable for a sub-title
         /// label, e.g. « Détecté jour 28 par le piézomètre — Sécheresse
-        /// prolongée, nappe à 4 m sous la surface ». Never returns null;
-        /// on failure returns a short generic line.
+        /// prolongée, nappe à 4 m sous la surface ». Manual actions
+        /// (ADR #47, <c>TriggeredByEventId == null</c>) surface as
+        /// « Action déclenchée par l'utilisateur le jour X » instead —
+        /// they have no sensor / event chain to expose. Never returns
+        /// null; on lookup failure falls back to a short generic line.
         /// </summary>
         public static string Format(IRecommendation rec, EventLog log)
         {
             if (rec == null) return "";
+
+            // Manual-action pathway (ADR #47): no triggering event, so
+            // surface the user-action provenance directly. Spares the
+            // history popup from showing a misleading « par un capteur ».
+            if (string.IsNullOrEmpty(rec.TriggeredByEventId))
+            {
+                return "Action déclenchée par l'utilisateur le jour " + rec.IssuedOnDay;
+            }
 
             var ev = LookupEvent(rec.TriggeredByEventId, log);
             if (ev != null)

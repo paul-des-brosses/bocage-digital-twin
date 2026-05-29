@@ -69,6 +69,12 @@ namespace Bocage.Presentation.Simulation
         private RecommendationEngine _recommendationEngine;
         private DecisionJournal _decisionJournal;
         private FaunaSensorReader _faunaSensorReader;
+        // Per-type counters for manual actions (ADR #47). Disambiguates
+        // multiple clicks on the same simulated day — each click gets a
+        // unique recommendation id even though the day suffix collides.
+        private int _manualPlantHedgesSeq;
+        private int _manualIrrigationSeq;
+        private int _manualReduceInputsSeq;
 
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
@@ -253,6 +259,9 @@ namespace Bocage.Presentation.Simulation
             _eventLog = new EventLog();
             _recommendationEngine = new RecommendationEngine();
             _decisionJournal = new DecisionJournal();
+            _manualPlantHedgesSeq = 0;
+            _manualIrrigationSeq = 0;
+            _manualReduceInputsSeq = 0;
             // Re-instantiate so the fauna sensor noise sequence restarts
             // from day 0 in lockstep with the engine. Otherwise the
             // existing instance's internal state would have advanced and
@@ -317,66 +326,70 @@ namespace Bocage.Presentation.Simulation
 
         /// <summary>
         /// Applies a one-off "plant hedges" intervention requested by the
-        /// user OUTSIDE the recommendation pathway (manual action button
-        /// in the espace agriculteur). Sub-étape 10a friction fix —
-        /// before this, the 3 reco actions could only be triggered by
-        /// an algorithm prompt, leaving the user passive between events.
+        /// user via the « Replanter haies » manual button in the espace
+        /// agriculteur. ADR #47 refactor: the action is journalled as a
+        /// <see cref="PlantHedgesRecommendation"/> manual rec
+        /// (<see cref="DecisionVerdict.AutoAccepted"/>, no triggering
+        /// event), then <see cref="AutoActionPipeline.Apply"/> mutates
+        /// the model — making the pipeline the single mutator. The
+        /// effect is synchronous: by the time the call returns, the
+        /// model has been updated and indicators republished.
         /// <para>
-        /// Implementation: the same mechanical effect as
-        /// <see cref="Bocage.Decision.AutoActionPipeline.ApplyOne"/>,
-        /// applied directly on the real model (the shadow run is not
-        /// touched — that asymmetry is exactly what feeds TechDelta).
-        /// We do NOT journal the action: the journal carries
-        /// recommendation-arbitrage history, and a manual button click
-        /// has no triggering event nor outcome bracket. The action
-        /// nonetheless surfaces in <see cref="SimLogger.UserActionLog"/>
-        /// for telemetry.
+        /// The shadow run is not touched — that asymmetry is exactly
+        /// what feeds <see cref="Bocage.Indicators.Hero.TechDeltaIndicator"/>.
+        /// Manual actions are cumulable (per ADR #47): two clicks on the
+        /// same simulated day produce two distinct journal entries via
+        /// the per-type sequence counter, both applied.
         /// </para>
         /// </summary>
         public void ApplyManualPlantHedges(double metersPerHectare)
         {
             if (_engine == null || _engine.Model == null) return;
             double magnitude = metersPerHectare < 0 ? 0 : metersPerHectare;
-            _engine.Model.SetHedgerowDensity(_engine.Model.HedgerowDensity + magnitude);
+            _manualPlantHedgesSeq++;
+            var rec = PlantHedgesRecommendation.Manual(_currentDay, _manualPlantHedgesSeq);
+            _decisionJournal.Append(rec, _currentDay, magnitude);
+            AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();
-            SimLogger.UserActionLog("manual: plant-hedges +" + magnitude.ToString("F1") + " m/ha (day " + _currentDay + ")");
+            SimLogger.UserActionLog("manual: plant-hedges +" + magnitude.ToString("F1") + " m/ha (day " + _currentDay + ", id=" + rec.Id + ")");
         }
 
         /// <summary>
-        /// Manual irrigation intervention: raises the water table by the
-        /// chosen depth (clamped so the table doesn't surface absurdly).
-        /// See <see cref="ApplyManualPlantHedges"/> for the design
-        /// rationale.
+        /// Manual « Irrigation ponctuelle » intervention. ADR #47
+        /// pathway — see <see cref="ApplyManualPlantHedges"/>. The
+        /// water-table floor (0.5 m) is enforced inside
+        /// <see cref="AutoActionPipeline.ApplyOne"/>; the runner
+        /// therefore passes the raw magnitude.
         /// </summary>
         public void ApplyManualIrrigation(double depthMeters)
         {
             if (_engine == null || _engine.Model == null) return;
             double magnitude = depthMeters < 0 ? 0 : depthMeters;
-            double newDepth = _engine.Model.WaterTableDepth - magnitude;
-            if (newDepth < 0.5) newDepth = 0.5;
-            _engine.Model.SetWaterTableDepth(newDepth);
+            _manualIrrigationSeq++;
+            var rec = IrrigationAdviceRecommendation.Manual(_currentDay, _manualIrrigationSeq);
+            _decisionJournal.Append(rec, _currentDay, magnitude);
+            AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();
-            SimLogger.UserActionLog("manual: irrigation −" + magnitude.ToString("F2") + " m depth (day " + _currentDay + ")");
+            SimLogger.UserActionLog("manual: irrigation −" + magnitude.ToString("F2") + " m depth (day " + _currentDay + ", id=" + rec.Id + ")");
         }
 
         /// <summary>
-        /// Manual "reduce inputs" pulse: applies the same one-shot fauna
-        /// boost + input-cost reduction that the
-        /// <see cref="Bocage.Decision.Recommendations.ReduceInputsRecommendation"/>
-        /// applies, scaled by the chosen intensity cut. Note this is a
-        /// punctual nudge — for sustained reduction, the agriculteur
-        /// uses the continuous "Intensité d'intrants" slider instead.
+        /// Manual « Baisser intrants » pulse. ADR #47 pathway — see
+        /// <see cref="ApplyManualPlantHedges"/>. The intensity-cut
+        /// scaling (ratio-against-<see cref="ReduceInputsRecommendation.IntensityCutPerStep"/>)
+        /// happens inside <see cref="AutoActionPipeline.ApplyOne"/>;
+        /// the runner therefore passes the raw magnitude.
         /// </summary>
         public void ApplyManualReduceInputs(double intensityCut)
         {
             if (_engine == null || _engine.Model == null) return;
             double magnitude = intensityCut < 0 ? 0 : intensityCut;
-            double reference = ReduceInputsRecommendation.IntensityCutPerStep;
-            double ratio = reference > 0 ? magnitude / reference : 0;
-            _engine.Model.SetFaunaPopulation(_engine.Model.FaunaPopulation + 0.05 * ratio);
-            _engine.Model.SetInputCost(_engine.Model.InputCost - 200.0 * ratio);
+            _manualReduceInputsSeq++;
+            var rec = ReduceInputsRecommendation.Manual(_currentDay, _manualReduceInputsSeq);
+            _decisionJournal.Append(rec, _currentDay, magnitude);
+            AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();
-            SimLogger.UserActionLog("manual: reduce-inputs −" + magnitude.ToString("F2") + " intensity (ratio=" + ratio.ToString("F2") + ", day " + _currentDay + ")");
+            SimLogger.UserActionLog("manual: reduce-inputs −" + magnitude.ToString("F2") + " intensity (day " + _currentDay + ", id=" + rec.Id + ")");
         }
 
         /// <summary>

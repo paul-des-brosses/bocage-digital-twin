@@ -84,13 +84,32 @@ namespace Bocage.Decision
         /// the user has chosen to ignore a recurring detection.
         /// Already-resolved entries (Accepted / Rejected / AutoAccepted)
         /// are never touched here; they remain in the audit trail
-        /// untouched.
+        /// untouched. Manual actions (ADR #47) land as AutoAccepted,
+        /// so they never trigger supersession of older Pending entries.
         /// </para>
         /// </summary>
         public bool Append(IRecommendation rec, int currentDay)
         {
+            return Append(rec, currentDay, 0.0);
+        }
+
+        /// <summary>
+        /// Overload that records an initial <paramref name="initialMagnitude"/>
+        /// alongside the appended entry. Used by the manual-action
+        /// pathway (ADR #47): the user has already chosen the slider
+        /// value at click time, so the entry lands as
+        /// <see cref="DecisionVerdict.AutoAccepted"/> with the magnitude
+        /// baked in — no follow-up <see cref="SetVerdict"/> call needed.
+        /// </summary>
+        public bool Append(IRecommendation rec, int currentDay, double initialMagnitude)
+        {
             if (rec == null) return false;
-            if (_coveredEventIds.Contains(rec.TriggeredByEventId)) return false;
+            // Dedup by triggering event id only when one is supplied.
+            // Manual actions (ADR #47) carry TriggeredByEventId=null
+            // and are explicitly cumulable — multiple appends share the
+            // null key but each carries a unique rec.Id, so they coexist.
+            if (!string.IsNullOrEmpty(rec.TriggeredByEventId)
+                && _coveredEventIds.Contains(rec.TriggeredByEventId)) return false;
 
             // Type-level supersession of any older Pending entry. We
             // mark in place (struct entries) so the journal stays a
@@ -111,8 +130,11 @@ namespace Bocage.Decision
                 }
             }
 
-            _entries.Add(new Entry(rec, rec.DefaultVerdict, currentDay));
-            _coveredEventIds.Add(rec.TriggeredByEventId);
+            _entries.Add(new Entry(rec, rec.DefaultVerdict, currentDay, initialMagnitude));
+            if (!string.IsNullOrEmpty(rec.TriggeredByEventId))
+            {
+                _coveredEventIds.Add(rec.TriggeredByEventId);
+            }
             return true;
         }
 

@@ -26,13 +26,35 @@ namespace Bocage.Decision.Recommendations
         public string Rationale => "Sécheresse prolongée — apport eau et couverts pour relâcher la pression hydrique sur 30 jours.";
         public int IssuedOnDay { get; }
         public string TriggeredByEventId { get; }
-        public DecisionVerdict DefaultVerdict => DecisionVerdict.Pending;
+        public DecisionVerdict DefaultVerdict { get; }
 
         public IrrigationAdviceRecommendation(int issuedOnDay, string triggeredByEventId)
+            : this("irrigation-advice#" + issuedOnDay, issuedOnDay, triggeredByEventId, DecisionVerdict.Pending)
         {
-            Id = "irrigation-advice#" + issuedOnDay;
+        }
+
+        private IrrigationAdviceRecommendation(string id, int issuedOnDay, string triggeredByEventId, DecisionVerdict defaultVerdict)
+        {
+            Id = id;
             IssuedOnDay = issuedOnDay;
             TriggeredByEventId = triggeredByEventId;
+            DefaultVerdict = defaultVerdict;
+        }
+
+        /// <summary>
+        /// Manual-pathway factory (ADR #47). Ships as
+        /// <see cref="DecisionVerdict.AutoAccepted"/> for the user's
+        /// « Irrigation ponctuelle » button click. See
+        /// <see cref="PlantHedgesRecommendation.Manual"/> for the
+        /// sequence-disambiguation contract.
+        /// </summary>
+        public static IrrigationAdviceRecommendation Manual(int day, int sequence)
+        {
+            return new IrrigationAdviceRecommendation(
+                id: "manual-irrigation#" + day + "-" + sequence,
+                issuedOnDay: day,
+                triggeredByEventId: null,
+                defaultVerdict: DecisionVerdict.AutoAccepted);
         }
     }
 }

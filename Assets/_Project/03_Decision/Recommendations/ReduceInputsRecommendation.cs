@@ -25,13 +25,35 @@ namespace Bocage.Decision.Recommendations
         public string Rationale => "Anomalie acoustique faune — baisser intrants de 0,2 unité pour relâcher la pression chimique sur 30 jours.";
         public int IssuedOnDay { get; }
         public string TriggeredByEventId { get; }
-        public DecisionVerdict DefaultVerdict => DecisionVerdict.Pending;
+        public DecisionVerdict DefaultVerdict { get; }
 
         public ReduceInputsRecommendation(int issuedOnDay, string triggeredByEventId)
+            : this("reduce-inputs#" + issuedOnDay, issuedOnDay, triggeredByEventId, DecisionVerdict.Pending)
         {
-            Id = "reduce-inputs#" + issuedOnDay;
+        }
+
+        private ReduceInputsRecommendation(string id, int issuedOnDay, string triggeredByEventId, DecisionVerdict defaultVerdict)
+        {
+            Id = id;
             IssuedOnDay = issuedOnDay;
             TriggeredByEventId = triggeredByEventId;
+            DefaultVerdict = defaultVerdict;
+        }
+
+        /// <summary>
+        /// Manual-pathway factory (ADR #47). Ships as
+        /// <see cref="DecisionVerdict.AutoAccepted"/> for the user's
+        /// « Baisser intrants » button click. See
+        /// <see cref="PlantHedgesRecommendation.Manual"/> for the
+        /// sequence-disambiguation contract.
+        /// </summary>
+        public static ReduceInputsRecommendation Manual(int day, int sequence)
+        {
+            return new ReduceInputsRecommendation(
+                id: "manual-reduce-inputs#" + day + "-" + sequence,
+                issuedOnDay: day,
+                triggeredByEventId: null,
+                defaultVerdict: DecisionVerdict.AutoAccepted);
         }
     }
 }
