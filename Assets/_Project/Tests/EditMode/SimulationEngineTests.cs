@@ -44,9 +44,10 @@ namespace Bocage.Tests.EditMode
             // regardless of position. Sub-stream isolation guarantees this.
             var modelA = new EcosystemModel();
             var ctxA = new ScenarioContext();
+            var weatherData = Bocage.SimulationCore.Model.SeasonalWeatherDataDefaults.MortagneAuPerche();
             var rulesA = new IRule[]
             {
-                new WeatherUpdateRule(),
+                new WeatherUpdateRule(weatherData),
                 new HedgerowGrowthRule(),
                 new AgriculturalPressureImpactRule(),
                 new WaterTableDynamicsRule(),
@@ -59,7 +60,7 @@ namespace Bocage.Tests.EditMode
             {
                 new WaterTableDynamicsRule(),
                 new AgriculturalPressureImpactRule(),
-                new WeatherUpdateRule(),
+                new WeatherUpdateRule(weatherData),
                 new HedgerowGrowthRule(),
             };
             var engineB = new SimulationEngine(7UL, modelB, ctxB, rulesB);

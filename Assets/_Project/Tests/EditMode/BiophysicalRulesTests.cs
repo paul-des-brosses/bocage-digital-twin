@@ -8,85 +8,103 @@ namespace Bocage.Tests.EditMode
 {
     public sealed class WeatherUpdateRuleTests
     {
+        // Mortagne-au-Perche annual mean from SeasonalWeatherDataDefaults
+        // (10.77 °C). The σ = 2 noise per day plus the seasonal cycle average
+        // out over a few simulated years, so the empirical mean over n ticks
+        // should converge to this value (± a small noise floor).
+        private const double ExpectedAnnualMeanCelsius = 10.77;
+        private const double ExpectedAnnualMeanPrecipitationMm = 720.4 / 365.0; // 1.974 mm/day
+
         [Test]
-        public void MeanTemperatureCloseTo12AtNeutralClimate()
+        public void AnnualMeanTemperatureMatchesSeasonalAverageAtNeutralClimate()
         {
-            var rule = new WeatherUpdateRule();
+            var rule = new WeatherUpdateRule(SeasonalWeatherDataDefaults.MortagneAuPerche());
             var model = new EcosystemModel();
             var ctx = new ScenarioContext();
             var rng = new SeededRandom(1UL).DeriveSubStream(rule.SubStreamId);
 
             double sum = 0.0;
-            const int n = 2000;
+            const int n = 3650; // 10 years smooths both seasonality and σ=2 noise
             for (int i = 0; i < n; i++)
             {
                 rule.Apply(model, ctx, rng);
                 sum += model.CurrentWeather.TemperatureCelsius;
+                model.AdvanceDay();
             }
             double mean = sum / n;
-            Assert.That(mean, Is.EqualTo(12.0).Within(0.5),
-                "Mean daily temperature should converge to ~12 °C at zero anomaly.");
+            Assert.That(mean, Is.EqualTo(ExpectedAnnualMeanCelsius).Within(0.5),
+                "Mean daily temperature over 10 years should converge to the Mortagne-au-Perche "
+                + "annual mean (~10.77 °C). Got " + mean);
         }
 
         [Test]
-        public void PositiveTemperatureAnomalyShiftsMeanUpward()
+        public void PositiveTemperatureAnomalyShiftsAnnualMeanUpward()
         {
-            var rule = new WeatherUpdateRule();
+            var rule = new WeatherUpdateRule(SeasonalWeatherDataDefaults.MortagneAuPerche());
             var model = new EcosystemModel();
             var ctx = new ScenarioContext(initialTemperatureAnomalyC: 5.0);
             var rng = new SeededRandom(2UL).DeriveSubStream(rule.SubStreamId);
 
             double sum = 0.0;
-            const int n = 2000;
+            const int n = 3650;
             for (int i = 0; i < n; i++)
             {
                 rule.Apply(model, ctx, rng);
                 sum += model.CurrentWeather.TemperatureCelsius;
+                model.AdvanceDay();
             }
             double mean = sum / n;
-            Assert.That(mean, Is.EqualTo(17.0).Within(0.5),
-                "A +5°C anomaly should add exactly 5°C to the mean.");
+            Assert.That(mean, Is.EqualTo(ExpectedAnnualMeanCelsius + 5.0).Within(0.5),
+                "A +5 °C anomaly should additively shift the annual mean by exactly 5 °C. Got " + mean);
         }
 
         [Test]
-        public void NegativePrecipitationAnomalyReducesMean()
+        public void NegativePrecipitationAnomalyReducesAnnualMean()
         {
-            var rule = new WeatherUpdateRule();
+            var rule = new WeatherUpdateRule(SeasonalWeatherDataDefaults.MortagneAuPerche());
             var model = new EcosystemModel();
             var ctx = new ScenarioContext(initialPrecipitationAnomalyPercent: -50.0);
             var rng = new SeededRandom(3UL).DeriveSubStream(rule.SubStreamId);
 
             double sum = 0.0;
-            const int n = 2000;
+            const int n = 3650;
             for (int i = 0; i < n; i++)
             {
                 rule.Apply(model, ctx, rng);
                 sum += model.CurrentWeather.PrecipitationMillimeters;
+                model.AdvanceDay();
             }
             double mean = sum / n;
-            // Expected mean is 2 × 0.5 = 1.0 mm but truncation at 0 biases upward slightly.
-            Assert.That(mean, Is.EqualTo(1.0).Within(0.5));
+            double expected = ExpectedAnnualMeanPrecipitationMm * 0.5;
+            Assert.That(mean, Is.EqualTo(expected).Within(0.25),
+                "-50% anomaly should halve the daily precipitation expectation "
+                + "(≈ 0.99 mm/day vs baseline ≈ 1.97 mm/day). Got " + mean);
         }
 
         [Test]
         public void DeterministicForSameSeed()
         {
-            var rule = new WeatherUpdateRule();
+            var data = SeasonalWeatherDataDefaults.MortagneAuPerche();
             var ctx = new ScenarioContext();
 
+            var rule1 = new WeatherUpdateRule(data);
             var run1 = new EcosystemModel();
-            var rng1 = new SeededRandom(42UL).DeriveSubStream(rule.SubStreamId);
-            var run2 = new EcosystemModel();
-            var rng2 = new SeededRandom(42UL).DeriveSubStream(rule.SubStreamId);
+            var rng1 = new SeededRandom(42UL).DeriveSubStream(rule1.SubStreamId);
 
-            for (int i = 0; i < 50; i++)
+            var rule2 = new WeatherUpdateRule(data);
+            var run2 = new EcosystemModel();
+            var rng2 = new SeededRandom(42UL).DeriveSubStream(rule2.SubStreamId);
+
+            for (int i = 0; i < 200; i++)
             {
-                rule.Apply(run1, ctx, rng1);
-                rule.Apply(run2, ctx, rng2);
+                rule1.Apply(run1, ctx, rng1);
+                rule2.Apply(run2, ctx, rng2);
                 Assert.AreEqual(run1.CurrentWeather.TemperatureCelsius,
                                 run2.CurrentWeather.TemperatureCelsius);
                 Assert.AreEqual(run1.CurrentWeather.PrecipitationMillimeters,
                                 run2.CurrentWeather.PrecipitationMillimeters);
+                run1.AdvanceDay();
+                run2.AdvanceDay();
             }
         }
     }
