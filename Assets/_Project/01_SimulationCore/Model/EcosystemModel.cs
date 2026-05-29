@@ -94,6 +94,21 @@ namespace Bocage.SimulationCore.Model
         private readonly int[] _heatDayBuffer = new int[HeatDayWindowDays];
         private int _heatDayBufferIndex;
 
+        /// <summary>
+        /// Soil organic carbon stock in tonnes of carbon per hectare,
+        /// tracked by the 1-pool model in
+        /// <see cref="Bocage.SimulationCore.Rules.SoilCarbonDynamicsRule"/>
+        /// (chantier E3 / ADR #48). Default 50 tC/ha reflects BDAT INRAE
+        /// reference for cultivated bocage soils in the Perche.
+        /// <para>
+        /// Read by the EddyTower sensor (Couche 02) to derive the daily
+        /// net CO2/CH4 flux from ΔSoilCarbonStock, and by
+        /// <see cref="Bocage.Indicators.Hero.SoilCarbonIndicator"/>
+        /// (Couche 04) for the Climat &amp; Ressources panel.
+        /// </para>
+        /// </summary>
+        public double SoilCarbonStock { get; private set; }
+
         public EcosystemModel(
             int initialDay = 0,
             Weather initialWeather = default,
@@ -102,7 +117,8 @@ namespace Bocage.SimulationCore.Model
             double initialCropYield = 5.5,
             double initialInputCost = 1200.0,
             double initialMaintenanceCost = 90.0,
-            double initialFaunaPopulation = 1.0)
+            double initialFaunaPopulation = 1.0,
+            double initialSoilCarbonStock = 50.0)
         {
             CurrentDay = initialDay;
             CurrentWeather = initialWeather;
@@ -112,6 +128,7 @@ namespace Bocage.SimulationCore.Model
             InputCost = ClampNonNegative(initialInputCost);
             MaintenanceCost = ClampNonNegative(initialMaintenanceCost);
             FaunaPopulation = ClampNonNegative(initialFaunaPopulation);
+            SoilCarbonStock = ClampNonNegative(initialSoilCarbonStock);
         }
 
         public void AdvanceDay()
@@ -152,6 +169,11 @@ namespace Bocage.SimulationCore.Model
         public void SetFaunaPopulation(double index)
         {
             FaunaPopulation = ClampNonNegative(index);
+        }
+
+        public void SetSoilCarbonStock(double tonnesCarbonPerHectare)
+        {
+            SoilCarbonStock = ClampNonNegative(tonnesCarbonPerHectare);
         }
 
         /// <summary>

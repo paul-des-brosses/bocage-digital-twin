@@ -38,6 +38,18 @@ namespace Bocage.SimulationCore.Scenario
     ///         for maintained hedges, in €/m/yr (MAEC linéaire +
     ///         local PNR rate). Range 0 to ~1.0.</item>
     /// </list>
+    /// <b>Soil carbon levers</b> (chantier E3 / ADR #48):
+    /// <list type="bullet">
+    ///   <item><see cref="CoverCropsCoveragePercent"/> — share of the
+    ///         cropland sown with cover crops between cash crops, in %.
+    ///         Drives the cover-crop input term of
+    ///         <see cref="Bocage.SimulationCore.Rules.SoilCarbonDynamicsRule"/>.
+    ///         Range 0 to 100.</item>
+    ///   <item><see cref="ResidueRestitutionPercent"/> — share of
+    ///         crop residues left on the field after harvest (vs.
+    ///         exported as straw/silage), in %. Drives the residue
+    ///         input term of the same rule. Range 0 to 100.</item>
+    /// </list>
     /// </para>
     /// </summary>
     public sealed class ScenarioContext
@@ -53,6 +65,10 @@ namespace Bocage.SimulationCore.Scenario
         // ---------------- Policy ----------------
         public TransitioningParameter<double> MaecCoveragePercent { get; }
         public TransitioningParameter<double> PseSubsidyRate { get; }
+
+        // ---------------- Soil carbon (chantier E3 / ADR #48) ----------------
+        public TransitioningParameter<double> CoverCropsCoveragePercent { get; }
+        public TransitioningParameter<double> ResidueRestitutionPercent { get; }
 
         // ---------------- Initial conditions ----------------
         /// <summary>
@@ -78,6 +94,8 @@ namespace Bocage.SimulationCore.Scenario
             double initialInputIntensityFactor = 1.0,
             double initialMaecCoveragePercent = 0.0,
             double initialPseSubsidyRate = 0.0,
+            double initialCoverCropsCoveragePercent = 0.0,
+            double initialResidueRestitutionPercent = 0.0,
             int startingMonth = 1,
             int horizonInDays = 365)
         {
@@ -87,6 +105,8 @@ namespace Bocage.SimulationCore.Scenario
             InputIntensityFactor = TransitioningParameter.ForDouble(initialInputIntensityFactor);
             MaecCoveragePercent = TransitioningParameter.ForDouble(initialMaecCoveragePercent);
             PseSubsidyRate = TransitioningParameter.ForDouble(initialPseSubsidyRate);
+            CoverCropsCoveragePercent = TransitioningParameter.ForDouble(initialCoverCropsCoveragePercent);
+            ResidueRestitutionPercent = TransitioningParameter.ForDouble(initialResidueRestitutionPercent);
             StartingMonth = startingMonth < 1 ? 1 : (startingMonth > 12 ? 12 : startingMonth);
             HorizonInDays = horizonInDays;
         }
@@ -99,6 +119,8 @@ namespace Bocage.SimulationCore.Scenario
             InputIntensityFactor.Tick();
             MaecCoveragePercent.Tick();
             PseSubsidyRate.Tick();
+            CoverCropsCoveragePercent.Tick();
+            ResidueRestitutionPercent.Tick();
         }
     }
 }

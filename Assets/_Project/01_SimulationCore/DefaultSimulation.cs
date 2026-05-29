@@ -34,6 +34,10 @@ namespace Bocage.SimulationCore
                 new WaterTableDynamicsRule(),
                 new HedgerowGrowthRule(),
                 new AgriculturalPressureImpactRule(),
+                // Soil carbon reads the up-to-date HedgerowDensity (hedge
+                // input proxy at 0.4 × density / 90 ref m/ha — cf ADR #48),
+                // so it runs after hedge stock is finalised for the day.
+                new SoilCarbonDynamicsRule(),
                 // Economic rules applied after hedge stock is updated so the
                 // maintenance cost reads the latest hedgerow density.
                 new CropYieldDynamicsRule(),
