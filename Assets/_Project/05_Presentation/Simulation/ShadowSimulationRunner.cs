@@ -60,7 +60,7 @@ namespace Bocage.Presentation.Simulation
             // its SubStream RNG produces an identical sequence — only
             // divergent decisions (8c) will move the two trajectories apart.
             var shadowModel = new EcosystemModel();
-            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario);
+            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario, realRunner.SeasonalWeather);
 
             realRunner.TickCompleted += OnRealTickCompleted;
             realRunner.Rebuilt += OnRealRebuilt;
@@ -94,7 +94,7 @@ namespace Bocage.Presentation.Simulation
                 initialWaterTableDepth: realRunner.Model.WaterTableDepth,
                 initialHedgerowDensity: realRunner.Model.HedgerowDensity,
                 initialFaunaPopulation: realRunner.Model.FaunaPopulation);
-            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario);
+            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario, realRunner.SeasonalWeather);
         }
     }
 }

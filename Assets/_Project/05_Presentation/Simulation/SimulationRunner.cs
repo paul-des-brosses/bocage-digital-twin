@@ -37,6 +37,10 @@ namespace Bocage.Presentation.Simulation
         [SerializeField, Tooltip("Master seed for the SeededRandom. Same seed + same scenario => same trajectory.")]
         private ulong masterSeed = 1UL;
 
+        [Header("Climate")]
+        [SerializeField, Tooltip("Seasonal weather authoring asset (chantier E2). If null, the engine falls back to the Mortagne-au-Perche normals hard-coded in SeasonalWeatherDataDefaults.")]
+        private Bocage.Presentation.Weather.SeasonalWeatherDataAsset seasonalWeatherAsset;
+
         [Header("Cadence")]
         [SerializeField, Range(0.5f, 20f), Tooltip("Simulated days per real-time second. 1 = x1, 10 = x10.")]
         private float ticksPerSecond = 1f;
@@ -64,11 +68,18 @@ namespace Bocage.Presentation.Simulation
         private SimulationEngine _engine;
         private Coroutine _tickRoutine;
         private int _currentDay;
+        // Built once at Awake and reused on every Rebuild so the shadow
+        // run consumes the exact same SeasonalWeatherData instance and
+        // its weather noise stays in lockstep with the real run (their
+        // divergence must come only from auto-actions, not from
+        // independent re-roll of the seasonal asset's float→double cast).
+        private Bocage.SimulationCore.Model.SeasonalWeatherData _seasonalWeather;
         private EventDetector _eventDetector;
         private EventLog _eventLog;
         private RecommendationEngine _recommendationEngine;
         private DecisionJournal _decisionJournal;
         private FaunaSensorReader _faunaSensorReader;
+        private WeatherStationReader _weatherStationReader;
         // Per-type counters for manual actions (ADR #47). Disambiguates
         // multiple clicks on the same simulated day — each click gets a
         // unique recommendation id even though the day suffix collides.
@@ -87,6 +98,27 @@ namespace Bocage.Presentation.Simulation
         /// diverge through tech actions, not through RNG.
         /// </summary>
         public ulong MasterSeed => masterSeed;
+
+        /// <summary>
+        /// Immutable monthly normals consumed by the engine's
+        /// <see cref="Bocage.SimulationCore.Rules.WeatherUpdateRule"/>.
+        /// Exposed so the shadow runner can build its own engine against
+        /// the exact same instance — sharing the reference avoids paying
+        /// for two independent float→double conversions of the asset
+        /// (which would otherwise produce different doubles by
+        /// nondeterministic rounding and break weather lockstep between
+        /// real and shadow runs).
+        /// </summary>
+        public Bocage.SimulationCore.Model.SeasonalWeatherData SeasonalWeather => _seasonalWeather;
+
+        /// <summary>
+        /// On-site WeatherStation sensor (chantier E2 / ADR #52). Owns
+        /// the noisy reading of today's T° + precip plus a 365-day
+        /// sliding window for the inspection panel that will be built in
+        /// chantier E6 / ADR #53. Exposed so future bindings can read
+        /// the recorded history; nothing else is wired to it yet.
+        /// </summary>
+        public WeatherStationReader WeatherStation => _weatherStationReader;
 
         /// <summary>
         /// Append-only history of events emitted by the Couche 2
@@ -147,7 +179,10 @@ namespace Bocage.Presentation.Simulation
 
         private void Awake()
         {
-            _engine = DefaultSimulation.Build(masterSeed);
+            _seasonalWeather = seasonalWeatherAsset != null
+                ? seasonalWeatherAsset.ToSeasonalWeatherData()
+                : Bocage.SimulationCore.Model.SeasonalWeatherDataDefaults.MortagneAuPerche();
+            _engine = DefaultSimulation.Build(masterSeed, seasonalWeather: _seasonalWeather);
             _eventDetector = new EventDetector();
             _eventLog = new EventLog();
             _recommendationEngine = new RecommendationEngine();
@@ -158,6 +193,7 @@ namespace Bocage.Presentation.Simulation
             // means its derived "fauna-sensors" sub-stream is reproducible
             // and isolated from every other sub-system.
             _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
+            _weatherStationReader = new WeatherStationReader(new SeededRandom(masterSeed));
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -209,6 +245,7 @@ namespace Bocage.Presentation.Simulation
                     _engine.Model,
                     _eventLog,
                     _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
+                _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
                 PublishRecommendations();
                 // TickCompleted fires BEFORE PublishIndicators so that
                 // the shadow runner (subscriber) advances its own engine
@@ -253,7 +290,11 @@ namespace Bocage.Presentation.Simulation
                 initialWaterTableDepth: initialWaterTableDepth,
                 initialHedgerowDensity: initialHedgerowDensity,
                 initialFaunaPopulation: initialFaunaPopulation);
-            _engine = DefaultSimulation.Build(masterSeed, model, _engine != null ? _engine.Scenario : null);
+            _engine = DefaultSimulation.Build(
+                masterSeed,
+                model,
+                _engine != null ? _engine.Scenario : null,
+                _seasonalWeather);
             _currentDay = 0;
             _eventDetector = new EventDetector();
             _eventLog = new EventLog();
@@ -267,6 +308,10 @@ namespace Bocage.Presentation.Simulation
             // existing instance's internal state would have advanced and
             // the rebuilt trajectory would no longer be deterministic.
             _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
+            // Same reasoning as the fauna reader: the noisy weather sequence
+            // restarts from day 0 in lockstep with the rebuilt engine so
+            // the 365-day buffer is consistent with the new trajectory.
+            _weatherStationReader = new WeatherStationReader(new SeededRandom(masterSeed));
 
             PublishIndicators();
             // Rebuild does NOT touch the ticking state — the caller
@@ -313,6 +358,7 @@ namespace Bocage.Presentation.Simulation
                     _engine.Model,
                     _eventLog,
                     _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
+                _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
                 PublishRecommendations();
                 TickCompleted?.Invoke();
             }
