@@ -235,5 +235,46 @@ namespace Bocage.Decision
         /// applied to the real model. Exposed for diagnostics.
         /// </summary>
         public int AppliedCount => _appliedOnDayByRecId.Count;
+
+        /// <summary>
+        /// Sum of the upfront capital costs (€/ha) of every Accepted /
+        /// AutoAccepted journal entry, computed from each entry's
+        /// <see cref="Entry.AppliedMagnitude"/> via
+        /// <see cref="PlantHedgesRecommendation.ComputeInvestmentCost"/>
+        /// (chantier E5 / ADR #50). Walks the entries list on each
+        /// access — callers in the UI hot path should cache. Currently
+        /// only <see cref="PlantHedgesRecommendation"/> contributes a
+        /// non-zero amount; <see cref="IrrigationAdviceRecommendation"/>
+        /// and <see cref="ReduceInputsRecommendation"/> are recurring
+        /// expenses already represented through <c>InputCost</c> /
+        /// <c>WaterTableDepth</c>.
+        /// </summary>
+        public double TotalInvestmentEurosPerHectare
+        {
+            get
+            {
+                double sum = 0.0;
+                for (int i = 0; i < _entries.Count; i++)
+                {
+                    var e = _entries[i];
+                    if (e.Verdict != DecisionVerdict.Accepted && e.Verdict != DecisionVerdict.AutoAccepted) continue;
+                    sum += ComputeAppliedInvestmentCost(e.Recommendation, e.AppliedMagnitude);
+                }
+                return sum;
+            }
+        }
+
+        /// <summary>
+        /// Per-type investment cost for a given applied magnitude. Kept
+        /// here rather than as a polymorphic method on <see cref="IRecommendation"/>
+        /// so the interface stays a flat data contract — the journal is
+        /// the only consumer that needs the per-entry cumul and already
+        /// switches on rec types elsewhere (cf. supersession).
+        /// </summary>
+        private static double ComputeAppliedInvestmentCost(IRecommendation rec, double appliedMagnitude)
+        {
+            if (rec is PlantHedgesRecommendation) return PlantHedgesRecommendation.ComputeInvestmentCost(appliedMagnitude);
+            return 0.0;
+        }
     }
 }

@@ -37,5 +37,22 @@ namespace Bocage.Decision.Recommendations
         /// (e.g. observation-only) could ship as <see cref="DecisionVerdict.AutoAccepted"/>.
         /// </summary>
         DecisionVerdict DefaultVerdict { get; }
+
+        /// <summary>
+        /// Upfront capital cost of the action in € per hectare, baked
+        /// at construction time from the embedded magnitude. Used by
+        /// <see cref="DecisionJournal.TotalInvestmentEurosPerHectare"/>
+        /// and the popup binding (chantier E5 / ADR #50). Manual recs
+        /// (ADR #47) lock the click-time magnitude so the value is
+        /// exact and matches the journal's <c>AppliedMagnitude</c>.
+        /// Auto recs lock the default magnitude — if the user later
+        /// moves the popup slider, the popup re-computes the displayed
+        /// cost from the slider value and the journal cumul uses the
+        /// applied magnitude (cf. <see cref="DecisionJournal.TotalInvestmentEurosPerHectare"/>).
+        /// PlantHedges manual: <c>magnitude × 5 €/m</c> (médiane Réseau
+        /// Haies 3-10 €/m). Irrigation and ReduceInputs: 0 — coût
+        /// récurrent intégré dans <c>InputCost</c> / <c>WaterTableDepth</c>.
+        /// </summary>
+        double InvestmentCostEurosPerHectare { get; }
     }
 }

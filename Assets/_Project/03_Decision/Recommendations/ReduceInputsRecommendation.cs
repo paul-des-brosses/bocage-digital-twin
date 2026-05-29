@@ -31,6 +31,12 @@ namespace Bocage.Decision.Recommendations
         public int IssuedOnDay { get; }
         public string TriggeredByEventId { get; }
         public DecisionVerdict DefaultVerdict { get; }
+        /// <summary>
+        /// ADR #50: reducing input intensity is a recurring policy
+        /// change whose savings flow through <c>InputCost</c>; no
+        /// upfront capital. Always 0.
+        /// </summary>
+        public double InvestmentCostEurosPerHectare => 0.0;
 
         public ReduceInputsRecommendation(int issuedOnDay, string triggeredByEventId)
             : this(
