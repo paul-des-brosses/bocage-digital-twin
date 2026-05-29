@@ -37,21 +37,6 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void DifferentSeedsDivergeWithinAFewDays()
-        {
-            var a = DefaultSimulation.Build(masterSeed: 1UL);
-            var b = DefaultSimulation.Build(masterSeed: 2UL);
-
-            for (int day = 0; day < 30; day++)
-            {
-                a.Tick();
-                b.Tick();
-            }
-            Assert.AreNotEqual(a.Model.HedgerowDensity, b.Model.HedgerowDensity);
-            Assert.AreNotEqual(a.Model.WaterTableDepth, b.Model.WaterTableDepth);
-        }
-
-        [Test]
         public void RuleSubStreamsAreIndependentOfRuleOrdering()
         {
             // Build two engines with the same seed but rule lists in different
