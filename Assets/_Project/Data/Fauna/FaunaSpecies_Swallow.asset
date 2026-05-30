@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95a57ae8d38455b8003c4758fc0e213d, type: 3}
+  m_Name: FaunaSpecies_Swallow
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Fauna.FaunaSpeciesDefinition
+  id: swallow
+  frames:
+  - {fileID: -5841096079204690764, guid: 57e4022c4bcf39240b7b84066820c15b, type: 3}
+  - {fileID: -5787534828647779116, guid: 57e4022c4bcf39240b7b84066820c15b, type: 3}
+  - {fileID: 3735431779418485537, guid: 57e4022c4bcf39240b7b84066820c15b, type: 3}
+  framesPerSecond: 8.0
+  appearanceThreshold: 0.3
+  spawnRateAtMaxBiodiv: 0.108
+  sortingLayerName: Default
+  sortingOrderInLayer: 5
+  trajectories:
+  - leftPoint: {x: -7.0, y: 3.5}
+    rightPoint: {x: 7.0, y: 3.5}
+    durationSec: 4.0
+    verticalBobAmplitude: 0.15
+    verticalBobFrequencyHz: 0.5
+  - leftPoint: {x: -7.0, y: 1.8}
+    rightPoint: {x: 7.0, y: 1.8}
+    durationSec: 4.5
+    verticalBobAmplitude: 0.2
+    verticalBobFrequencyHz: 0.4

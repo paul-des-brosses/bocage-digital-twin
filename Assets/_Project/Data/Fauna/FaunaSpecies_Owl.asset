@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95a57ae8d38455b8003c4758fc0e213d, type: 3}
+  m_Name: FaunaSpecies_Owl
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Fauna.FaunaSpeciesDefinition
+  id: owl
+  frames:
+  - {fileID: -6861513601872675165, guid: 493298ebbd52e083e617833714552e12, type: 3}
+  - {fileID: 2827494841234524199, guid: 493298ebbd52e083e617833714552e12, type: 3}
+  - {fileID: -5842908893045092777, guid: 493298ebbd52e083e617833714552e12, type: 3}
+  framesPerSecond: 6.0
+  appearanceThreshold: 0.4
+  spawnRateAtMaxBiodiv: 0.042
+  sortingLayerName: Default
+  sortingOrderInLayer: 5
+  trajectories:
+  - leftPoint: {x: -7.0, y: 2.5}
+    rightPoint: {x: 7.0, y: 2.5}
+    durationSec: 6.0
+    verticalBobAmplitude: 0.18
+    verticalBobFrequencyHz: 0.35
