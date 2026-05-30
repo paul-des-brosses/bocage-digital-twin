@@ -22,13 +22,14 @@ namespace Bocage.Tests.EditMode
             var placement = ScriptableObject.CreateInstance<FaunaPlacementDefinition>();
             SetPrivateField(placement, "species", new[] { species1, species2 });
 
-            // GameObject starts inactive so AddComponent does NOT fire Awake
-            // until we've finished injecting the test placement.
+            // EditMode does NOT auto-fire the Awake lifecycle on
+            // SetActive(true), so we inject the placement via reflection
+            // and trigger the build explicitly via the public Rebuild()
+            // method (which is also what Awake calls in normal runtime).
             var go = new GameObject("test_fauna_pool");
-            go.SetActive(false);
             var pool = go.AddComponent<FaunaPool>();
             SetPrivateField(pool, "placement", placement);
-            go.SetActive(true);
+            pool.Rebuild();
 
             Assert.AreEqual(3, pool.PooledSprites.Count,
                 "Pool size must equal sum of trajectory counts across species (2 + 1).");

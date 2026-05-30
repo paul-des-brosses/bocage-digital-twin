@@ -42,6 +42,20 @@ namespace Bocage.Presentation.Scene.Fauna
 
         private void Awake()
         {
+            Rebuild();
+        }
+
+        /// <summary>
+        /// Pre-instantiate one disabled GameObject per (species, trajectory)
+        /// pair. Called once at <see cref="Awake"/> in normal runtime;
+        /// also callable directly so EditMode tests can trigger
+        /// construction without relying on the Awake lifecycle (which is
+        /// not auto-fired in EditMode test frames) and so an editor button
+        /// could re-run the build after authoring changes to the SO.
+        /// Idempotent: re-running clears the previous children first.
+        /// </summary>
+        public void Rebuild()
+        {
             if (placement == null)
             {
                 SimLogger.DebugLog("[FaunaPool] no placement assigned, skipping");
@@ -50,6 +64,7 @@ namespace Bocage.Presentation.Scene.Fauna
 
             var parent = spawnRoot != null ? spawnRoot : transform;
             ClearChildren(parent);
+            _pooled.Clear();
             BuildPool(placement, parent);
         }
 
