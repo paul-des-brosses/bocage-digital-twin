@@ -257,24 +257,43 @@ visible).
 
 **Couche 05 — Presentation** :
 
-- `FaunaSpeciesDefinition.cs` (ScriptableObject par espèce) : sprite,
-  seuil d'apparition (sur `RC_BiodiversityComposite` ou
-  `RC_FaunaFactor*` après E5), position de spawn, pattern d'animation.
-- 4 assets : `FaunaSpecies_Heron.asset`, `FaunaSpecies_Owl.asset`,
-  `FaunaSpecies_Harrier.asset`, `FaunaSpecies_Swallow.asset` dans
-  `Assets/_Project/Data/Fauna/`.
-- `FaunaPlacementDefinition.cs` : SO racine listant les espèces.
+- `TrajectoryDefinition.cs` : `[Serializable]` struct embarqué dans
+  `FaunaSpeciesDefinition`. Endpoints `leftPoint` + `rightPoint`
+  off-screen, `durationSec`, amplitude + fréquence d'un sinus vertical
+  pour briser la monotonie du vol linéaire.
+- `FaunaSpeciesDefinition.cs` (ScriptableObject par espèce) : id,
+  `Sprite[] frames` (sous-sprites de la sheet animée), `framesPerSecond`
+  (wing flap), `appearanceThreshold` sur `RC_BiodiversityComposite`,
+  `spawnRateAtMaxBiodiv` (λ_max par trajectoire), sortingLayer/Order,
+  `TrajectoryDefinition[] trajectories` (1 pour les espèces solitaires
+  comme buse/chouette, 2 pour l'hirondelle → max 2 oiseaux simultanés).
+- 3 assets : `FaunaSpecies_Swallow.asset`, `FaunaSpecies_Owl.asset`,
+  `FaunaSpecies_Buzzard.asset` dans `Assets/_Project/Data/Fauna/`.
+  **Pas de `FaunaSpecies_Heron.asset`** : décision utilisateur
+  2026-05-30, le héron reste un sprite statique (`heron.png`) sans
+  SO dédié pour le MVP. Anim héron déférée post-MVP.
+- `FaunaPlacementDefinition.cs` : SO racine listant les 3 espèces.
 - `FaunaPool.cs` : object pooling sans Instantiate runtime (CLAUDE.md
-  §6). Awake pré-instancie `maxPoolSize` sprites par espèce sous
-  `spawnRoot` avec positions déterministes via
-  `SeededRandom.DeriveSubStream("fauna_placement")`.
-- `FaunaIdleMotion.cs` : animation frame-swap (cycle 3-4 frames).
-  Variantes par espèce : swallow/harrier oscillation horizontale
-  sinusoïdale lente, owl statique (perchée), heron sway vertical
-  très lent.
-- `FaunaPoolBinding.cs` : observe `RC_BiodiversityComposite` (et
-  `RC_FaunaFactor*` après E5) → ratio actif/inactif par espèce selon
-  courbe de réponse.
+  §6). Awake pré-instancie **1 GameObject désactivé par trajectoire**
+  (4 sprites au total avec les valeurs MVP : 2 swallow + 1 owl + 1
+  buzzard) sous `spawnRoot`. `ExecutionOrder -9000` pour que les
+  bindings default-order trouvent le pool déjà peuplé.
+- `FaunaTraversalMotion.cs` (ex-`FaunaIdleMotion`, renommé 2026-05-30
+  pour refléter le modèle traversée plutôt qu'idle) : par sprite
+  actif. Lerp X linéaire entre les 2 endpoints sur `durationSec`,
+  Y modulé par sinus (amplitude + fréquence + phase déterministe),
+  sprite flip horizontal selon direction, wing flap à FPS constant.
+  `SamplePositionAt(elapsed, direction)` exposé pur pour tests
+  EditMode.
+- `FaunaPoolBinding.cs` : observe `RC_BiodiversityComposite`, cache
+  `Normalized01` via `OnChanged`. Update : pour chaque pooled sprite,
+  roll Bernoulli `p = λ_effective × Δt` où
+  `λ_effective = λ_max × max(0, (biodiv − threshold) / (1 − threshold))`.
+  Sur succès : `SetActive(true)`, direction 50/50 random, phase sin
+  uniforme `[0, 2π)`, le tout déterministe sous `masterSeed` via
+  `SeededRandom.DeriveSubStream("fauna_pool_binding")`. Observation
+  des `RC_FaunaFactor*` non activée en MVP (extensible sans casser
+  l'API quand la calibration le demandera).
 
 **Sprites** :
 
@@ -285,16 +304,24 @@ visible).
 
 ### Tests EditMode
 
-- 3 tests : pool size respecté (pas d'Instantiate runtime), courbes
-  de réponse appliquées correctement (biodiv basse → faune absente,
-  biodiv haute → tous présents), déterminisme placement.
+- **5 tests** sur 3 fichiers (`FaunaPoolTests`,
+  `FaunaTraversalMotionTests`, `FaunaPoolBindingTests`) :
+  - **Pool** : pré-instanciation correcte (count = somme des
+    trajectoires × espèces, tous désactivés au sortir du Awake).
+  - **Motion** : lerp X linéaire L→R sur 3 checkpoints (0, milieu,
+    fin) ; miroir R→L sur les 2 endpoints.
+  - **Binding** : `ComputeEffectiveSpawnRate` retourne 0 sous le
+    seuil (incluant l'égalité), linéaire au-dessus jusqu'à λ_max à
+    biodiv = 1 (3 checkpoints intermédiaires).
 
 ### Critère de validation
 
 - Tests EditMode verts.
-- Démo : biodiv chute progressive → espèces disparaissent une à une
-  selon leur seuil (hirondelle d'abord, héron en dernier ou inverse
-  selon calibration). Biodiv remonte → espèces reviennent.
+- Démo : biodiv chute progressive → fréquence de passage de chaque
+  espèce décroît, puis tombe à 0 sous le seuil propre de chaque
+  espèce (swallow 0.30, owl 0.40, buzzard 0.50). Biodiv remonte →
+  les passages reprennent. Aucune espèce permanente : que des
+  traversées ponctuelles entrant/sortant par les bords.
 - Aucune `Instantiate`/`Destroy` runtime (Profiler).
 - Pas de modulation `_HealthT` sur faune (item BACKLOG #3 hors MVP).
 
