@@ -41,7 +41,7 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
 | `swallow_sheet.png` | Nanobanana wave 2 (frames 02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Hirondelle en vol, sprite sheet 3 frames horizontale (sub 256×143, sheet 768×143). Le legacy `bird_swallow_flight_v1` n'est pas inclus comme frame_01 (bbox 2110×1105 vs siblings ~2748×1536 → variation visible de taille du sujet). Cf §8. |
-| `owl_sheet.png` | Nanobanana wave 1 (frame_01) + wave 2 (02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Chouette chevêche en vol, sprite sheet 4 frames horizontale (sub 256×127, sheet 1024×127). Legacy `bird_owl_flight_v1_detoured` (2848×1490) ≈ wave 2 (2852×1472) → intégré comme frame_01 sans re-détour. Cf §8. |
+| `owl_sheet.png` | Nanobanana wave 2 (frames 02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Chouette chevêche en vol, sprite sheet 3 frames horizontale (sub 256×127, sheet 768×127). Legacy `bird_owl_flight_v1` initialement intégré comme frame_01 mais retiré 2026-05-30 (incohérence visuelle dessous des ailes plus clair sur frames wave 2 que sur legacy v1). Cf §8. |
 | `buzzard_sheet.png` | Nanobanana wave 2 + `build_animation_sheet.py` | intégré 2026-05-30 | Buse variable (`Buteo buteo`) en glide planar, sprite sheet 3 frames horizontale (sub 256×130, sheet 768×130). **Remplace `bird_harrier_flight` rejeté** : l'ancien sprite était une mouette par erreur de prompt initial (correction ADR #49). Originaux archivés dans `Sprites/Source/_rejected/`. Cf §8. |
 | `heron.png` | Nanobanana wave 1, statique | intégré | Héron cendré au bord de la mare, pose de chasse statique (196×256). Variantes `heron_alert_v1` + `heron_hunting_v1` livrées en wave 2 dans `Sprites/Source/` mais **non intégrées au MVP** (décision utilisateur 2026-05-30 : « pour l'instant utiliser que le premier et il reste statique »). Filter Mode passé Point→Bilinear 2026-05-30 (cohérence faune). |
 | `amphibian_small.png` | Nanobanana | **non produit, écarté** | Sacrifié comme prévu (statut optionnel/coupable). La lecture biodiversité est portée par les 4 autres sprites faune (hirondelle, chouette, buse, héron). Décision DA 2026-05-12. |
@@ -325,7 +325,7 @@ Sources brutes wave 2 archivées dans `Sprites/Source/`.
 | Espèce | Asset Unity | Sheet (W×H) | Frames | Sub-sprite | GUID |
 |---|---|---|---|---|---|
 | Hirondelle (`swallow`) | `swallow_sheet.png` | 768×143 | 3 | 256×143 | `57e4022c4bcf39240b7b84066820c15b` |
-| Chouette chevêche (`owl`) | `owl_sheet.png` | 1024×127 | 4 | 256×127 | `493298ebbd52e083e617833714552e12` |
+| Chouette chevêche (`owl`) | `owl_sheet.png` | 768×127 | 3 | 256×127 | `493298ebbd52e083e617833714552e12` |
 | Buse variable (`buzzard`) | `buzzard_sheet.png` | 768×130 | 3 | 256×130 | `33c2f60ec470881371bfb4f999d40830` |
 | Héron cendré (`heron`) | `heron.png` (statique) | 196×256 | 1 | n/a | (hérité phase 1 : `cd44513e…`) |
 
@@ -357,9 +357,16 @@ Sources brutes wave 2 archivées dans `Sprites/Source/`.
   renumérotés 01/02/03 côté sub-sprite). Si une 4ᵉ frame est
   réintégrée plus tard, le legacy v1 devra être re-détouré au canvas
   commun.
-- **Chouette 4-frame avec legacy v1**. Le legacy `bird_owl_flight_v1`
-  detoured (2848×1490) ≈ wave 2 (2852×1472), diff négligeable —
-  legacy intégré comme frame_01 sans re-détour.
+- **Chouette 3-frame** (pas 4). Tentative initiale avec legacy
+  `bird_owl_flight_v1` comme frame_01 : les dimensions étaient
+  compatibles (2848×1490 ≈ wave 2 2852×1472) mais la couleur du
+  dessous des ailes diverge (legacy plus sombre, wave 2 plus clair)
+  — incohérence visible pendant le cycle wing-flap, repérée à
+  validation visuelle utilisateur 2026-05-30. Décision : drop legacy
+  v1, animation 3-frame sur wave 2 (02/03/04 renumérotés 01/02/03),
+  même pattern que le swallow. Leçon : la compatibilité dimensions
+  est nécessaire mais pas suffisante — la cohérence chromatique entre
+  vagues de génération doit aussi être validée à l'œil.
 - **Variantes héron non intégrées**. `heron_alert_v1` et
   `heron_hunting_v1` sont livrés en wave 2 dans `Sprites/Source/`
   mais **pas intégrés au MVP** (décision utilisateur 2026-05-30 :
