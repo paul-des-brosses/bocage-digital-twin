@@ -11,9 +11,6 @@ TextureImporter:
   - first:
       213: -5842908893045092777
     second: owl_2
-  - first:
-      213: 533804200589846748
-    second: owl_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -187,28 +184,6 @@ TextureImporter:
       indices:
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: owl_3
-      rect:
-        serializedVersion: 2
-        x: 768
-        y: 0
-        width: 256
-        height: 127
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData:
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 411f053aba38f2995cd6f803b93ba947
-      internalID: 533804200589846748
-      vertices: []
-      indices:
-      edges: []
-      weights: []
     outline: []
     customData:
     physicsShape: []
@@ -226,7 +201,6 @@ TextureImporter:
       owl_0: -6861513601872675165
       owl_1: 2827494841234524199
       owl_2: -5842908893045092777
-      owl_3: 533804200589846748
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
   userData:
