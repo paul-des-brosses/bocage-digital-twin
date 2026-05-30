@@ -40,11 +40,11 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 
 | Nom | Source | Statut | Notes |
 |---|---|---|---|
-| `bird_swallow_flight.png` | Nanobanana | intégré | Hirondelle en vol, sprite simple animable. Validation DA 2026-04-26 (option 1 — palette `v0.1-provisional` retenue sans rééquilibrage). Sprite final : `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/swallow.png` (256×121). |
-| `bird_owl_flight.png` | Nanobanana | post-traité | Chouette chevêche en vol. Source détourée prête (2848×1490, alpha 32 bits). |
-| `bird_harrier_flight.png` | Nanobanana | post-traité | Busard Saint-Martin en glide. Source détourée prête (2568×1632, alpha 32 bits). Introduit un gris-bleu pâle dans la palette corpus. |
-| `heron_static.png` | Nanobanana | post-traité | Héron cendré au bord de la mare, pose de chasse statique. Source détourée prête (2568×1632, alpha 32 bits). Introduit un gris-bleu froid moyen et un ocre chaud (pattes) dans la palette corpus. |
-| `amphibian_small.png` | Nanobanana | **non produit, écarté** | Sacrifié comme prévu (statut optionnel/coupable). La lecture biodiversité est portée par les 4 autres sprites faune (hirondelle, chouette, busard, héron). Décision DA 2026-05-12. |
+| `swallow_sheet.png` | Nanobanana wave 2 (frames 02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Hirondelle en vol, sprite sheet 3 frames horizontale (sub 256×143, sheet 768×143). Le legacy `bird_swallow_flight_v1` n'est pas inclus comme frame_01 (bbox 2110×1105 vs siblings ~2748×1536 → variation visible de taille du sujet). Cf §8. |
+| `owl_sheet.png` | Nanobanana wave 1 (frame_01) + wave 2 (02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Chouette chevêche en vol, sprite sheet 4 frames horizontale (sub 256×127, sheet 1024×127). Legacy `bird_owl_flight_v1_detoured` (2848×1490) ≈ wave 2 (2852×1472) → intégré comme frame_01 sans re-détour. Cf §8. |
+| `buzzard_sheet.png` | Nanobanana wave 2 + `build_animation_sheet.py` | intégré 2026-05-30 | Buse variable (`Buteo buteo`) en glide planar, sprite sheet 3 frames horizontale (sub 256×130, sheet 768×130). **Remplace `bird_harrier_flight` rejeté** : l'ancien sprite était une mouette par erreur de prompt initial (correction ADR #49). Originaux archivés dans `Sprites/Source/_rejected/`. Cf §8. |
+| `heron.png` | Nanobanana wave 1, statique | intégré | Héron cendré au bord de la mare, pose de chasse statique (196×256). Variantes `heron_alert_v1` + `heron_hunting_v1` livrées en wave 2 dans `Sprites/Source/` mais **non intégrées au MVP** (décision utilisateur 2026-05-30 : « pour l'instant utiliser que le premier et il reste statique »). Filter Mode passé Point→Bilinear 2026-05-30 (cohérence faune). |
+| `amphibian_small.png` | Nanobanana | **non produit, écarté** | Sacrifié comme prévu (statut optionnel/coupable). La lecture biodiversité est portée par les 4 autres sprites faune (hirondelle, chouette, buse, héron). Décision DA 2026-05-12. |
 
 ### Sensors (visibles dans la scène)
 
@@ -198,6 +198,20 @@ caractères latins étendus (accents français, €).
    destination canonique et son `--max-size` catégoriel. Le mapping
    complet (source → destination → taille cible) est la source de
    vérité dans la table `SPRITES` de ce script.
+
+   **Cas spécial — familles de frames animées** (livré 2026-05-30) :
+   pour les sprites multi-frames (sheets animées comme la faune en
+   vol), utiliser `python tools/build_animation_sheet.py <famille>
+   <output_sheet> <frames…>` qui ajoute deux étapes au pipeline
+   standard : (a) **alignement cross-frame** par alpha-bbox commun
+   (le sujet reste à la même taille et position relative dans chaque
+   frame, ce qui corrige les détourages au cadrage incohérent) ; (b)
+   **concaténation horizontale** + génération du `.meta` Unity avec
+   `spriteMode: 2` (Multiple), rects grid pré-écrits, `filterMode: 1`
+   (Bilinear) et GUIDs déterministes (stables aux re-runs). Réutilise
+   `chroma_key_removal`, `alpha_cleanup`, `quantize_to_palette` de
+   `postprocess.py`. Cf §8 pour les 3 familles faune (swallow / owl /
+   buzzard) livrées via cet outil.
 6. Validation visuelle DA avant intégration.
 7. **Configuration d'import Unity — Crunch compression sur l'override
    Web** : optionnel. Unity ne l'active pas par défaut, c'est un
@@ -300,47 +314,108 @@ non-négociable de l'étape 9.
 
 ---
 
-## 8. Sprites faune — état post-recadrage 2026-05-28 (chantier E4)
+## 8. Sprites faune — état post-vague 2 (2026-05-30)
 
-Le chantier E4 de `docs/ROADMAP.md` (ADR #49) demande **4 espèces ×
-3-4 frames** pour l'animation frame-swap du `FaunaPool` (cf
-`docs/SCENE_WIRING.md` chantier E4).
+Vague 2 livrée et intégrée. Trois sprite sheets animées sliced + un
+héron statique dans `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`.
+Sources brutes wave 2 archivées dans `Sprites/Source/`.
 
-**État actuel par espèce** (au 2026-05-28) :
+### 8.1 Inventaire intégré
 
-| Espèce | Frame existante | Frames manquantes | Pattern d'animation cible |
-|---|---|---|---|
-| Hirondelle (`swallow`) | `swallow.png` (256×121, intégré v0.1-provisional) | 2-3 frames de vol | Oscillation horizontale sinusoïdale lente + très légère amplitude verticale. |
-| Chouette chevêche (`owl`) | `bird_owl_flight.png` (post-traité, à intégrer) | 0 (perchée, statique) | Pas d'animation — frame unique suffisante. |
-| Busard Saint-Martin (`harrier`) | `bird_harrier_flight.png` (post-traité, à intégrer) | 2-3 frames de glide | Oscillation horizontale sinusoïdale lente. |
-| Héron cendré (`heron`) | `heron_static.png` (post-traité, à intégrer) | 1-2 frames de sway | Sway vertical très lent (respiration). |
+| Espèce | Asset Unity | Sheet (W×H) | Frames | Sub-sprite | GUID |
+|---|---|---|---|---|---|
+| Hirondelle (`swallow`) | `swallow_sheet.png` | 768×143 | 3 | 256×143 | `57e4022c4bcf39240b7b84066820c15b` |
+| Chouette chevêche (`owl`) | `owl_sheet.png` | 1024×127 | 4 | 256×127 | `493298ebbd52e083e617833714552e12` |
+| Buse variable (`buzzard`) | `buzzard_sheet.png` | 768×130 | 3 | 256×130 | `33c2f60ec470881371bfb4f999d40830` |
+| Héron cendré (`heron`) | `heron.png` (statique) | 196×256 | 1 | n/a | (hérité phase 1 : `cd44513e…`) |
 
-**Charge utilisateur** (cf `CLAUDE.md` §2 division du travail) :
+**Configuration import Unity** (toute la faune) :
 
-1. **Génération** des frames supplémentaires via Nanobanana avec
-   l'image existante de chaque espèce comme seconde référence
-   ip-adapter (préserve la cohérence « même oiseau dans une autre
-   pose »).
-2. **Détourage manuel** + **post-traitement** standard via
-   `python tools/postprocess.py` (cf §6 ci-dessus).
-3. **Convention de nommage** : `<espèce>_frame_<N>.png` (par exemple
-   `swallow_frame_1.png`, `swallow_frame_2.png`,
-   `swallow_frame_3.png`). La frame existante est renommée
-   `<espèce>_frame_0.png` pour cohérence.
-4. **Placement** dans
-   `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/<espèce>/`.
-5. **Référencement** dans le ScriptableObject
-   `FaunaSpecies_<Espèce>.asset` (cf E4) : tableau `Sprite[] frames`.
+- `textureType: 8` (Sprite 2D and UI)
+- `spriteMode: 2` (Multiple) pour les sheets ; les rects sub-sprite
+  sont écrits par `build_animation_sheet.py`, pas besoin de slicer
+  dans l'éditeur Unity.
+- `spritePixelsToUnits: 100`
+- `filterMode: 1` (**Bilinear** — passage de Point à Bilinear le
+  2026-05-30 pour rendu lisse, sprites non pixel-art).
+- 3 `platformSettings` (DefaultTexturePlatform / Standalone / WebGL).
+- `crunchedCompression: 0` (chantier E7 conditionnel, cf §6 étape 7).
 
-**Note importante** : Claude Code ne peut pas générer ces frames
-(usage Nanobanana = action manuelle utilisateur, cf CLAUDE.md §2).
-Le chantier E4 livre l'infrastructure (`FaunaPool`,
-`FaunaSpeciesDefinition`, `FaunaIdleMotion`, `FaunaPoolBinding`) et
-les assets vides ; l'utilisateur remplit les frames au fil des
-itérations.
+### 8.2 Décisions techniques notables
 
-**Estimation utilisateur** : 1-2 h par espèce (génération +
-détourage + post-traitement + placement), soit 4-8 h pour les
-4 espèces. À planifier en parallèle ou avant la livraison du
-chantier E4 Claude Code (les bindings peuvent être testés sur la
-frame 0 seule comme fallback temporaire).
+- **Buse variable remplace busard Saint-Martin** (correction critique
+  2026-05-30, ADR #49). Le sprite `bird_harrier_flight_v1` originel
+  était une mouette par erreur de prompt initial. Archivé dans
+  `Sprites/Source/_rejected/`. La buse a été re-générée et nommée
+  `buzzard` partout (asset Unity, sheet, GUIDs, sub-sprite names,
+  futur `FaunaSpecies_Buzzard.asset` en E4 code).
+- **Hirondelle 3-frame** (pas 4). Le legacy `bird_swallow_flight_v1`
+  détouré présente un bbox (2110×1105) significativement plus petit
+  que les frames wave 2 (~2748×1536), ce qui produirait une variation
+  de taille du sujet ≈ 25 % entre frames. Décision 2026-05-30 : drop
+  le legacy v1, animation à 3 frames sur les wave 2 (02/03/04
+  renumérotés 01/02/03 côté sub-sprite). Si une 4ᵉ frame est
+  réintégrée plus tard, le legacy v1 devra être re-détouré au canvas
+  commun.
+- **Chouette 4-frame avec legacy v1**. Le legacy `bird_owl_flight_v1`
+  detoured (2848×1490) ≈ wave 2 (2852×1472), diff négligeable —
+  legacy intégré comme frame_01 sans re-détour.
+- **Variantes héron non intégrées**. `heron_alert_v1` et
+  `heron_hunting_v1` sont livrés en wave 2 dans `Sprites/Source/`
+  mais **pas intégrés au MVP** (décision utilisateur 2026-05-30 :
+  « pour l'instant utiliser que le premier et il reste statique ;
+  ça m'a l'air complexe pour pas grand chose de l'animer »). Source
+  archivée pour usage futur (anim héron facultative post-MVP).
+
+### 8.3 Pipeline étendu — `tools/build_animation_sheet.py`
+
+`tools/postprocess.py` reste single-image-in/out (crop bbox + resize
+indépendant par image), ce qui ne garantit pas l'alignement
+frame-à-frame nécessaire à une animation. Nouveau outil
+`tools/build_animation_sheet.py` (livré 2026-05-30, cf §6) :
+
+1. Charge N frames d'une famille (PNG détourées).
+2. Applique `chroma_key_removal` + `alpha_cleanup` (importés depuis
+   `postprocess.py`).
+3. Calcule la bounding box alpha de chaque frame, retient la max
+   dimension (width et height) sur toute la famille, ajoute marge 5%
+   → canvas commun.
+4. Crop chaque frame à son propre bbox, paste centrée dans le canvas
+   commun (le sujet reste à la même position visuelle entre frames).
+5. Quantize chaque frame sur la palette Perche
+   (`tools/palette_perche.json`).
+6. Redimensionne chaque frame à `--max-subsprite-width` (défaut
+   256 px) en preservant le ratio.
+7. Concatène horizontalement → sprite sheet (sheet_width = N × sub_w).
+8. Écrit `<famille>_sheet.png` + `<famille>_sheet.png.meta` avec
+   GUID déterministe (hash stable du nom de famille → re-runs
+   idempotents), `spriteMode: 2`, rects grid pré-écrits,
+   `filterMode: 1`, 3 platformSettings, `nameFileIdTable` cohérente.
+
+### 8.4 Caveats connus (informationnels, non bloquants)
+
+- **`uniq_rgb` par sub-sprite ≈ 1000-2000** après le pipeline.
+  Origine : après quantization sur 32 couleurs palette Perche,
+  l'étape de resize LANCZOS interpole entre couleurs palette aux
+  bords AA. C'est le comportement souhaité pour un rendu lisse
+  cohérent avec `filterMode: 1` (Bilinear) — pas du pixel art.
+  Vérification distance-palette : 100 % des pixels opaques restent
+  à distance RGB ≤ 40 d'une couleur palette ; ~52 % sont
+  exact-match palette ; ~85 % à distance ≤ 10.
+- **Résidu chroma résiduel** : ≤ 5 pixels par sub-sprite (soit
+  ≤ 0.06 % des pixels opaques) ont une couleur RGB pure magenta ou
+  pure verte avec **alpha = 1 ou 2** (invisibles). Origine :
+  `chroma_key_removal` met l'alpha à 0 sur les pixels chroma purs
+  avant resize, mais LANCZOS interpole alpha et RGB séparément, ce
+  qui peut faire ré-émerger des micro-fragments chroma à alpha
+  quasi-nul aux bords. Aucun impact visuel ni runtime. Amélioration
+  possible (non bloquante) : ré-appliquer `chroma_key_removal`
+  après resize dans `build_animation_sheet.py`.
+
+### 8.5 Charge utilisateur restante
+
+Aucune pour la faune MVP. Les 4 espèces sont intégrées. Les variantes
+héron alert/hunting et toute frame supplémentaire (e.g. swallow
+frame_01 re-détouré) sont à planifier hors-MVP via `FaunaSpecies_*`
+ScriptableObjects à étendre en E4 code, avec sources livrées en wave
+ultérieure.
