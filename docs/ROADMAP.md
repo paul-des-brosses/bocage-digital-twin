@@ -267,33 +267,52 @@ visible).
   `spawnRateAtMaxBiodiv` (λ_max par trajectoire), sortingLayer/Order,
   `TrajectoryDefinition[] trajectories` (1 pour les espèces solitaires
   comme buse/chouette, 2 pour l'hirondelle → max 2 oiseaux simultanés).
-- 3 assets : `FaunaSpecies_Swallow.asset`, `FaunaSpecies_Owl.asset`,
-  `FaunaSpecies_Buzzard.asset` dans `Assets/_Project/Data/Fauna/`.
-  **Pas de `FaunaSpecies_Heron.asset`** : décision utilisateur
-  2026-05-30, le héron reste un sprite statique (`heron.png`) sans
-  SO dédié pour le MVP. Anim héron déférée post-MVP.
-- `FaunaPlacementDefinition.cs` : SO racine listant les 3 espèces.
+- 4 assets : `FaunaSpecies_Swallow.asset`, `FaunaSpecies_Owl.asset`,
+  `FaunaSpecies_Buzzard.asset`, `FaunaSpecies_Heron.asset` dans
+  `Assets/_Project/Data/Fauna/`. Le héron a été remis dans le MVP
+  2026-05-30 (décision utilisateur révisée : indicateur sentinelle
+  permanent qui apparaît au-dessus d'un seuil biodiv haut et fade
+  out sinon — pas une traversée).
+- `FaunaPlacementDefinition.cs` : SO racine listant les 4 espèces.
 - `FaunaPool.cs` : object pooling sans Instantiate runtime (CLAUDE.md
-  §6). Awake pré-instancie **1 GameObject désactivé par trajectoire**
-  (4 sprites au total avec les valeurs MVP : 2 swallow + 1 owl + 1
-  buzzard) sous `spawnRoot`. `ExecutionOrder -9000` pour que les
-  bindings default-order trouvent le pool déjà peuplé.
+  §6). Awake branche sur `FaunaMotionMode` :
+  - **Traversal** (swallow/owl/buzzard) : 1 GameObject **désactivé**
+    par trajectoire (4 sprites avec les valeurs MVP : 2 swallow + 1
+    owl + 1 buzzard).
+  - **StaticAppearance** (heron) : 1 GameObject **actif** à
+    `staticPosition`, alpha = 0 au Awake (invisible jusqu'à
+    activation par le binding).
+  Total : 5 GameObjects pré-instanciés. `ExecutionOrder -9000` pour
+  que les bindings default-order trouvent le pool déjà peuplé.
 - `FaunaTraversalMotion.cs` (ex-`FaunaIdleMotion`, renommé 2026-05-30
   pour refléter le modèle traversée plutôt qu'idle) : par sprite
-  actif. Lerp X linéaire entre les 2 endpoints sur `durationSec`,
-  Y modulé par sinus (amplitude + fréquence + phase déterministe),
-  sprite flip horizontal selon direction, wing flap à FPS constant.
-  `SamplePositionAt(elapsed, direction)` exposé pur pour tests
-  EditMode.
+  actif en mode Traversal. Lerp X linéaire entre les 2 endpoints
+  sur `durationSec`, Y modulé par sinus (amplitude + fréquence +
+  phase déterministe), sprite flip horizontal selon direction
+  (XOR avec `defaultFacesRight` par espèce), wing flap à FPS
+  constant. `SamplePositionAt(elapsed, direction)` exposé pur pour
+  tests EditMode.
+- `FaunaStaticAppearance.cs` (nouveau 2026-05-30) : par sprite static
+  (heron). GameObject toujours actif, visibilité contrôlée par alpha
+  via `Mathf.MoveTowards` à la cadence `fadeDurationSec` configurée.
+  `SetVisible(bool)` toggle la cible, `TickFade(deltaTime)` exposé
+  pour tests EditMode déterministes.
 - `FaunaPoolBinding.cs` : observe `RC_BiodiversityComposite`, cache
-  `Normalized01` via `OnChanged`. Update : pour chaque pooled sprite,
-  roll Bernoulli `p = λ_effective × Δt` où
-  `λ_effective = λ_max × max(0, (biodiv − threshold) / (1 − threshold))`.
-  Sur succès : `SetActive(true)`, direction 50/50 random, phase sin
-  uniforme `[0, 2π)`, le tout déterministe sous `masterSeed` via
-  `SeededRandom.DeriveSubStream("fauna_pool_binding")`. Observation
-  des `RC_FaunaFactor*` non activée en MVP (extensible sans casser
-  l'API quand la calibration le demandera).
+  `Normalized01` via `OnChanged`. Update branche sur `MotionMode` :
+  - **Traversal** : pour chaque pooled sprite, roll Bernoulli
+    `p = λ_effective × Δt` où
+    `λ_effective = λ_max × max(0, (biodiv − threshold) / (1 − threshold))`.
+    Sur succès : `SetActive(true)`, direction 50/50 random, phase
+    sin uniforme `[0, 2π)`, le tout déterministe sous `masterSeed`
+    via `SeededRandom.DeriveSubStream("fauna_pool_binding")`.
+  - **StaticAppearance** : simple toggle
+    `p.StaticAppearance.SetVisible(biodiv >= threshold)` — le fade
+    timing est géré par le composant lui-même.
+  Observation des `RC_FaunaFactor*` non activée en MVP (extensible
+  sans casser l'API quand la calibration le demandera).
+- `FaunaMotionMode` enum sur `FaunaSpeciesDefinition` : `Traversal`
+  (3 oiseaux) ou `StaticAppearance` (héron). Champs SO supplémentaires
+  pour static : `staticPosition: Vector2`, `fadeDurationSec: float`.
 
 **Sprites** :
 
@@ -304,24 +323,36 @@ visible).
 
 ### Tests EditMode
 
-- **5 tests** sur 3 fichiers (`FaunaPoolTests`,
-  `FaunaTraversalMotionTests`, `FaunaPoolBindingTests`) :
-  - **Pool** : pré-instanciation correcte (count = somme des
-    trajectoires × espèces, tous désactivés au sortir du Awake).
+- **7 tests** sur 4 fichiers (`FaunaPoolTests`,
+  `FaunaTraversalMotionTests`, `FaunaPoolBindingTests`,
+  `FaunaStaticAppearanceTests`) :
+  - **Pool** :
+    - Traversal : pré-instanciation correcte (count = somme des
+      trajectoires × espèces, tous désactivés au sortir du Awake).
+    - StaticAppearance : 1 GO unique par espèce static,
+      `transform.position = staticPosition`, GO **actif**,
+      `TraversalMotion = null`, `StaticAppearance != null`.
   - **Motion** : lerp X linéaire L→R sur 3 checkpoints (0, milieu,
     fin) ; miroir R→L sur les 2 endpoints.
   - **Binding** : `ComputeEffectiveSpawnRate` retourne 0 sous le
     seuil (incluant l'égalité), linéaire au-dessus jusqu'à λ_max à
     biodiv = 1 (3 checkpoints intermédiaires).
+  - **StaticAppearance** : `TickFade` lerpe alpha vers cible au
+    bon taux (0.25s avec fade 1s → α = 0.25), clamp aux extremums
+    0 et 1, réversibilité sur `SetVisible(false)`.
 
 ### Critère de validation
 
 - Tests EditMode verts.
-- Démo : biodiv chute progressive → fréquence de passage de chaque
-  espèce décroît, puis tombe à 0 sous le seuil propre de chaque
-  espèce (swallow 0.30, owl 0.40, buzzard 0.50). Biodiv remonte →
-  les passages reprennent. Aucune espèce permanente : que des
-  traversées ponctuelles entrant/sortant par les bords.
+- Démo Traversal : biodiv chute progressive → fréquence de passage
+  de chaque oiseau décroît, puis tombe à 0 sous le seuil propre
+  (swallow 0.30, owl 0.40, buzzard 0.50). Biodiv remonte → les
+  passages reprennent.
+- Démo StaticAppearance : à biodiv < 0.65, le héron est invisible
+  (alpha 0). Quand la biodiv monte au-dessus de 0.65, le héron
+  fade in sur 1.5s. Quand elle redescend, fade out symétrique.
+  Aucune traversée pour le héron — il reste à
+  `staticPosition (2.5, -2.93)` au bord de la mare.
 - Aucune `Instantiate`/`Destroy` runtime (Profiler).
 - Pas de modulation `_HealthT` sur faune (item BACKLOG #3 hors MVP).
 

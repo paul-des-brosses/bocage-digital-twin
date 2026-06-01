@@ -349,10 +349,11 @@ Aucun champ Inspector nouveau.
 
 | Asset | Notes |
 |---|---|
-| `FaunaSpecies_Swallow.asset` | 3 sous-sprites du `swallow_sheet`, 8 fps wing flap, seuil 0.30, λ_max 0.108, **2 trajectoires** (haut + bas), max 2 hirondelles à l'écran. |
-| `FaunaSpecies_Owl.asset` | 3 sous-sprites du `owl_sheet`, 6 fps wing flap, seuil 0.40, λ_max 0.042, **1 trajectoire** médium. |
-| `FaunaSpecies_Buzzard.asset` | 3 sous-sprites du `buzzard_sheet`, 2 fps planar, seuil 0.50, λ_max 0.036, **1 trajectoire** haut+lent. Remplace l'ancien `FaunaSpecies_Harrier` (correction mouette mal nommée, ADR #49). |
-| `FaunaPlacement.asset` | SO racine listant les 3 espèces ci-dessus. **Pas de `FaunaSpecies_Heron.asset`** : décision utilisateur 2026-05-30, le héron reste un sprite statique (`heron.png` placé en dur dans la scène) sans SO ni animation pour le MVP. À reprendre post-MVP via une variante `MotionMode.Static` sur `FaunaSpeciesDefinition`. |
+| `FaunaSpecies_Swallow.asset` | MotionMode **Traversal**. 3 sous-sprites du `swallow_sheet`, 8 fps wing flap, seuil 0.30, λ_max 0.108, **2 trajectoires** (haut + bas), max 2 hirondelles à l'écran. |
+| `FaunaSpecies_Owl.asset` | MotionMode **Traversal**. 3 sous-sprites du `owl_sheet`, 6 fps wing flap, seuil 0.40, λ_max 0.042, **1 trajectoire** médium. `defaultFacesRight: false` (orienté gauche). |
+| `FaunaSpecies_Buzzard.asset` | MotionMode **Traversal**. 3 sous-sprites du `buzzard_sheet`, 2 fps planar, seuil 0.50, λ_max 0.036, **1 trajectoire** haut+lent. `defaultFacesRight: false`. Remplace l'ancien `FaunaSpecies_Harrier` (correction mouette mal nommée, ADR #49). |
+| `FaunaSpecies_Heron.asset` | MotionMode **StaticAppearance**. 1 sous-sprite du `heron.png` pré-existant, seuil 0.65, `staticPosition (2.5, -2.93)` au bord de la mare, `fadeDurationSec 1.5`. Pas de trajectoire, pas de wing flap. Le binding active/désactive l'alpha selon biodiv vs seuil ; le composant `FaunaStaticAppearance` gère le lerp. |
+| `FaunaPlacement.asset` | SO racine listant les 4 espèces ci-dessus. |
 
 ### Chantier E5 — Capital + biodiv 3 facteurs (livré 2026-05-29)
 
