@@ -30,16 +30,15 @@ namespace Bocage.Sensors
     /// other sub-system.
     /// </para>
     /// </summary>
-    public sealed class WeatherStationReader
+    public sealed class WeatherStationReader : ISensorHistory<Weather>
     {
         public const int HistoryWindowDays = 365;
         public const double TemperatureNoiseSigmaC = 0.3;
         public const double PrecipitationRelativeNoiseSigma = 0.05;
 
         private readonly SeededRandom _rng;
-        private readonly Weather[] _history = new Weather[HistoryWindowDays];
-        private int _historyHead; // next slot to write
-        private int _historyCount; // number of valid samples (≤ HistoryWindowDays)
+        private readonly RollingSensorHistory<Weather> _history =
+            new RollingSensorHistory<Weather>(HistoryWindowDays);
 
         public WeatherStationReader(SeededRandom masterRng)
         {
@@ -48,7 +47,13 @@ namespace Bocage.Sensors
         }
 
         /// <summary>Total number of samples currently stored (caps at 365).</summary>
-        public int HistoryCount => _historyCount;
+        public int HistoryCount => _history.HistoryCount;
+
+        /// <inheritdoc />
+        public int Capacity => _history.Capacity;
+
+        /// <summary>Gets the most recent observation, or <c>false</c> if none recorded yet.</summary>
+        public bool TryGetLatest(out Weather value) => _history.TryGetLatest(out value);
 
         /// <summary>Returns a noisy reading without touching the history buffer.</summary>
         public Weather Read(in Weather trueWeather)
@@ -68,9 +73,7 @@ namespace Bocage.Sensors
         public Weather ReadAndRecord(in Weather trueWeather)
         {
             Weather observed = Read(trueWeather);
-            _history[_historyHead] = observed;
-            _historyHead = (_historyHead + 1) % HistoryWindowDays;
-            if (_historyCount < HistoryWindowDays) _historyCount++;
+            _history.Record(observed);
             return observed;
         }
 
@@ -79,19 +82,6 @@ namespace Bocage.Sensors
         /// in chronological order (oldest first). Returns the number of
         /// samples actually written.
         /// </summary>
-        public int CopyHistoryTo(IList<Weather> destination)
-        {
-            if (destination == null) throw new ArgumentNullException(nameof(destination));
-            destination.Clear();
-            int oldestIndex = _historyCount < HistoryWindowDays
-                ? 0
-                : _historyHead;
-            for (int i = 0; i < _historyCount; i++)
-            {
-                int slot = (oldestIndex + i) % HistoryWindowDays;
-                destination.Add(_history[slot]);
-            }
-            return _historyCount;
-        }
+        public int CopyHistoryTo(IList<Weather> destination) => _history.CopyHistoryTo(destination);
     }
 }
