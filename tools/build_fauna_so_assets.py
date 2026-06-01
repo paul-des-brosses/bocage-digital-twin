@@ -84,7 +84,7 @@ SPECIES = [
         "fps": 6.0,
         "threshold": 0.40,
         "lambda_max": 0.042,  # 0.07 × 0.6
-        "default_faces_right": True,  # 3/4 face-on view; user-confirmed visually OK 2026-05-30
+        "default_faces_right": False,  # wave-2 prompt "Orientée gauche"; user-confirmed 2026-05-30 ("chouette aussi est à l'envers")
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
