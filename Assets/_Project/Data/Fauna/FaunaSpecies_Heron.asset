@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95a57ae8d38455b8003c4758fc0e213d, type: 3}
+  m_Name: FaunaSpecies_Heron
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Fauna.FaunaSpeciesDefinition
+  id: heron
+  frames:
+  - {fileID: 4549171791951585375, guid: cd44513ec6fea9144879f3905c26ce66, type: 3}
+  framesPerSecond: 0.0
+  appearanceThreshold: 0.65
+  spawnRateAtMaxBiodiv: 0.0
+  defaultFacesRight: 1
+  motionMode: 1
+  staticPosition: {x: 2.5, y: -2.93}
+  fadeDurationSec: 1.5
+  sortingLayerName: Fauna
+  sortingOrderInLayer: 5
+  trajectories:

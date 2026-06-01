@@ -21,6 +21,9 @@ MonoBehaviour:
   appearanceThreshold: 0.5
   spawnRateAtMaxBiodiv: 0.036
   defaultFacesRight: 0
+  motionMode: 0
+  staticPosition: {x: 0.0, y: 0.0}
+  fadeDurationSec: 1.5
   sortingLayerName: Fauna
   sortingOrderInLayer: 5
   trajectories:

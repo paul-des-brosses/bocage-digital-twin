@@ -46,8 +46,18 @@ ASSET_GUIDS = {
     "FaunaSpecies_Swallow": _hash_hex32("bocage_fauna_asset_Species_Swallow_v1"),
     "FaunaSpecies_Owl": _hash_hex32("bocage_fauna_asset_Species_Owl_v1"),
     "FaunaSpecies_Buzzard": _hash_hex32("bocage_fauna_asset_Species_Buzzard_v1"),
+    "FaunaSpecies_Heron": _hash_hex32("bocage_fauna_asset_Species_Heron_v1"),
     "FaunaPlacement": _hash_hex32("bocage_fauna_asset_Placement_v1"),
 }
+
+# Pre-existing legacy sprite (not produced by build_animation_sheet.py).
+# GUID + sub-sprite internalID read verbatim from heron.png.meta.
+HERON_SHEET_GUID = "cd44513ec6fea9144879f3905c26ce66"
+HERON_SUB_SPRITE_INTERNAL_ID = 4549171791951585375
+
+# Enum FaunaMotionMode mirror (kept in sync with the C# enum order).
+MOTION_TRAVERSAL = 0
+MOTION_STATIC_APPEARANCE = 1
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +75,9 @@ SPECIES = [
         "threshold": 0.30,
         "lambda_max": 0.108,  # 0.18 × 0.6 per-trajectory
         "default_faces_right": True,  # wave-2 prompt: "vue profil pur orientée droite"
+        "motion_mode": MOTION_TRAVERSAL,
+        "static_position": (0.0, 0.0),
+        "fade_duration_sec": 1.5,
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
@@ -85,6 +98,9 @@ SPECIES = [
         "threshold": 0.40,
         "lambda_max": 0.042,  # 0.07 × 0.6
         "default_faces_right": False,  # wave-2 prompt "Orientée gauche"; user-confirmed 2026-05-30 ("chouette aussi est à l'envers")
+        "motion_mode": MOTION_TRAVERSAL,
+        "static_position": (0.0, 0.0),
+        "fade_duration_sec": 1.5,
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
@@ -101,12 +117,37 @@ SPECIES = [
         "threshold": 0.50,
         "lambda_max": 0.036,  # 0.06 × 0.6 (rare planar species)
         "default_faces_right": False,  # wave-2 buzzard source draws the bird facing left (user-confirmed 2026-05-30 "vole en marche arrière" → flag flipped)
+        "motion_mode": MOTION_TRAVERSAL,
+        "static_position": (0.0, 0.0),
+        "fade_duration_sec": 1.5,
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
             {"left": (-8.0, 4.5), "right": (8.0, 4.5),
              "duration": 9.0, "bob_amp": 0.10, "bob_freq": 0.25},
         ],
+    },
+    {
+        # Sentinel species — present when biodiv composite is high
+        # (≥ 0.65), fades out otherwise. No traversal, single sprite at
+        # the pond's edge. User decision 2026-05-30 (revised from
+        # initial "static permanent" plan).
+        "asset_name": "FaunaSpecies_Heron",
+        "id": "heron",
+        "sheet_family": None,  # not from build_animation_sheet.py
+        "sheet_guid_override": HERON_SHEET_GUID,
+        "sub_sprite_internal_ids_override": [HERON_SUB_SPRITE_INTERNAL_ID],
+        "frame_count": 1,
+        "fps": 0.0,            # static, no wing flap
+        "threshold": 0.65,
+        "lambda_max": 0.0,     # static, no Poisson roll
+        "default_faces_right": True,  # irrelevant for static mode
+        "motion_mode": MOTION_STATIC_APPEARANCE,
+        "static_position": (2.5, -2.93),  # at the pond — user-provided, ajustable in Inspector
+        "fade_duration_sec": 1.5,
+        "sorting_layer": "Fauna",
+        "sorting_order": 5,
+        "trajectories": [],
     },
 ]
 
@@ -166,7 +207,12 @@ def asset_preamble(asset_name: str, script_guid: str, full_class: str) -> str:
 def write_species_asset(species: dict, output_dir: Path) -> Path:
     """Write FaunaSpecies_<Name>.asset for one species."""
     asset_name = species["asset_name"]
-    sheet_guid = sheet_family_guid(species["sheet_family"])
+
+    # Sheet GUID + sub-sprite internal IDs: computed from sheet_family
+    # for generated sheets, or read from overrides for pre-existing
+    # legacy sprites (heron.png).
+    sheet_guid = species.get("sheet_guid_override") or sheet_family_guid(species["sheet_family"])
+    sub_id_overrides = species.get("sub_sprite_internal_ids_override")
 
     lines = [
         ASSET_HEADER,
@@ -179,7 +225,10 @@ def write_species_asset(species: dict, output_dir: Path) -> Path:
         "  frames:\n",
     ]
     for i in range(species["frame_count"]):
-        sub_id = sub_sprite_internal_id(species["sheet_family"], i)
+        if sub_id_overrides is not None:
+            sub_id = sub_id_overrides[i]
+        else:
+            sub_id = sub_sprite_internal_id(species["sheet_family"], i)
         lines.append(f"  - {{fileID: {sub_id}, guid: {sheet_guid}, type: 3}}\n")
 
     lines.extend([
@@ -187,6 +236,9 @@ def write_species_asset(species: dict, output_dir: Path) -> Path:
         f"  appearanceThreshold: {species['threshold']}\n",
         f"  spawnRateAtMaxBiodiv: {species['lambda_max']}\n",
         f"  defaultFacesRight: {1 if species['default_faces_right'] else 0}\n",
+        f"  motionMode: {species['motion_mode']}\n",
+        f"  staticPosition: {{x: {species['static_position'][0]}, y: {species['static_position'][1]}}}\n",
+        f"  fadeDurationSec: {species['fade_duration_sec']}\n",
         f"  sortingLayerName: {species['sorting_layer']}\n",
         f"  sortingOrderInLayer: {species['sorting_order']}\n",
         "  trajectories:\n",

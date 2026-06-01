@@ -15,6 +15,38 @@ namespace Bocage.Tests.EditMode
     public sealed class FaunaPoolTests
     {
         [Test]
+        public void PreInstantiates_StaticAppearance_OneActiveGameObjectAtStaticPosition()
+        {
+            var sp = MakeSpecies(id: "test_static", trajectoryCount: 0);
+            SetPrivateField(sp, "motionMode", FaunaMotionMode.StaticAppearance);
+            SetPrivateField(sp, "staticPosition", new Vector2(3.5f, -1.2f));
+            SetPrivateField(sp, "fadeDurationSec", 1.0f);
+
+            var placement = ScriptableObject.CreateInstance<FaunaPlacementDefinition>();
+            SetPrivateField(placement, "species", new[] { sp });
+
+            var go = new GameObject("test_static_pool");
+            var pool = go.AddComponent<FaunaPool>();
+            SetPrivateField(pool, "placement", placement);
+            pool.Rebuild();
+
+            Assert.AreEqual(1, pool.PooledSprites.Count,
+                "StaticAppearance species creates exactly 1 GameObject regardless of trajectory count.");
+
+            var p = pool.PooledSprites[0];
+            Assert.IsNull(p.TraversalMotion);
+            Assert.IsNotNull(p.StaticAppearance);
+            Assert.IsTrue(p.GameObject.activeSelf,
+                "Static-mode GameObject stays active — alpha (not SetActive) controls visibility.");
+            Assert.AreEqual(3.5f, p.GameObject.transform.localPosition.x, 0.001f);
+            Assert.AreEqual(-1.2f, p.GameObject.transform.localPosition.y, 0.001f);
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(placement);
+            Object.DestroyImmediate(sp);
+        }
+
+        [Test]
         public void PreInstantiates_OneGameObjectPerTrajectory_AllDisabled()
         {
             var species1 = MakeSpecies(id: "test_a", trajectoryCount: 2);

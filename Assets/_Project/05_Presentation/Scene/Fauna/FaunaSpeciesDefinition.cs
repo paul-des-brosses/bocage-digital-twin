@@ -4,6 +4,27 @@ using UnityEngine;
 namespace Bocage.Presentation.Scene.Fauna
 {
     /// <summary>
+    /// Determines how a fauna species is realised in the scene by
+    /// <see cref="FaunaPool"/> + <see cref="FaunaPoolBinding"/>.
+    /// </summary>
+    public enum FaunaMotionMode
+    {
+        /// <summary>One sprite per trajectory, probabilistic Poisson
+        /// activation, linear lerp between off-screen endpoints with
+        /// sin Y bob. Used by swallow / owl / buzzard (transient
+        /// passages across the scene).</summary>
+        Traversal = 0,
+
+        /// <summary>One sprite at a fixed <c>staticPosition</c>,
+        /// GameObject always active, visibility driven by alpha
+        /// fade-in / fade-out based on biodiv vs
+        /// <c>appearanceThreshold</c>. Used by heron (sentinel
+        /// indicator of good ecological state — present when biodiv
+        /// is high, fades out otherwise).</summary>
+        StaticAppearance = 1,
+    }
+
+    /// <summary>
     /// Data-driven definition of one visible fauna species. One asset per
     /// species, aggregated by <see cref="FaunaPlacementDefinition"/>,
     /// instantiated by <see cref="FaunaPool"/> at Awake, driven
@@ -43,8 +64,17 @@ namespace Bocage.Presentation.Scene.Fauna
         [SerializeField, Tooltip("Maximum Poisson spawn rate per trajectory (spawns/sec) when biodiv = 1. Effective rate at runtime = spawnRateAtMaxBiodiv × max(0, (biodiv - threshold) / (1 - threshold)).")]
         private float spawnRateAtMaxBiodiv = 0.1f;
 
-        [SerializeField, Tooltip("Set TRUE if the sprite source faces RIGHT at rest (most common — swallow). Set FALSE if it faces LEFT (e.g. buzzard top-down view drawn facing left). The motion component XORs this with the runtime direction so the bird always visually faces where it's going.")]
+        [SerializeField, Tooltip("Set TRUE if the sprite source faces RIGHT at rest (most common — swallow). Set FALSE if it faces LEFT (e.g. buzzard top-down view drawn facing left). The motion component XORs this with the runtime direction so the bird always visually faces where it's going. Irrelevant for StaticAppearance mode.")]
         private bool defaultFacesRight = true;
+
+        [SerializeField, Tooltip("How this species is realised. Traversal = transient passages (Poisson spawn). StaticAppearance = fixed-position sentinel that fades in/out on biodiv threshold.")]
+        private FaunaMotionMode motionMode = FaunaMotionMode.Traversal;
+
+        [SerializeField, Tooltip("World-space position where the sprite sits when in StaticAppearance mode. Ignored for Traversal.")]
+        private Vector2 staticPosition;
+
+        [SerializeField, Tooltip("Fade-in / fade-out duration in seconds for StaticAppearance mode. Ignored for Traversal.")]
+        private float fadeDurationSec = 1.5f;
 
         [SerializeField, Tooltip("Sorting layer name for the spawned sprites (e.g. 'Foreground').")]
         private string sortingLayerName = "Default";
@@ -61,6 +91,9 @@ namespace Bocage.Presentation.Scene.Fauna
         public float AppearanceThreshold => appearanceThreshold;
         public float SpawnRateAtMaxBiodiv => spawnRateAtMaxBiodiv;
         public bool DefaultFacesRight => defaultFacesRight;
+        public FaunaMotionMode MotionMode => motionMode;
+        public Vector2 StaticPosition => staticPosition;
+        public float FadeDurationSec => fadeDurationSec;
         public string SortingLayerName => sortingLayerName;
         public int SortingOrderInLayer => sortingOrderInLayer;
         public IReadOnlyList<TrajectoryDefinition> Trajectories => trajectories;

@@ -76,33 +76,70 @@ namespace Bocage.Presentation.Scene.Fauna
                 var sp = species[s];
                 if (sp == null) continue;
 
-                int n = sp.TrajectoryCount;
-                for (int i = 0; i < n; i++)
+                if (sp.MotionMode == FaunaMotionMode.StaticAppearance)
                 {
-                    var go = new GameObject(sp.Id + "_" + i);
-                    go.transform.SetParent(parent, worldPositionStays: false);
-
-                    var renderer = go.AddComponent<SpriteRenderer>();
-                    if (sp.FrameCount > 0)
-                    {
-                        renderer.sprite = sp.Frames[0];
-                    }
-                    if (!string.IsNullOrEmpty(sp.SortingLayerName))
-                    {
-                        renderer.sortingLayerName = sp.SortingLayerName;
-                    }
-                    renderer.sortingOrder = sp.SortingOrderInLayer;
-
-                    var motion = go.AddComponent<FaunaTraversalMotion>();
-                    motion.Configure(sp.Frames, sp.FramesPerSecond, sp.Trajectories[i], sp.DefaultFacesRight);
-
-                    go.SetActive(false);
-
-                    _pooled.Add(new PooledSprite(go, motion, sp, i));
+                    BuildStaticAppearance(sp, parent);
+                }
+                else
+                {
+                    BuildTraversalPool(sp, parent);
                 }
             }
 
             SimLogger.DebugLog("[FaunaPool] pre-instantiated " + _pooled.Count + " sprites across " + species.Count + " species");
+        }
+
+        private void BuildTraversalPool(FaunaSpeciesDefinition sp, Transform parent)
+        {
+            int n = sp.TrajectoryCount;
+            for (int i = 0; i < n; i++)
+            {
+                var go = new GameObject(sp.Id + "_" + i);
+                go.transform.SetParent(parent, worldPositionStays: false);
+
+                var renderer = go.AddComponent<SpriteRenderer>();
+                if (sp.FrameCount > 0)
+                {
+                    renderer.sprite = sp.Frames[0];
+                }
+                if (!string.IsNullOrEmpty(sp.SortingLayerName))
+                {
+                    renderer.sortingLayerName = sp.SortingLayerName;
+                }
+                renderer.sortingOrder = sp.SortingOrderInLayer;
+
+                var motion = go.AddComponent<FaunaTraversalMotion>();
+                motion.Configure(sp.Frames, sp.FramesPerSecond, sp.Trajectories[i], sp.DefaultFacesRight);
+
+                go.SetActive(false);
+
+                _pooled.Add(new PooledSprite(go, motion, null, sp, i));
+            }
+        }
+
+        private void BuildStaticAppearance(FaunaSpeciesDefinition sp, Transform parent)
+        {
+            var go = new GameObject(sp.Id);
+            go.transform.SetParent(parent, worldPositionStays: false);
+            go.transform.localPosition = new Vector3(sp.StaticPosition.x, sp.StaticPosition.y, 0f);
+
+            var renderer = go.AddComponent<SpriteRenderer>();
+            if (sp.FrameCount > 0)
+            {
+                renderer.sprite = sp.Frames[0];
+            }
+            if (!string.IsNullOrEmpty(sp.SortingLayerName))
+            {
+                renderer.sortingLayerName = sp.SortingLayerName;
+            }
+            renderer.sortingOrder = sp.SortingOrderInLayer;
+
+            var staticApp = go.AddComponent<FaunaStaticAppearance>();
+            staticApp.Configure(sp.FadeDurationSec);
+
+            // GameObject stays ACTIVE — visibility is controlled by alpha
+            // fade (FaunaStaticAppearance.Awake sets alpha to 0 initially).
+            _pooled.Add(new PooledSprite(go, null, staticApp, sp, 0));
         }
 
         private static void ClearChildren(Transform parent)
@@ -118,24 +155,29 @@ namespace Bocage.Presentation.Scene.Fauna
 
     /// <summary>
     /// Stable handle to one pooled sprite. Carries everything the spawn
-    /// driver needs to decide activation + drive the traversal, without
-    /// re-querying the SO each frame.
+    /// driver needs to decide activation, without re-querying the SO
+    /// each frame. Exactly one of <see cref="TraversalMotion"/> or
+    /// <see cref="StaticAppearance"/> is non-null, depending on the
+    /// species' <see cref="FaunaSpeciesDefinition.MotionMode"/>.
     /// </summary>
     public sealed class PooledSprite
     {
         public GameObject GameObject { get; }
-        public FaunaTraversalMotion Motion { get; }
+        public FaunaTraversalMotion TraversalMotion { get; }
+        public FaunaStaticAppearance StaticAppearance { get; }
         public FaunaSpeciesDefinition Species { get; }
         public int TrajectoryIndex { get; }
 
         public PooledSprite(
             GameObject go,
-            FaunaTraversalMotion motion,
+            FaunaTraversalMotion traversalMotion,
+            FaunaStaticAppearance staticAppearance,
             FaunaSpeciesDefinition species,
             int trajectoryIndex)
         {
             GameObject = go;
-            Motion = motion;
+            TraversalMotion = traversalMotion;
+            StaticAppearance = staticAppearance;
             Species = species;
             TrajectoryIndex = trajectoryIndex;
         }

@@ -81,16 +81,27 @@ namespace Bocage.Presentation.Scene.Fauna
             {
                 var p = pooled[i];
 
-                // 1) Finished traversal → deactivate, slot becomes eligible again.
-                if (p.Motion.IsFinished)
+                if (p.Species.MotionMode == FaunaMotionMode.StaticAppearance)
                 {
-                    p.Motion.Stop();
+                    // Static sentinel: visible iff biodiv >= threshold.
+                    // FaunaStaticAppearance handles the alpha lerp itself.
+                    bool shouldBeVisible = _currentBiodiv >= p.Species.AppearanceThreshold;
+                    p.StaticAppearance.SetVisible(shouldBeVisible);
+                    continue;
+                }
+
+                // Traversal mode below.
+
+                // 1) Finished traversal → deactivate, slot becomes eligible again.
+                if (p.TraversalMotion.IsFinished)
+                {
+                    p.TraversalMotion.Stop();
                     p.GameObject.SetActive(false);
                     continue;
                 }
 
                 // 2) Currently traversing → skip.
-                if (p.Motion.IsActive) continue;
+                if (p.TraversalMotion.IsActive) continue;
 
                 // 3) Inactive slot → probabilistic spawn roll.
                 float lambdaEff = ComputeEffectiveSpawnRate(p.Species, _currentBiodiv);
@@ -104,7 +115,7 @@ namespace Bocage.Presentation.Scene.Fauna
                         : FaunaTraversalMotion.Direction.RightToLeft;
                     float phase = (float)(_spawnRng.NextDouble() * 2.0 * Mathf.PI);
                     p.GameObject.SetActive(true);
-                    p.Motion.StartTraversal(direction, phase);
+                    p.TraversalMotion.StartTraversal(direction, phase);
                 }
             }
         }
