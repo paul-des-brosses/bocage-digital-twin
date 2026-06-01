@@ -43,7 +43,7 @@ Inventaire exhaustif des assets nécessaires au projet. Statut à mettre
 | `swallow_sheet.png` | Nanobanana wave 2 (frames 02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Hirondelle en vol, sprite sheet 3 frames horizontale (sub 256×143, sheet 768×143). Le legacy `bird_swallow_flight_v1` n'est pas inclus comme frame_01 (bbox 2110×1105 vs siblings ~2748×1536 → variation visible de taille du sujet). Cf §8. |
 | `owl_sheet.png` | Nanobanana wave 2 (frames 02/03/04) + `build_animation_sheet.py` | intégré 2026-05-30 | Chouette chevêche en vol, sprite sheet 3 frames horizontale (sub 256×127, sheet 768×127). Legacy `bird_owl_flight_v1` initialement intégré comme frame_01 mais retiré 2026-05-30 (incohérence visuelle dessous des ailes plus clair sur frames wave 2 que sur legacy v1). Cf §8. |
 | `buzzard_sheet.png` | Nanobanana wave 2 + `build_animation_sheet.py` | intégré 2026-05-30 | Buse variable (`Buteo buteo`) en glide planar, sprite sheet 3 frames horizontale (sub 256×130, sheet 768×130). **Remplace `bird_harrier_flight` rejeté** : l'ancien sprite était une mouette par erreur de prompt initial (correction ADR #49). Originaux archivés dans `Sprites/Source/_rejected/`. Cf §8. |
-| `heron.png` | Nanobanana wave 1, statique | intégré | Héron cendré au bord de la mare, pose de chasse statique (196×256). Variantes `heron_alert_v1` + `heron_hunting_v1` livrées en wave 2 dans `Sprites/Source/` mais **non intégrées au MVP** (décision utilisateur 2026-05-30 : « pour l'instant utiliser que le premier et il reste statique »). Filter Mode passé Point→Bilinear 2026-05-30 (cohérence faune). |
+| `heron_sheet.png` | Nanobanana wave 1 (static) + wave 2 (alert) + `build_animation_sheet.py` | intégré 2026-05-30 | Héron cendré au bord de la mare, sprite sheet **2 frames** (sub 256×325, sheet 512×325) : frame 0 = pose de repos (`heron_static_v1`), frame 1 = tête tournée alerte (`heron_alert_v1`). Sentinelle biodiv (MotionMode StaticAppearance, apparaît ≥ 0.65, fade in/out) avec head-turn rare (≈ toutes les 18 s, maintenu 2.5 s). `heron_hunting_v1` livré en source mais **non intégré** (réservé post-MVP). Remplace l'ancien `heron.png` 1-frame supprimé. |
 | `amphibian_small.png` | Nanobanana | **non produit, écarté** | Sacrifié comme prévu (statut optionnel/coupable). La lecture biodiversité est portée par les 4 autres sprites faune (hirondelle, chouette, buse, héron). Décision DA 2026-05-12. |
 
 ### Sensors (visibles dans la scène)
@@ -327,7 +327,7 @@ Sources brutes wave 2 archivées dans `Sprites/Source/`.
 | Hirondelle (`swallow`) | `swallow_sheet.png` | 768×143 | 3 | 256×143 | `57e4022c4bcf39240b7b84066820c15b` |
 | Chouette chevêche (`owl`) | `owl_sheet.png` | 768×127 | 3 | 256×127 | `493298ebbd52e083e617833714552e12` |
 | Buse variable (`buzzard`) | `buzzard_sheet.png` | 768×130 | 3 | 256×130 | `33c2f60ec470881371bfb4f999d40830` |
-| Héron cendré (`heron`) | `heron.png` (statique) | 196×256 | 1 | n/a | (hérité phase 1 : `cd44513e…`) |
+| Héron cendré (`heron`) | `heron_sheet.png` | 512×325 | 2 | 256×325 | `b365893e732f78262a9d009826a73860` |
 
 **Configuration import Unity** (toute la faune) :
 
@@ -367,12 +367,17 @@ Sources brutes wave 2 archivées dans `Sprites/Source/`.
   même pattern que le swallow. Leçon : la compatibilité dimensions
   est nécessaire mais pas suffisante — la cohérence chromatique entre
   vagues de génération doit aussi être validée à l'œil.
-- **Variantes héron non intégrées**. `heron_alert_v1` et
-  `heron_hunting_v1` sont livrés en wave 2 dans `Sprites/Source/`
-  mais **pas intégrés au MVP** (décision utilisateur 2026-05-30 :
-  « pour l'instant utiliser que le premier et il reste statique ;
-  ça m'a l'air complexe pour pas grand chose de l'animer »). Source
-  archivée pour usage futur (anim héron facultative post-MVP).
+- **Héron sentinelle avec head-turn** (décision révisée 2026-05-30).
+  Initialement prévu statique 1-frame, finalement livré en sheet
+  2-frames (`heron_static_v1` repos + `heron_alert_v1` tête tournée).
+  Le héron est un indicateur de bonne santé écologique : il apparaît
+  (fade in) quand la biodiv composite ≥ 0.65 et disparaît (fade out)
+  sinon — MotionMode `StaticAppearance`, pas de traversée. De temps en
+  temps (Poisson, ≈ 1 fois / 18 s, pose maintenue 2.5 s) il tourne la
+  tête (swap frame alert) avant de revenir au repos. `heron_hunting_v1`
+  livré en source mais **non intégré** (réservé post-MVP — la pose de
+  pêche n'a pas de déclencheur mesuré honnête pour l'instant). L'ancien
+  `heron.png` 1-frame est supprimé.
 
 ### 8.3 Pipeline étendu — `tools/build_animation_sheet.py`
 

@@ -51,6 +51,27 @@ en backlog. Reformulée en item **#28**.
 
 ## 3. Items historiques livrés (conservés pour traçabilité)
 
+### #1 + #2 — Faune visible en pool + animation (4 espèces)
+
+**Statut** : ✅ livré en chantier E4 (cf ADR #49) le 2026-05-30.
+
+Couche 05 : `FaunaSpeciesDefinition` (SO par espèce, enum
+`FaunaMotionMode` Traversal / StaticAppearance), `TrajectoryDefinition`
+(struct), `FaunaPlacementDefinition` (SO racine), `FaunaPool`
+(pré-instanciation Awake, zéro `Instantiate` runtime — CLAUDE.md §6),
+`FaunaTraversalMotion` (lerp X + sin Y + flip + frame swap),
+`FaunaStaticAppearance` (alpha fade + head turn rare), `FaunaPoolBinding`
+(spawn Poisson piloté par `RC_BiodiversityComposite`). Outils éditeur :
+`FaunaPoolEditor` (poignées draggables position + scale en Scene view),
+`tools/build_animation_sheet.py` (sheets animées) +
+`tools/build_fauna_so_assets.py` (génération SO déterministe).
+
+4 espèces : hirondelle (2 trajectoires, max 2 simultanées), chouette
+(1 traj), buse variable (1 traj, planar), héron (sentinelle static
+biodiv ≥ 0.65 + head turn). Seuils d'apparition par espèce (0.30 /
+0.40 / 0.50 / 0.65). 8 tests EditMode. Item BACKLOG #3 (`_HealthT`
+faune) reste hors MVP (cf §2).
+
 ### #5 — SG_Hedgerow node `_HealthT` natif
 
 **Statut** : ✅ livré en sub-étape 10b. Le Shader Graph
