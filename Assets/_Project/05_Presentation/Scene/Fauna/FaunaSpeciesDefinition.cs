@@ -76,6 +76,9 @@ namespace Bocage.Presentation.Scene.Fauna
         [SerializeField, Tooltip("Fade-in / fade-out duration in seconds for StaticAppearance mode. Ignored for Traversal.")]
         private float fadeDurationSec = 1.5f;
 
+        [SerializeField, Tooltip("Uniform world-space scale applied to the spawned sprite GameObject (transform.localScale = Vector3.one * worldScale). 1.0 = native PPU size. Use to make a species visually bigger / smaller without re-importing the sprite.")]
+        private float worldScale = 1f;
+
         [SerializeField, Tooltip("Sorting layer name for the spawned sprites (e.g. 'Foreground').")]
         private string sortingLayerName = "Default";
 
@@ -94,6 +97,7 @@ namespace Bocage.Presentation.Scene.Fauna
         public FaunaMotionMode MotionMode => motionMode;
         public Vector2 StaticPosition => staticPosition;
         public float FadeDurationSec => fadeDurationSec;
+        public float WorldScale => worldScale > 0f ? worldScale : 1f;
         public string SortingLayerName => sortingLayerName;
         public int SortingOrderInLayer => sortingOrderInLayer;
         public IReadOnlyList<TrajectoryDefinition> Trajectories => trajectories;

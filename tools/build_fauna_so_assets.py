@@ -239,6 +239,7 @@ def write_species_asset(species: dict, output_dir: Path) -> Path:
         f"  motionMode: {species['motion_mode']}\n",
         f"  staticPosition: {{x: {species['static_position'][0]}, y: {species['static_position'][1]}}}\n",
         f"  fadeDurationSec: {species['fade_duration_sec']}\n",
+        f"  worldScale: {species.get('world_scale', 1.0)}\n",
         f"  sortingLayerName: {species['sorting_layer']}\n",
         f"  sortingOrderInLayer: {species['sorting_order']}\n",
         "  trajectories:\n",

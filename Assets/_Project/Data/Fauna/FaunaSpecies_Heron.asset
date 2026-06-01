@@ -22,6 +22,7 @@ MonoBehaviour:
   motionMode: 1
   staticPosition: {x: 2.5, y: -2.93}
   fadeDurationSec: 1.5
+  worldScale: 1.0
   sortingLayerName: Fauna
   sortingOrderInLayer: 5
   trajectories:

@@ -45,15 +45,62 @@ namespace Bocage.Presentation.Scene.Fauna
             Rebuild();
         }
 
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            if (placement == null) return;
+            var speciesList = placement.Species;
+            for (int s = 0; s < speciesList.Count; s++)
+            {
+                var sp = speciesList[s];
+                if (sp == null) continue;
+                Gizmos.color = ColorForSpecies(sp);
+                if (sp.MotionMode == FaunaMotionMode.StaticAppearance)
+                {
+                    Vector3 p = new Vector3(sp.StaticPosition.x, sp.StaticPosition.y, 0f);
+                    Gizmos.DrawWireSphere(p, 0.3f);
+                    Gizmos.DrawLine(p + new Vector3(-0.4f, 0f, 0f), p + new Vector3(0.4f, 0f, 0f));
+                    Gizmos.DrawLine(p + new Vector3(0f, -0.4f, 0f), p + new Vector3(0f, 0.4f, 0f));
+                }
+                else
+                {
+                    var trajs = sp.Trajectories;
+                    for (int t = 0; t < trajs.Count; t++)
+                    {
+                        Vector3 a = new Vector3(trajs[t].leftPoint.x, trajs[t].leftPoint.y, 0f);
+                        Vector3 b = new Vector3(trajs[t].rightPoint.x, trajs[t].rightPoint.y, 0f);
+                        Gizmos.DrawLine(a, b);
+                        Gizmos.DrawWireSphere(a, 0.18f);
+                        Gizmos.DrawWireSphere(b, 0.18f);
+                    }
+                }
+            }
+        }
+
+        private static Color ColorForSpecies(FaunaSpeciesDefinition sp)
+        {
+            unchecked
+            {
+                int h = sp != null && sp.Id != null ? sp.Id.GetHashCode() : 0;
+                float r = ((h * 374761393) & 0xFF) / 255f;
+                float g = ((h * 668265263) & 0xFF) / 255f;
+                float b = ((h * 1274126177) & 0xFF) / 255f;
+                return new Color(r, g, b, 0.85f);
+            }
+        }
+#endif
+
         /// <summary>
         /// Pre-instantiate one disabled GameObject per (species, trajectory)
         /// pair. Called once at <see cref="Awake"/> in normal runtime;
         /// also callable directly so EditMode tests can trigger
         /// construction without relying on the Awake lifecycle (which is
         /// not auto-fired in EditMode test frames) and so an editor button
-        /// could re-run the build after authoring changes to the SO.
-        /// Idempotent: re-running clears the previous children first.
+        /// (or the inspector context menu) can re-run the build after
+        /// authoring changes to the SO. Idempotent: re-running clears
+        /// the previous children first.
         /// </summary>
+        [ContextMenu("Rebuild Pool (Edit-mode preview)")]
         public void Rebuild()
         {
             if (placement == null)
@@ -92,10 +139,12 @@ namespace Bocage.Presentation.Scene.Fauna
         private void BuildTraversalPool(FaunaSpeciesDefinition sp, Transform parent)
         {
             int n = sp.TrajectoryCount;
+            float scale = sp.WorldScale;
             for (int i = 0; i < n; i++)
             {
                 var go = new GameObject(sp.Id + "_" + i);
                 go.transform.SetParent(parent, worldPositionStays: false);
+                go.transform.localScale = new Vector3(scale, scale, 1f);
 
                 var renderer = go.AddComponent<SpriteRenderer>();
                 if (sp.FrameCount > 0)
@@ -119,9 +168,11 @@ namespace Bocage.Presentation.Scene.Fauna
 
         private void BuildStaticAppearance(FaunaSpeciesDefinition sp, Transform parent)
         {
+            float scale = sp.WorldScale;
             var go = new GameObject(sp.Id);
             go.transform.SetParent(parent, worldPositionStays: false);
             go.transform.localPosition = new Vector3(sp.StaticPosition.x, sp.StaticPosition.y, 0f);
+            go.transform.localScale = new Vector3(scale, scale, 1f);
 
             var renderer = go.AddComponent<SpriteRenderer>();
             if (sp.FrameCount > 0)
