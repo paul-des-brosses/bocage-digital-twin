@@ -94,7 +94,7 @@ namespace Bocage.Presentation.Scene.Fauna
                     renderer.sortingOrder = sp.SortingOrderInLayer;
 
                     var motion = go.AddComponent<FaunaTraversalMotion>();
-                    motion.Configure(sp.Frames, sp.FramesPerSecond, sp.Trajectories[i]);
+                    motion.Configure(sp.Frames, sp.FramesPerSecond, sp.Trajectories[i], sp.DefaultFacesRight);
 
                     go.SetActive(false);
 

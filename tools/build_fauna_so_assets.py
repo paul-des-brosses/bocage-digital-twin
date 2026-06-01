@@ -64,6 +64,7 @@ SPECIES = [
         "fps": 8.0,
         "threshold": 0.30,
         "lambda_max": 0.108,  # 0.18 × 0.6 per-trajectory
+        "default_faces_right": True,  # wave-2 prompt: "vue profil pur orientée droite"
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
@@ -83,6 +84,7 @@ SPECIES = [
         "fps": 6.0,
         "threshold": 0.40,
         "lambda_max": 0.042,  # 0.07 × 0.6
+        "default_faces_right": True,  # 3/4 face-on view; user-confirmed visually OK 2026-05-30
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
@@ -98,6 +100,7 @@ SPECIES = [
         "fps": 2.0,
         "threshold": 0.50,
         "lambda_max": 0.036,  # 0.06 × 0.6 (rare planar species)
+        "default_faces_right": False,  # wave-2 buzzard source draws the bird facing left (user-confirmed 2026-05-30 "vole en marche arrière" → flag flipped)
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
@@ -183,6 +186,7 @@ def write_species_asset(species: dict, output_dir: Path) -> Path:
         f"  framesPerSecond: {species['fps']}\n",
         f"  appearanceThreshold: {species['threshold']}\n",
         f"  spawnRateAtMaxBiodiv: {species['lambda_max']}\n",
+        f"  defaultFacesRight: {1 if species['default_faces_right'] else 0}\n",
         f"  sortingLayerName: {species['sorting_layer']}\n",
         f"  sortingOrderInLayer: {species['sorting_order']}\n",
         "  trajectories:\n",

@@ -40,6 +40,7 @@ namespace Bocage.Presentation.Scene.Fauna
         private float _durationSec = 1f;  // non-zero default to avoid div-by-zero before Configure
         private float _bobAmplitude;
         private float _bobFrequencyHz;
+        private bool _defaultFacesRight = true;
         private bool _configured;
 
         // Per-traversal state.
@@ -67,7 +68,8 @@ namespace Bocage.Presentation.Scene.Fauna
         public void Configure(
             IReadOnlyList<Sprite> frames,
             float framesPerSecond,
-            TrajectoryDefinition trajectory)
+            TrajectoryDefinition trajectory,
+            bool defaultFacesRight = true)
         {
             _frames = frames;
             _framesPerSecond = framesPerSecond;
@@ -76,6 +78,7 @@ namespace Bocage.Presentation.Scene.Fauna
             _durationSec = Mathf.Max(0.01f, trajectory.durationSec);
             _bobAmplitude = trajectory.verticalBobAmplitude;
             _bobFrequencyHz = trajectory.verticalBobFrequencyHz;
+            _defaultFacesRight = defaultFacesRight;
             _configured = true;
         }
 
@@ -98,7 +101,11 @@ namespace Bocage.Presentation.Scene.Fauna
             {
                 _renderer.sprite = _frames[0];
             }
-            _renderer.flipX = _direction == Direction.RightToLeft;
+            // XOR : flip the sprite iff its default facing disagrees with
+            // the runtime direction. Default faces RIGHT + going RIGHT → no
+            // flip ; default faces LEFT + going RIGHT → flip ; etc.
+            bool goingRight = _direction == Direction.LeftToRight;
+            _renderer.flipX = _defaultFacesRight != goingRight;
             ApplyTransformAt(0f);
         }
 

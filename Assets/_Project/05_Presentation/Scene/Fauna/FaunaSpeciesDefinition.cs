@@ -43,6 +43,9 @@ namespace Bocage.Presentation.Scene.Fauna
         [SerializeField, Tooltip("Maximum Poisson spawn rate per trajectory (spawns/sec) when biodiv = 1. Effective rate at runtime = spawnRateAtMaxBiodiv × max(0, (biodiv - threshold) / (1 - threshold)).")]
         private float spawnRateAtMaxBiodiv = 0.1f;
 
+        [SerializeField, Tooltip("Set TRUE if the sprite source faces RIGHT at rest (most common — swallow). Set FALSE if it faces LEFT (e.g. buzzard top-down view drawn facing left). The motion component XORs this with the runtime direction so the bird always visually faces where it's going.")]
+        private bool defaultFacesRight = true;
+
         [SerializeField, Tooltip("Sorting layer name for the spawned sprites (e.g. 'Foreground').")]
         private string sortingLayerName = "Default";
 
@@ -57,6 +60,7 @@ namespace Bocage.Presentation.Scene.Fauna
         public float FramesPerSecond => framesPerSecond;
         public float AppearanceThreshold => appearanceThreshold;
         public float SpawnRateAtMaxBiodiv => spawnRateAtMaxBiodiv;
+        public bool DefaultFacesRight => defaultFacesRight;
         public string SortingLayerName => sortingLayerName;
         public int SortingOrderInLayer => sortingOrderInLayer;
         public IReadOnlyList<TrajectoryDefinition> Trajectories => trajectories;

@@ -20,6 +20,7 @@ MonoBehaviour:
   framesPerSecond: 8.0
   appearanceThreshold: 0.3
   spawnRateAtMaxBiodiv: 0.108
+  defaultFacesRight: 1
   sortingLayerName: Fauna
   sortingOrderInLayer: 5
   trajectories:
