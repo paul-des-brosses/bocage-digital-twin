@@ -2258,6 +2258,52 @@ Transform:
   - {fileID: 1461258743}
   m_Father: {fileID: 1335269289}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1332578070
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1332578072}
+  - component: {fileID: 1332578071}
+  m_Layer: 0
+  m_Name: Fauna
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1332578071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332578070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74503487ebdcc9e42ae49103fd31e450, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Fauna.FaunaPool
+  placement: {fileID: 11400000, guid: e760e3212d1d6bdc85f5627785b4d35e, type: 2}
+  spawnRoot: {fileID: 1332578072}
+--- !u!4 &1332578072
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332578070}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1335269289}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1335269288
 GameObject:
   m_ObjectHideFlags: 0
@@ -2295,6 +2341,7 @@ Transform:
   - {fileID: 1324521048}
   - {fileID: 839802122}
   - {fileID: 188111635}
+  - {fileID: 1332578072}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1335269290
@@ -2723,6 +2770,7 @@ GameObject:
   - component: {fileID: 1463489838}
   - component: {fileID: 1463489839}
   - component: {fileID: 1463489840}
+  - component: {fileID: 1463489841}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -3054,6 +3102,21 @@ MonoBehaviour:
   runner: {fileID: 2115294099}
   dropdownName: starting-month-dropdown
   hintLabelName: starting-month-hint
+--- !u!114 &1463489841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c0ca7bd81415d94a9314d7e319e8762, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Fauna.FaunaPoolBinding
+  pool: {fileID: 1332578071}
+  biodivComposite: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
+  masterSeed: 1
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0
