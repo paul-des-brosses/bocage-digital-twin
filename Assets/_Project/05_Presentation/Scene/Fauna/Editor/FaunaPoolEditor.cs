@@ -110,6 +110,8 @@ namespace Bocage.Presentation.Editor.Scene.Fauna
                 EditorUtility.SetDirty(sp);
                 SyncPreviewPosition(pool, sp);
             }
+
+            DrawScaleHandle(pool, sp, worldPos);
         }
 
         // ----- Traversal trajectories ---------------------------------------
@@ -143,6 +145,64 @@ namespace Bocage.Presentation.Editor.Scene.Fauna
                     SetTrajectoryField(sp, t, "rightPoint", new Vector2(newRight.x, newRight.y));
                     SyncPreviewPosition(pool, sp);
                 }
+            }
+
+            // One scale handle per species, anchored at the midpoint of
+            // the first trajectory (worldScale is per-species, not per-traj).
+            if (trajs.Count > 0)
+            {
+                Vector2 mid = (trajs[0].leftPoint + trajs[0].rightPoint) * 0.5f;
+                DrawScaleHandle(pool, sp, new Vector3(mid.x, mid.y, 0f));
+            }
+        }
+
+        // ----- Scale handle (shared by both modes) --------------------------
+
+        private void DrawScaleHandle(FaunaPool pool, FaunaSpeciesDefinition sp, Vector3 anchor)
+        {
+            Handles.color = ColorForSpecies(sp);
+            float size = HandleUtility.GetHandleSize(anchor) * 0.5f;
+            // Offset above the position handle so the two don't fight.
+            Vector3 handlePos = anchor + Vector3.up * size * 3f;
+
+            Handles.DrawDottedLine(anchor, handlePos, 3f);
+            Handles.Label(handlePos + Vector3.up * 0.3f,
+                sp.Id + " scale: " + sp.WorldScale.ToString("0.00"));
+
+            EditorGUI.BeginChangeCheck();
+            float newScale = Handles.ScaleValueHandle(
+                sp.WorldScale,
+                handlePos,
+                Quaternion.identity,
+                size,
+                Handles.CubeHandleCap,
+                0.05f);
+            if (EditorGUI.EndChangeCheck())
+            {
+                SetScale(sp, newScale);
+                SyncPreviewScale(pool, sp);
+            }
+        }
+
+        private static void SetScale(FaunaSpeciesDefinition sp, float value)
+        {
+            value = Mathf.Max(0.05f, value);
+            Undo.RecordObject(sp, "Scale " + sp.Id);
+            var so = new SerializedObject(sp);
+            so.FindProperty("worldScale").floatValue = value;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(sp);
+        }
+
+        private static void SyncPreviewScale(FaunaPool pool, FaunaSpeciesDefinition sp)
+        {
+            var pooled = pool.PooledSprites;
+            float scale = sp.WorldScale;
+            for (int i = 0; i < pooled.Count; i++)
+            {
+                var ps = pooled[i];
+                if (ps == null || ps.Species != sp || ps.GameObject == null) continue;
+                ps.GameObject.transform.localScale = new Vector3(scale, scale, 1f);
             }
         }
 
