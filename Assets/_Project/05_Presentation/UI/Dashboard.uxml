@@ -208,14 +208,31 @@
         </ui:VisualElement>
 
         <!--
-        Body — Level-B panels. Each panel is a column shell with title and
-        a placeholder paragraph. At sub-étape 6b only the structure exists;
-        honest sub-indicators land at Étapes 7 (économie) and 8 (faune).
+        Body — three Niveau B trigger buttons anchored at the bottom of the
+        viewport. Clicking one opens a centered modal popup holding the
+        panel's full content (chantier E6 / ADR #54). Reuses the proven
+        `.hidden` toggle pattern (cf decision-popup-overlay) — no
+        accordion/foldout collapse, no risk of orphan rows.
         -->
         <ui:VisualElement name="body-row" class="body-row">
+            <ui:Button name="biodiv-open" text="Biodiversité" class="level-b-trigger" />
+            <ui:Button name="climat-open" text="Climat &amp; ressources" class="level-b-trigger" />
+            <ui:Button name="economy-open" text="Économie" class="level-b-trigger" />
+        </ui:VisualElement>
 
-            <ui:VisualElement name="panel-biodiversity" class="level-b-panel">
-                <ui:Label text="Biodiversité" class="panel-title" />
+        <!--
+        Niveau B modal overlays. Each is hidden by default via the shared
+        `.hidden` class; NiveauBModalsBinding wires the open/close buttons,
+        click-outside dismissal, and Escape. The labels inside (e.g.
+        biodiv-composite-value) remain in the visual tree, so the three
+        OngletXxxBindings continue to find them via Q&lt;Label&gt;.
+        -->
+        <ui:VisualElement name="biodiv-modal-overlay" class="level-b-modal-overlay hidden">
+            <ui:VisualElement class="level-b-modal-card">
+                <ui:VisualElement class="level-b-modal-header">
+                    <ui:Label text="Biodiversité" class="level-b-modal-title" />
+                    <ui:Button name="biodiv-modal-close" text="✕" class="level-b-modal-close" />
+                </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
                     <ui:Label text="Indice composite" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
@@ -252,9 +269,14 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
 
-            <ui:VisualElement name="panel-climate-resources" class="level-b-panel">
-                <ui:Label text="Climat &amp; ressources" class="panel-title" />
+        <ui:VisualElement name="climat-modal-overlay" class="level-b-modal-overlay hidden">
+            <ui:VisualElement class="level-b-modal-card">
+                <ui:VisualElement class="level-b-modal-header">
+                    <ui:Label text="Climat &amp; ressources" class="level-b-modal-title" />
+                    <ui:Button name="climat-modal-close" text="✕" class="level-b-modal-close" />
+                </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
                     <ui:Label text="Nappe phréatique" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
@@ -291,9 +313,14 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
 
-            <ui:VisualElement name="panel-economy" class="level-b-panel">
-                <ui:Label text="Économie" class="panel-title" />
+        <ui:VisualElement name="economy-modal-overlay" class="level-b-modal-overlay hidden">
+            <ui:VisualElement class="level-b-modal-card">
+                <ui:VisualElement class="level-b-modal-header">
+                    <ui:Label text="Économie" class="level-b-modal-title" />
+                    <ui:Button name="economy-modal-close" text="✕" class="level-b-modal-close" />
+                </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
                     <ui:Label text="Rendement cultures" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
@@ -343,7 +370,6 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-
         </ui:VisualElement>
 
         <!--
