@@ -64,7 +64,7 @@ SPECIES = [
         "fps": 8.0,
         "threshold": 0.30,
         "lambda_max": 0.108,  # 0.18 × 0.6 per-trajectory
-        "sorting_layer": "Default",
+        "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
             # Path 1: high + fast L↔R
@@ -83,7 +83,7 @@ SPECIES = [
         "fps": 6.0,
         "threshold": 0.40,
         "lambda_max": 0.042,  # 0.07 × 0.6
-        "sorting_layer": "Default",
+        "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
             {"left": (-7.0, 2.5), "right": (7.0, 2.5),
@@ -98,7 +98,7 @@ SPECIES = [
         "fps": 2.0,
         "threshold": 0.50,
         "lambda_max": 0.036,  # 0.06 × 0.6 (rare planar species)
-        "sorting_layer": "Default",
+        "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [
             {"left": (-8.0, 4.5), "right": (8.0, 4.5),
