@@ -185,6 +185,11 @@ namespace Bocage.Presentation.Scene.Fauna
             }
             renderer.sortingOrder = sp.SortingOrderInLayer;
 
+            // Static species have no travel direction — facing is taken
+            // directly from DefaultFacesRight: checked = as authored,
+            // unchecked = mirrored horizontally.
+            renderer.flipX = !sp.DefaultFacesRight;
+
             var staticApp = go.AddComponent<FaunaStaticAppearance>();
             // Pass head-turn config if the species declares an alertFrameIndex
             // and provides at least 2 frames (rest at 0, alert at alertFrameIndex).

@@ -64,7 +64,7 @@ namespace Bocage.Presentation.Scene.Fauna
         [SerializeField, Tooltip("Maximum Poisson spawn rate per trajectory (spawns/sec) when biodiv = 1. Effective rate at runtime = spawnRateAtMaxBiodiv × max(0, (biodiv - threshold) / (1 - threshold)).")]
         private float spawnRateAtMaxBiodiv = 0.1f;
 
-        [SerializeField, Tooltip("Set TRUE if the sprite source faces RIGHT at rest (most common — swallow). Set FALSE if it faces LEFT (e.g. buzzard top-down view drawn facing left). The motion component XORs this with the runtime direction so the bird always visually faces where it's going. Irrelevant for StaticAppearance mode.")]
+        [SerializeField, Tooltip("Traversal: TRUE if the sprite source faces RIGHT at rest; XORed with the runtime direction so the bird faces where it's going. StaticAppearance (heron): checked = sprite shown as authored, unchecked = mirrored horizontally (heron looks the other way).")]
         private bool defaultFacesRight = true;
 
         [SerializeField, Tooltip("How this species is realised. Traversal = transient passages (Poisson spawn). StaticAppearance = fixed-position sentinel that fades in/out on biodiv threshold.")]
