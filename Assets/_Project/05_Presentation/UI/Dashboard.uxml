@@ -216,8 +216,41 @@
 
             <ui:VisualElement name="panel-biodiversity" class="level-b-panel">
                 <ui:Label text="Biodiversité" class="panel-title" />
-                <ui:Label text="Sous-indicateurs détaillés (richesse spécifique faune, indice de diversité végétale, qualité des lisières). Câblage honnête à l'Étape 8."
-                          class="panel-placeholder" />
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Indice composite" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-composite-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante habitat" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-habitat-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante eau" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-water-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante intrants" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-inputs-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Espèces visibles" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-species-count-value" text="—" class="panel-row-value" />
+                        <ui:Label text="/ 4" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
 
             <ui:VisualElement name="panel-climate-resources" class="level-b-panel">
@@ -229,14 +262,86 @@
                         <ui:Label text="m" class="panel-row-unit" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label text="Sous-indicateurs détaillés (température moyenne, précipitations cumulées, stress hydrique). Câblage progressif aux étapes suivantes."
-                          class="panel-placeholder" />
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="T° moyenne (365 j)" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-temp-mean-value" text="—" class="panel-row-value" />
+                        <ui:Label text="°C" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Précip. cumulées (365 j)" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-precip-cumul-value" text="—" class="panel-row-value" />
+                        <ui:Label text="mm" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Stock carbone sol" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-soil-carbon-value" text="—" class="panel-row-value" />
+                        <ui:Label text="tC/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Flux net CO2" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-co2-flux-value" text="—" class="panel-row-value" />
+                        <ui:Label text="kg/ha/j" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
 
             <ui:VisualElement name="panel-economy" class="level-b-panel">
                 <ui:Label text="Économie" class="panel-title" />
-                <ui:Label text="Sous-indicateurs détaillés (rendement cultures, coûts d'intrants, paiements pour services environnementaux). Câblage honnête à l'Étape 7."
-                          class="panel-placeholder" />
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Rendement cultures" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-yield-value" text="—" class="panel-row-value" />
+                        <ui:Label text="t/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Coût intrants" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-input-cost-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Entretien haies" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-maintenance-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Paiement PSE" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-pse-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Paiement PAC" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-pac-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Investissement cumulé" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-total-investment-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Horizon rentabilité" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-horizon-value" text="—" class="panel-row-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
 
         </ui:VisualElement>
