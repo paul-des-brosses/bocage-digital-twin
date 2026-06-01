@@ -1,0 +1,258 @@
+using System.Collections.Generic;
+using Bocage.SimulationCore.Logging;
+using UnityEngine;
+
+namespace Bocage.Presentation.Scene.Fauna
+{
+    /// <summary>
+    /// Pre-instantiates one disabled sprite GameObject per trajectory of
+    /// every species declared in a <see cref="FaunaPlacementDefinition"/>.
+    /// One trajectory = one slot = max one bird simultaneously on that
+    /// path (so a 2-trajectory species can show 2 birds at once, a
+    /// 1-trajectory species shows max 1).
+    /// <para>
+    /// CLAUDE.md §6 forbids runtime Instantiate/Destroy. All sprites are
+    /// created once at Awake under <see cref="spawnRoot"/> with
+    /// <c>SetActive(false)</c>, each carrying a configured
+    /// <see cref="FaunaTraversalMotion"/>; the spawn driver
+    /// (<see cref="FaunaPoolBinding"/>) toggles activity probabilistically.
+    /// </para>
+    /// <para>
+    /// Execution order -9000 matches <c>SensorVisualPlacer</c> / scene
+    /// assembly: children exist before any default-order binding runs.
+    /// </para>
+    /// </summary>
+    [DefaultExecutionOrder(-9000)]
+    public sealed class FaunaPool : MonoBehaviour
+    {
+        [SerializeField, Tooltip("Root SO listing the visible species and their trajectories.")]
+        private FaunaPlacementDefinition placement;
+
+        [SerializeField, Tooltip("Parent transform that receives the pooled sprites. Falls back to this transform if null. Typically '_Scene_Visual/Fauna'.")]
+        private Transform spawnRoot;
+
+        private readonly List<PooledSprite> _pooled = new List<PooledSprite>();
+
+        /// <summary>
+        /// Read-only view of all pooled sprites, in stable order across
+        /// the species/trajectory grid. Iterated by
+        /// <see cref="FaunaPoolBinding"/> to drive activation.
+        /// </summary>
+        public IReadOnlyList<PooledSprite> PooledSprites => _pooled;
+
+        private void Awake()
+        {
+            Rebuild();
+        }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            if (placement == null) return;
+            var speciesList = placement.Species;
+            for (int s = 0; s < speciesList.Count; s++)
+            {
+                var sp = speciesList[s];
+                if (sp == null) continue;
+                Gizmos.color = ColorForSpecies(sp);
+                if (sp.MotionMode == FaunaMotionMode.StaticAppearance)
+                {
+                    Vector3 p = new Vector3(sp.StaticPosition.x, sp.StaticPosition.y, 0f);
+                    Gizmos.DrawWireSphere(p, 0.3f);
+                    Gizmos.DrawLine(p + new Vector3(-0.4f, 0f, 0f), p + new Vector3(0.4f, 0f, 0f));
+                    Gizmos.DrawLine(p + new Vector3(0f, -0.4f, 0f), p + new Vector3(0f, 0.4f, 0f));
+                }
+                else
+                {
+                    var trajs = sp.Trajectories;
+                    for (int t = 0; t < trajs.Count; t++)
+                    {
+                        Vector3 a = new Vector3(trajs[t].leftPoint.x, trajs[t].leftPoint.y, 0f);
+                        Vector3 b = new Vector3(trajs[t].rightPoint.x, trajs[t].rightPoint.y, 0f);
+                        Gizmos.DrawLine(a, b);
+                        Gizmos.DrawWireSphere(a, 0.18f);
+                        Gizmos.DrawWireSphere(b, 0.18f);
+                    }
+                }
+            }
+        }
+
+        private static Color ColorForSpecies(FaunaSpeciesDefinition sp)
+        {
+            unchecked
+            {
+                int h = sp != null && sp.Id != null ? sp.Id.GetHashCode() : 0;
+                float r = ((h * 374761393) & 0xFF) / 255f;
+                float g = ((h * 668265263) & 0xFF) / 255f;
+                float b = ((h * 1274126177) & 0xFF) / 255f;
+                return new Color(r, g, b, 0.85f);
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Pre-instantiate one disabled GameObject per (species, trajectory)
+        /// pair. Called once at <see cref="Awake"/> in normal runtime;
+        /// also callable directly so EditMode tests can trigger
+        /// construction without relying on the Awake lifecycle (which is
+        /// not auto-fired in EditMode test frames) and so an editor button
+        /// (or the inspector context menu) can re-run the build after
+        /// authoring changes to the SO. Idempotent: re-running clears
+        /// the previous children first.
+        /// </summary>
+        [ContextMenu("Rebuild Pool (Edit-mode preview)")]
+        public void Rebuild()
+        {
+            if (placement == null)
+            {
+                SimLogger.DebugLog("[FaunaPool] no placement assigned, skipping");
+                return;
+            }
+
+            var parent = spawnRoot != null ? spawnRoot : transform;
+            ClearChildren(parent);
+            _pooled.Clear();
+            BuildPool(placement, parent);
+        }
+
+        private void BuildPool(FaunaPlacementDefinition def, Transform parent)
+        {
+            var species = def.Species;
+            for (int s = 0; s < species.Count; s++)
+            {
+                var sp = species[s];
+                if (sp == null) continue;
+
+                if (sp.MotionMode == FaunaMotionMode.StaticAppearance)
+                {
+                    BuildStaticAppearance(sp, parent);
+                }
+                else
+                {
+                    BuildTraversalPool(sp, parent);
+                }
+            }
+
+            SimLogger.DebugLog("[FaunaPool] pre-instantiated " + _pooled.Count + " sprites across " + species.Count + " species");
+        }
+
+        private void BuildTraversalPool(FaunaSpeciesDefinition sp, Transform parent)
+        {
+            int n = sp.TrajectoryCount;
+            float scale = sp.WorldScale;
+            for (int i = 0; i < n; i++)
+            {
+                var go = new GameObject(sp.Id + "_" + i);
+                go.transform.SetParent(parent, worldPositionStays: false);
+                go.transform.localScale = new Vector3(scale, scale, 1f);
+
+                var renderer = go.AddComponent<SpriteRenderer>();
+                if (sp.FrameCount > 0)
+                {
+                    renderer.sprite = sp.Frames[0];
+                }
+                if (!string.IsNullOrEmpty(sp.SortingLayerName))
+                {
+                    renderer.sortingLayerName = sp.SortingLayerName;
+                }
+                renderer.sortingOrder = sp.SortingOrderInLayer;
+
+                var motion = go.AddComponent<FaunaTraversalMotion>();
+                motion.Configure(sp.Frames, sp.FramesPerSecond, sp.Trajectories[i], sp.DefaultFacesRight);
+
+                go.SetActive(false);
+
+                _pooled.Add(new PooledSprite(go, motion, null, sp, i));
+            }
+        }
+
+        private void BuildStaticAppearance(FaunaSpeciesDefinition sp, Transform parent)
+        {
+            float scale = sp.WorldScale;
+            var go = new GameObject(sp.Id);
+            go.transform.SetParent(parent, worldPositionStays: false);
+            go.transform.localPosition = new Vector3(sp.StaticPosition.x, sp.StaticPosition.y, 0f);
+            go.transform.localScale = new Vector3(scale, scale, 1f);
+
+            var renderer = go.AddComponent<SpriteRenderer>();
+            if (sp.FrameCount > 0)
+            {
+                renderer.sprite = sp.Frames[0];
+            }
+            if (!string.IsNullOrEmpty(sp.SortingLayerName))
+            {
+                renderer.sortingLayerName = sp.SortingLayerName;
+            }
+            renderer.sortingOrder = sp.SortingOrderInLayer;
+
+            // Static species have no travel direction — facing is taken
+            // directly from DefaultFacesRight: checked = as authored,
+            // unchecked = mirrored horizontally.
+            renderer.flipX = !sp.DefaultFacesRight;
+
+            var staticApp = go.AddComponent<FaunaStaticAppearance>();
+            // Pass head-turn config if the species declares an alertFrameIndex
+            // and provides at least 2 frames (rest at 0, alert at alertFrameIndex).
+            Sprite restSprite = sp.FrameCount > 0 ? sp.Frames[0] : null;
+            Sprite alertSprite = null;
+            int alertIdx = sp.AlertFrameIndex;
+            if (alertIdx >= 0 && alertIdx < sp.FrameCount)
+            {
+                alertSprite = sp.Frames[alertIdx];
+            }
+            // Deterministic seed per species so re-runs are reproducible.
+            ulong seed = (ulong)(sp.Id != null ? sp.Id.GetHashCode() : 0) ^ 0xA5A5A5A5UL;
+            staticApp.Configure(
+                sp.FadeDurationSec,
+                restSprite,
+                alertSprite,
+                sp.MeanSecondsBetweenHeadTurns,
+                sp.HeadTurnHoldSec,
+                seed);
+
+            // GameObject stays ACTIVE — visibility is controlled by alpha
+            // fade (FaunaStaticAppearance.Awake sets alpha to 0 initially).
+            _pooled.Add(new PooledSprite(go, null, staticApp, sp, 0));
+        }
+
+        private static void ClearChildren(Transform parent)
+        {
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                var child = parent.GetChild(i);
+                if (Application.isPlaying) Destroy(child.gameObject);
+                else DestroyImmediate(child.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Stable handle to one pooled sprite. Carries everything the spawn
+    /// driver needs to decide activation, without re-querying the SO
+    /// each frame. Exactly one of <see cref="TraversalMotion"/> or
+    /// <see cref="StaticAppearance"/> is non-null, depending on the
+    /// species' <see cref="FaunaSpeciesDefinition.MotionMode"/>.
+    /// </summary>
+    public sealed class PooledSprite
+    {
+        public GameObject GameObject { get; }
+        public FaunaTraversalMotion TraversalMotion { get; }
+        public FaunaStaticAppearance StaticAppearance { get; }
+        public FaunaSpeciesDefinition Species { get; }
+        public int TrajectoryIndex { get; }
+
+        public PooledSprite(
+            GameObject go,
+            FaunaTraversalMotion traversalMotion,
+            FaunaStaticAppearance staticAppearance,
+            FaunaSpeciesDefinition species,
+            int trajectoryIndex)
+        {
+            GameObject = go;
+            TraversalMotion = traversalMotion;
+            StaticAppearance = staticAppearance;
+            Species = species;
+            TrajectoryIndex = trajectoryIndex;
+        }
+    }
+}

@@ -66,3 +66,7 @@ desktop.ini
 # output — only inspected locally for DA validation between palette
 # changes and bulk runs).
 /Sprites/Source/_test_*/
+
+# Python (tools/ scripts bytecode)
+__pycache__/
+*.pyc

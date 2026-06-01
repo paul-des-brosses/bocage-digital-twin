@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd0691ccd0c0565f9eaa543684e5594d, type: 3}
+  m_Name: FaunaPlacement
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scene.Fauna.FaunaPlacementDefinition
+  species:
+  - {fileID: 11400000, guid: c83520ba3c1115eabed9f1cf8db04b84, type: 2}
+  - {fileID: 11400000, guid: 3d38328d680a93f1a44ab37eade0876d, type: 2}
+  - {fileID: 11400000, guid: 9dc26177ed5f71de4389f0ea347771f4, type: 2}
+  - {fileID: 11400000, guid: 29036ea2d6c46a568acdb0e5f9fd1955, type: 2}

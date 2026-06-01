@@ -336,24 +336,24 @@ Aucun champ Inspector nouveau.
 
 | GameObject | Components | Références à brancher |
 |---|---|---|
-| `_Scene_Visual/Fauna` | `FaunaPool` (composant Couche 05) | `Placement Definition` → asset `FaunaPlacement_Default.asset`. `Spawn Root` → ce GameObject lui-même (ou enfant). `Random Seed Source` → seed maître du `SimulationRunner`. |
-| Chaque pool member (pré-instancié au Awake par `FaunaPool`) | `SpriteRenderer`, `FaunaIdleMotion` | Paramètres lus depuis `FaunaSpeciesDefinition`. |
+| `_Scene_Visual/Fauna` | `FaunaPool` (composant Couche 05) | `Placement` → asset `FaunaPlacement.asset`. `Spawn Root` → ce GameObject lui-même (ou enfant dédié `Fauna_Pool`). |
+| Chaque pool member (pré-instancié au Awake par `FaunaPool`) | `SpriteRenderer`, `FaunaTraversalMotion` | Configuré automatiquement par `FaunaPool.BuildPool` à partir de `FaunaSpeciesDefinition` ; pas de réglage manuel. |
 
 **Nouveau composant sur `_UI_Canvas`** :
 
 | Component | Champs sérialisés à brancher |
 |---|---|
-| `FaunaPoolBinding` (E4) | `Pool` → `_Scene_Visual/Fauna` (GameObject portant `FaunaPool`). `Biodiv Container` → `RC_BiodiversityComposite.asset`. `Habitat / Water / Inputs Factor Containers` → `RC_FaunaFactor{Habitat,Water,Inputs}.asset` (après E5). |
+| `FaunaPoolBinding` (E4) | `Pool` → `_Scene_Visual/Fauna` (GameObject portant `FaunaPool`). `Biodiv Composite` → `RC_BiodiversityComposite.asset`. `Master Seed` → même seed que `SimulationRunner` (pour cohérence cross-run). **Pas de Habitat/Water/Inputs en MVP** : observation `RC_FaunaFactor*` non activée tant qu'aucune sensibilité par-espèce n'est calibrée — extensible sans casser l'API. |
 
 **Assets ScriptableObject** (dans `Assets/_Project/Data/Fauna/`) :
 
 | Asset | Notes |
 |---|---|
-| `FaunaSpecies_Heron.asset` | Sprite frames héron, seuil apparition élevé (espèce sensible). |
-| `FaunaSpecies_Owl.asset` | Sprite frames chouette, position perchée, pas d'animation. |
-| `FaunaSpecies_Harrier.asset` | Sprite frames busard, oscillation horizontale lente. |
-| `FaunaSpecies_Swallow.asset` | Sprite frames hirondelle, oscillation horizontale lente. |
-| `FaunaPlacement_Default.asset` | SO racine listant les 4 espèces ci-dessus. |
+| `FaunaSpecies_Swallow.asset` | MotionMode **Traversal**. 3 sous-sprites du `swallow_sheet`, 8 fps wing flap, seuil 0.30, λ_max 0.108, **2 trajectoires** (haut + bas), max 2 hirondelles à l'écran. |
+| `FaunaSpecies_Owl.asset` | MotionMode **Traversal**. 3 sous-sprites du `owl_sheet`, 6 fps wing flap, seuil 0.40, λ_max 0.042, **1 trajectoire** médium. `defaultFacesRight: false` (orienté gauche). |
+| `FaunaSpecies_Buzzard.asset` | MotionMode **Traversal**. 3 sous-sprites du `buzzard_sheet`, 2 fps planar, seuil 0.50, λ_max 0.036, **1 trajectoire** haut+lent. `defaultFacesRight: false`. Remplace l'ancien `FaunaSpecies_Harrier` (correction mouette mal nommée, ADR #49). |
+| `FaunaSpecies_Heron.asset` | MotionMode **StaticAppearance**. 1 sous-sprite du `heron.png` pré-existant, seuil 0.65, `staticPosition (2.5, -2.93)` au bord de la mare, `fadeDurationSec 1.5`. Pas de trajectoire, pas de wing flap. Le binding active/désactive l'alpha selon biodiv vs seuil ; le composant `FaunaStaticAppearance` gère le lerp. |
+| `FaunaPlacement.asset` | SO racine listant les 4 espèces ci-dessus. |
 
 ### Chantier E5 — Capital + biodiv 3 facteurs (livré 2026-05-29)
 

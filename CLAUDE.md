@@ -240,10 +240,12 @@ moyenne, humidité du sol, healthT d'un agent, etc.).
 Cette règle est non négociable : c'est ce qui distingue un digital twin
 d'un jeu vidéo.
 
-**Statut au 2026-05-29** : principe respecté intégralement après
+**Statut au 2026-05-30** : principe respecté intégralement après
 livraison de E2 (saisonnalité + WeatherStation), E3 (carbone sol +
-EddyTower) et E5 (capital + biodiv 3 facteurs). Les 5 capteurs sont
-bout-en-bout (mesure → indicateur affiché ou événement → recommandation).
+EddyTower), E5 (capital + biodiv 3 facteurs) et E4 (faune visible).
+Les 5 capteurs sont bout-en-bout (mesure → indicateur affiché ou
+événement → recommandation), et la faune visible est entièrement
+dérivée de l'indice biodiversité mesuré.
 
 - E2 a livré le sprite **WeatherStation** branché à un
   `WeatherStationReader` (Couche 02) qui expose des mesures pures T° +
@@ -268,10 +270,16 @@ bout-en-bout (mesure → indicateur affiché ou événement → recommandation).
   Côté capital, le « Coût upfront estimé » affiché dans le popup
   PlantHedges (et le cumul `TotalInvestment` + horizon de rentabilité)
   sont dérivés des entrées du `DecisionJournal`, pas d'un calendrier.
-
----
-
-## 10. Audio
+- E4 a livré la **faune visible** (4 espèces) entièrement pilotée par
+  `RC_BiodiversityComposite` (Couche 04), pas par le calendrier. Les
+  3 oiseaux (hirondelle, chouette, buse) traversent la scène à une
+  fréquence de spawn Poisson `λ = λ_max × max(0, (biodiv − seuil) /
+  (1 − seuil))` propre à chaque espèce (seuils 0.30 / 0.40 / 0.50) ;
+  le héron est une sentinelle qui apparaît (fade in) quand la biodiv
+  ≥ 0.65 et disparaît sinon. Aucune apparition scénique : un oiseau
+  visible = un état biodiv mesuré au-dessus de son seuil. Le head-turn
+  rare du héron est le seul effet purement esthétique, et il ne pilote
+  aucune variable — il décore une présence déjà justifiée par la mesure.
 
 **Aucun audio dans ce projet.** Aucune musique, aucun bruitage, aucun son
 d'ambiance, aucun son de feedback UI. Le projet est silencieux. La racine

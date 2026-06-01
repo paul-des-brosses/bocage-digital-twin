@@ -6,6 +6,7 @@
         "Bocage.Sensors",
         "Bocage.Decision",
         "Bocage.Indicators",
+        "Bocage.Presentation",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
