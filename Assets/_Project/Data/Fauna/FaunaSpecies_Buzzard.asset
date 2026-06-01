@@ -24,6 +24,9 @@ MonoBehaviour:
   motionMode: 0
   staticPosition: {x: 0.0, y: 0.0}
   fadeDurationSec: 1.5
+  alertFrameIndex: -1
+  meanSecondsBetweenHeadTurns: 0.0
+  headTurnHoldSec: 0.0
   worldScale: 1.0
   sortingLayerName: Fauna
   sortingOrderInLayer: 5

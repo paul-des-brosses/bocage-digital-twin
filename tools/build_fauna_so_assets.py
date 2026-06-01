@@ -50,11 +50,6 @@ ASSET_GUIDS = {
     "FaunaPlacement": _hash_hex32("bocage_fauna_asset_Placement_v1"),
 }
 
-# Pre-existing legacy sprite (not produced by build_animation_sheet.py).
-# GUID + sub-sprite internalID read verbatim from heron.png.meta.
-HERON_SHEET_GUID = "cd44513ec6fea9144879f3905c26ce66"
-HERON_SUB_SPRITE_INTERNAL_ID = 4549171791951585375
-
 # Enum FaunaMotionMode mirror (kept in sync with the C# enum order).
 MOTION_TRAVERSAL = 0
 MOTION_STATIC_APPEARANCE = 1
@@ -130,21 +125,22 @@ SPECIES = [
     {
         # Sentinel species — present when biodiv composite is high
         # (≥ 0.65), fades out otherwise. No traversal, single sprite at
-        # the pond's edge. User decision 2026-05-30 (revised from
-        # initial "static permanent" plan).
+        # the pond's edge. Rare head-turn (alert frame) to break the
+        # monotony of the static pose. User decision 2026-05-30.
         "asset_name": "FaunaSpecies_Heron",
         "id": "heron",
-        "sheet_family": None,  # not from build_animation_sheet.py
-        "sheet_guid_override": HERON_SHEET_GUID,
-        "sub_sprite_internal_ids_override": [HERON_SUB_SPRITE_INTERNAL_ID],
-        "frame_count": 1,
-        "fps": 0.0,            # static, no wing flap
+        "sheet_family": "heron",  # 2-frame heron_sheet via build_animation_sheet.py
+        "frame_count": 2,         # 0 = rest, 1 = alert
+        "fps": 0.0,               # static, no wing flap
         "threshold": 0.65,
-        "lambda_max": 0.0,     # static, no Poisson roll
+        "lambda_max": 0.0,        # static, no Poisson spawn
         "default_faces_right": True,  # irrelevant for static mode
         "motion_mode": MOTION_STATIC_APPEARANCE,
         "static_position": (2.5, -2.93),  # at the pond — user-provided, ajustable in Inspector
         "fade_duration_sec": 1.5,
+        "alert_frame_index": 1,           # heron_1 = alert pose (head turned)
+        "mean_seconds_between_head_turns": 18.0,  # rare — ≈1 head-turn every 18s on average
+        "head_turn_hold_sec": 2.5,        # alert pose held 2.5s before reverting
         "sorting_layer": "Fauna",
         "sorting_order": 5,
         "trajectories": [],
@@ -239,6 +235,9 @@ def write_species_asset(species: dict, output_dir: Path) -> Path:
         f"  motionMode: {species['motion_mode']}\n",
         f"  staticPosition: {{x: {species['static_position'][0]}, y: {species['static_position'][1]}}}\n",
         f"  fadeDurationSec: {species['fade_duration_sec']}\n",
+        f"  alertFrameIndex: {species.get('alert_frame_index', -1)}\n",
+        f"  meanSecondsBetweenHeadTurns: {species.get('mean_seconds_between_head_turns', 0.0)}\n",
+        f"  headTurnHoldSec: {species.get('head_turn_hold_sec', 0.0)}\n",
         f"  worldScale: {species.get('world_scale', 1.0)}\n",
         f"  sortingLayerName: {species['sorting_layer']}\n",
         f"  sortingOrderInLayer: {species['sorting_order']}\n",

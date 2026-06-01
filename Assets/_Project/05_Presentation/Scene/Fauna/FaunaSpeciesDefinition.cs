@@ -76,6 +76,15 @@ namespace Bocage.Presentation.Scene.Fauna
         [SerializeField, Tooltip("Fade-in / fade-out duration in seconds for StaticAppearance mode. Ignored for Traversal.")]
         private float fadeDurationSec = 1.5f;
 
+        [SerializeField, Tooltip("Frame index in `frames` to swap to during a head-turn (e.g. heron looking alert). Set to -1 to disable. StaticAppearance mode only.")]
+        private int alertFrameIndex = -1;
+
+        [SerializeField, Tooltip("Average seconds between head-turn rolls (Poisson rate = 1/mean). 0 = disabled. The actual interval varies — sometimes 5s, sometimes 60s. StaticAppearance mode only.")]
+        private float meanSecondsBetweenHeadTurns = 0f;
+
+        [SerializeField, Tooltip("How long the alert pose is held (seconds) before reverting to the rest frame. StaticAppearance mode only.")]
+        private float headTurnHoldSec = 0f;
+
         [SerializeField, Tooltip("Uniform world-space scale applied to the spawned sprite GameObject (transform.localScale = Vector3.one * worldScale). 1.0 = native PPU size. Use to make a species visually bigger / smaller without re-importing the sprite.")]
         private float worldScale = 1f;
 
@@ -97,6 +106,9 @@ namespace Bocage.Presentation.Scene.Fauna
         public FaunaMotionMode MotionMode => motionMode;
         public Vector2 StaticPosition => staticPosition;
         public float FadeDurationSec => fadeDurationSec;
+        public int AlertFrameIndex => alertFrameIndex;
+        public float MeanSecondsBetweenHeadTurns => meanSecondsBetweenHeadTurns;
+        public float HeadTurnHoldSec => headTurnHoldSec;
         public float WorldScale => worldScale > 0f ? worldScale : 1f;
         public string SortingLayerName => sortingLayerName;
         public int SortingOrderInLayer => sortingOrderInLayer;

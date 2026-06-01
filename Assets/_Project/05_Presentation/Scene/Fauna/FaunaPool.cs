@@ -186,7 +186,24 @@ namespace Bocage.Presentation.Scene.Fauna
             renderer.sortingOrder = sp.SortingOrderInLayer;
 
             var staticApp = go.AddComponent<FaunaStaticAppearance>();
-            staticApp.Configure(sp.FadeDurationSec);
+            // Pass head-turn config if the species declares an alertFrameIndex
+            // and provides at least 2 frames (rest at 0, alert at alertFrameIndex).
+            Sprite restSprite = sp.FrameCount > 0 ? sp.Frames[0] : null;
+            Sprite alertSprite = null;
+            int alertIdx = sp.AlertFrameIndex;
+            if (alertIdx >= 0 && alertIdx < sp.FrameCount)
+            {
+                alertSprite = sp.Frames[alertIdx];
+            }
+            // Deterministic seed per species so re-runs are reproducible.
+            ulong seed = (ulong)(sp.Id != null ? sp.Id.GetHashCode() : 0) ^ 0xA5A5A5A5UL;
+            staticApp.Configure(
+                sp.FadeDurationSec,
+                restSprite,
+                alertSprite,
+                sp.MeanSecondsBetweenHeadTurns,
+                sp.HeadTurnHoldSec,
+                seed);
 
             // GameObject stays ACTIVE — visibility is controlled by alpha
             // fade (FaunaStaticAppearance.Awake sets alpha to 0 initially).

@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: cd44513ec6fea9144879f3905c26ce66
+guid: b365893e732f78262a9d009826a73860
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4549171791951585375
+      213: -8654169043042202191
     second: heron_0
+  - first:
+      213: 2253372913965578493
+    second: heron_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,6 +99,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -105,39 +121,62 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 196
-        height: 256
+        width: 256
+        height: 325
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData:
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f50608964a7e12f30800000000000000
-      internalID: 4549171791951585375
+      spriteID: 8acc6bcb1183e36caf8c33a1b2f47254
+      internalID: -8654169043042202191
       vertices: []
-      indices: 
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: heron_1
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 0
+        width: 256
+        height: 325
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eed1804cb4927c815936d799f201b53a
+      internalID: 2253372913965578493
+      vertices: []
+      indices:
       edges: []
       weights: []
     outline: []
-    customData: 
+    customData:
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID:
     internalID: 0
     vertices: []
-    indices: 
+    indices:
     edges: []
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      heron_0: 4549171791951585375
-  mipmapLimitGroupName: 
+      heron_0: -8654169043042202191
+      heron_1: 2253372913965578493
+  mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+  userData:
+  assetBundleName:
+  assetBundleVariant:

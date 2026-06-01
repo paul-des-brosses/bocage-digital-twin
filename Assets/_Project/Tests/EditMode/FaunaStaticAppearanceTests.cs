@@ -50,5 +50,46 @@ namespace Bocage.Tests.EditMode
 
             Object.DestroyImmediate(go);
         }
+
+        [Test]
+        public void HeadTurn_TriggerAndRevert_SwapsSprite()
+        {
+            var rest = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), Vector2.zero);
+            var alert = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), Vector2.zero);
+
+            var go = new GameObject("test_head_turn");
+            var renderer = go.AddComponent<SpriteRenderer>();
+            var sa = go.AddComponent<FaunaStaticAppearance>();
+            sa.Configure(
+                fadeDurationSec: 1.0f,
+                restSprite: rest,
+                alertSprite: alert,
+                meanSecondsBetweenHeadTurns: 10f,
+                headTurnHoldSec: 2.0f,
+                seed: 42UL);
+
+            // Configure assigned rest sprite immediately.
+            Assert.AreSame(rest, renderer.sprite, "Configure should set the rest sprite.");
+            Assert.IsFalse(sa.IsAlert);
+
+            // Force-enter alert (bypass Bernoulli).
+            sa.TriggerHeadTurnForTest();
+            Assert.IsTrue(sa.IsAlert);
+            Assert.AreSame(alert, renderer.sprite);
+
+            // Tick less than hold → still alert.
+            sa.TickHeadTurn(1.5f);
+            Assert.IsTrue(sa.IsAlert);
+            Assert.AreSame(alert, renderer.sprite);
+
+            // Tick past hold → revert to rest.
+            sa.TickHeadTurn(1.0f);
+            Assert.IsFalse(sa.IsAlert);
+            Assert.AreSame(rest, renderer.sprite);
+
+            Object.DestroyImmediate(go);
+            Object.DestroyImmediate(rest);
+            Object.DestroyImmediate(alert);
+        }
     }
 }
