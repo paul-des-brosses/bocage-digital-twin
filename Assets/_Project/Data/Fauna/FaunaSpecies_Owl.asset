@@ -17,22 +17,22 @@ MonoBehaviour:
   - {fileID: -6861513601872675165, guid: 493298ebbd52e083e617833714552e12, type: 3}
   - {fileID: 2827494841234524199, guid: 493298ebbd52e083e617833714552e12, type: 3}
   - {fileID: -5842908893045092777, guid: 493298ebbd52e083e617833714552e12, type: 3}
-  framesPerSecond: 6.0
+  framesPerSecond: 6
   appearanceThreshold: 0.4
   spawnRateAtMaxBiodiv: 0.042
   defaultFacesRight: 0
   motionMode: 0
-  staticPosition: {x: 0.0, y: 0.0}
+  staticPosition: {x: 0, y: 0}
   fadeDurationSec: 1.5
   alertFrameIndex: -1
-  meanSecondsBetweenHeadTurns: 0.0
-  headTurnHoldSec: 0.0
-  worldScale: 1.0
+  meanSecondsBetweenHeadTurns: 0
+  headTurnHoldSec: 0
+  worldScale: 0.5
   sortingLayerName: Fauna
   sortingOrderInLayer: 5
   trajectories:
-  - leftPoint: {x: -7.0, y: 2.5}
-    rightPoint: {x: 7.0, y: 2.5}
-    durationSec: 6.0
+  - leftPoint: {x: -7, y: 2.1120024}
+    rightPoint: {x: 7, y: 2.0711608}
+    durationSec: 6
     verticalBobAmplitude: 0.18
     verticalBobFrequencyHz: 0.35

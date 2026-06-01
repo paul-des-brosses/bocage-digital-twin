@@ -16,17 +16,17 @@ MonoBehaviour:
   frames:
   - {fileID: -8654169043042202191, guid: b365893e732f78262a9d009826a73860, type: 3}
   - {fileID: 2253372913965578493, guid: b365893e732f78262a9d009826a73860, type: 3}
-  framesPerSecond: 0.0
+  framesPerSecond: 0
   appearanceThreshold: 0.65
-  spawnRateAtMaxBiodiv: 0.0
-  defaultFacesRight: 1
+  spawnRateAtMaxBiodiv: 0
+  defaultFacesRight: 0
   motionMode: 1
-  staticPosition: {x: 2.5, y: -2.93}
+  staticPosition: {x: 0.7846422, y: -2.5215816}
   fadeDurationSec: 1.5
   alertFrameIndex: 1
-  meanSecondsBetweenHeadTurns: 18.0
+  meanSecondsBetweenHeadTurns: 18
   headTurnHoldSec: 2.5
-  worldScale: 1.0
+  worldScale: 0.6
   sortingLayerName: Fauna
   sortingOrderInLayer: 5
-  trajectories:
+  trajectories: []
