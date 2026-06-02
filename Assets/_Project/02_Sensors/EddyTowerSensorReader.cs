@@ -38,7 +38,7 @@ namespace Bocage.Sensors
     /// the baseline; from the second call onward the ΔC is meaningful.
     /// </para>
     /// </summary>
-    public sealed class EddyTowerSensorReader
+    public sealed class EddyTowerSensorReader : ISensorHistory<double>
     {
         public const int HistoryWindowDays = 365;
         public const double NoiseSigmaKgCO2PerHectarePerDay = 1.5;
@@ -46,9 +46,8 @@ namespace Bocage.Sensors
         public const double TonnesToKilograms = 1000.0;
 
         private readonly SeededRandom _rng;
-        private readonly double[] _history = new double[HistoryWindowDays];
-        private int _historyHead;
-        private int _historyCount;
+        private readonly RollingSensorHistory<double> _history =
+            new RollingSensorHistory<double>(HistoryWindowDays);
         private double _previousSoilCarbonStock;
         private bool _hasBaseline;
 
@@ -59,7 +58,13 @@ namespace Bocage.Sensors
         }
 
         /// <summary>Total number of samples currently stored (caps at 365).</summary>
-        public int HistoryCount => _historyCount;
+        public int HistoryCount => _history.HistoryCount;
+
+        /// <inheritdoc />
+        public int Capacity => _history.Capacity;
+
+        /// <summary>Gets the most recent net-flux reading, or <c>false</c> if none recorded yet.</summary>
+        public bool TryGetLatest(out double value) => _history.TryGetLatest(out value);
 
         /// <summary>
         /// Returns a noisy daily net CO2 flux in kgCO2/ha/day without
@@ -86,9 +91,7 @@ namespace Bocage.Sensors
         public double ReadAndRecord(double currentSoilCarbonStock)
         {
             double observed = Read(currentSoilCarbonStock);
-            _history[_historyHead] = observed;
-            _historyHead = (_historyHead + 1) % HistoryWindowDays;
-            if (_historyCount < HistoryWindowDays) _historyCount++;
+            _history.Record(observed);
             _previousSoilCarbonStock = currentSoilCarbonStock;
             _hasBaseline = true;
             return observed;
@@ -99,19 +102,6 @@ namespace Bocage.Sensors
         /// in chronological order (oldest first). Returns the number of
         /// samples actually written.
         /// </summary>
-        public int CopyHistoryTo(IList<double> destination)
-        {
-            if (destination == null) throw new ArgumentNullException(nameof(destination));
-            destination.Clear();
-            int oldestIndex = _historyCount < HistoryWindowDays
-                ? 0
-                : _historyHead;
-            for (int i = 0; i < _historyCount; i++)
-            {
-                int slot = (oldestIndex + i) % HistoryWindowDays;
-                destination.Add(_history[slot]);
-            }
-            return _historyCount;
-        }
+        public int CopyHistoryTo(IList<double> destination) => _history.CopyHistoryTo(destination);
     }
 }

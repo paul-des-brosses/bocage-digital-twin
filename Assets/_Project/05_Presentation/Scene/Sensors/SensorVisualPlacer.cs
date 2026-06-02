@@ -131,6 +131,12 @@ namespace Bocage.Presentation.Scene.Sensors
                 }
                 go.AddComponent<SensorHoverEmitter>();
                 go.AddComponent<SensorHoverHighlight>();
+                // Click handler (chantier E6 / ADR #53): publishes the
+                // sensor type on the static bus consumed by the inspection
+                // panel binding. Same OnMouseDown path as the hover
+                // emitter — Collider2D above is the only requirement,
+                // no Physics2DRaycaster.
+                go.AddComponent<SensorClickHandler>();
 
                 count++;
             }

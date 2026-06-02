@@ -39,7 +39,7 @@ Chaque étape est un chantier autonome sur sa propre branche
 | E3 | Carbone sol + EddyTower bout-en-bout | `feature/E3-carbone-sol` | 10-14 h | #48 |
 | E4 | Faune visible 4 espèces | `feature/E4-faune-visible` | 10-13 h | #49 |
 | E5 | Capital + horizon rentabilité + biodiv 3 facteurs | `feature/E5-capital-biodiv` | 12-16 h | #50, #51 |
-| E6 | Panneau inspection capteurs + 3 onglets Niveau B remplis | `feature/E6-panneau-onglets` | 22-33 h | #53, #54 |
+| E6 | Panneau inspection capteurs + 3 onglets Niveau B remplis ✅ livré 2026-06-02 | `feature/E6-panneau-onglets` | 22-33 h | #53, #54, #57 |
 | E7 | Polish + publication MVP | `feature/E7-polish-publication` | 6-10 h | — |
 
 **Total estimé : 81-116 h.** Marge confortable sur cible 150 h.
@@ -419,60 +419,180 @@ visible).
 
 ## 8. Étape E6 — Panneau inspection capteurs + 3 onglets Niveau B remplis
 
+**Statut** : ✅ livré 2026-06-02.
 **Branche** : `feature/E6-panneau-onglets`.
-**ADR cadrants** : #53 (panneau inspection), #54 (onglets).
+**ADR cadrants** : #53 (panneau inspection), #54 (onglets), #57
+(force-online sur tous les capteurs).
 **Estimation** : 22-33 h (12-21 h panneau inspection + 10-12 h
 onglets).
 **Pré-requis** : E2, E3, E4, E5 mergés (toutes les variables source
-des onglets et des graphes d'inspection doivent exister).
+des onglets et des graphes d'inspection existent).
 
-### Livrables
+### Livrables effectifs
 
-**Panneau d'inspection capteurs (ADR #53)** :
+**Fondation transverse (commit `b144338`)** :
 
-- Détection clic sur sprite 2D : ajout d'un `Collider2D` sur chaque
-  sprite capteur + `Physics2DRaycaster` sur la caméra + Unity
-  EventSystem actif.
-- Interface `ISensorHistory<T>` (Couche 02) : sliding window 365 j
-  réutilisable mutualisée avec les onglets.
-- `SensorInspectorPanel.uxml` + USS (Couche 05) : panneau modal
-  réutilisable, se reconfigure selon le capteur cliqué.
-- Composant graphe custom en `VisualElement` avec
-  `generateVisualContent` callback. Bornes claires, légendes
-  Garamond italique, valeurs JetBrains Mono.
-- 5 contenus spécifiques (cf ADR #53 tableau) :
-  Piezometer, WeatherStation, AcousticSensor, CameraTrap, EddyTower.
-- `SensorInspectorPanelBinding.cs` : reçoit `OnSensorClicked` →
-  configure et ouvre le panneau.
-- Fermeture : clic dehors, touche Échap, bouton fermer.
-- `WeatherNormalsPanelBinding.cs` : sous-panneau du
-  SensorInspectorPanel pour les normales mois courant/suivant.
+- Interface `ISensorHistory<T>` (Couche 02) + conteneur générique
+  `RollingSensorHistory<T>` (ring buffer pré-alloué, éviction O(1)).
+- Rétro-fit `WeatherStationReader` et `EddyTowerSensorReader` :
+  délèguent leur historique au conteneur réutilisable. API publique
+  inchangée (HistoryCount/CopyHistoryTo + nouveau TryGetLatest).
+- 6 tests EditMode `RollingSensorHistoryTests`.
 
-**3 onglets Niveau B remplis (ADR #54)** :
+**3 onglets Niveau B (ADR #54, commit `7bd10eb`)** :
 
-- `OngletBiodivBinding.cs` : 5 lignes (indice composite + 3 facteurs
-  + comptage espèces visibles).
-- `OngletClimatBinding.cs` : 5 lignes (nappe + T° glissante + précip
-  glissantes + stock C + flux net CO2).
-- `OngletEconomieBinding.cs` : 7 lignes (rendement + intrants +
-  entretien + PSE + PAC + investissement cumulé + horizon).
-- USS / UXML existants enrichis.
+- `OngletBiodivBinding` (5 lignes : composite + 3 facteurs +
+  comptage espèces visibles via `FaunaPool.PooledSprites`).
+- `OngletClimatBinding` (4 lignes capteur : T° moyenne 365 j,
+  précip cumulées 365 j, stock C, flux net CO2 — la ligne nappe
+  reste pilotée par le binding existant `WaterTableDetailLabelBinding`).
+- `OngletEconomieBinding` (7 lignes : rendement + intrants +
+  entretien + PSE + PAC + investissement cumulé + horizon — PSE et
+  PAC réutilisent les constantes publiques de
+  `IntegratedProfitabilityIndicator` pour ne jamais diverger du Hero
+  KPI).
+- Enrichissement `Dashboard.uxml` : 16 labels nommés ajoutés dans
+  les 3 panneaux (5 + 4 + 7).
+- 8 tests EditMode `OngletBindingsTests` sur les helpers purs.
 
-### Tests EditMode
+**Pivot UX vers modales Niveau B (commit `5e38bda`)** :
 
-- 2 tests `ISensorHistory<T>` : enregistrement correct, sliding
-  window 365 j (anciens samples expirent).
-- 3 tests onglets (1 par onglet) : valeurs publiées dans `RC_*`
-  correctement reflétées dans les bindings (mock observable).
+- Les 3 panneaux Niveau B affichaient tout leur contenu en
+  permanence — perçu comme surcharge visuelle.
+- Refonte : chaque panneau devient un `Button` compact en bas
+  (`body-row`) qui ouvre une modale centrée (overlay full-screen +
+  carte centrale) au clic.
+- `NiveauBModalsBinding` (Couche 05) auto-câble les 3 boutons →
+  3 overlays via la classe utilitaire `.hidden` éprouvée.
+  Fermeture : X, clic en dehors de la carte, Échap.
+- 4 tests EditMode sur `SetVisible`.
 
-### Critère de validation
+**B.1 — Readers manquants (commit `9cca833`)** :
 
-- Tests EditMode verts.
-- Démo : clic sur Piezometer → graphe nappe 365 j s'affiche avec
-  seuils. Clic sur WeatherStation → graphes T° et précip vs normales
-  mensuelles. Idem pour les 3 autres capteurs.
-- Démo : les 3 onglets Niveau B sont tous remplis avec valeurs
-  cohérentes. Aucun placeholder « à venir ».
+- Struct générique `SensorSample<T> { Measured, Truth }` pour stocker
+  la paire mesure/vérité dans les historiques.
+- `PiezometerReader` (Couche 02) : observe `WaterTableDepth`, bruit
+  gaussien σ = 0.05 m, sous-stream RNG `"piezometer"`, historique
+  365 j. Personne d'autre ne consomme le reader — les indicateurs
+  continuent à lire la vérité du modèle (même pattern que
+  `WeatherStationReader`/`EddyTowerSensorReader`).
+- `AcousticSensorReader` + `CameraTrapSensorReader` (Couche 02) :
+  wrappers d'historique purs. `FaunaSensorReader` refondu en
+  orchestrateur — possède les 2 sous-readers, expose les propriétés
+  publiques `Acoustic`/`Camera`, garde son sous-stream
+  `"fauna-sensors"` et son ordre de tirage acoustique-puis-camera
+  bit-pour-bit identiques (préserve les tests
+  `CalibrationScenarioValidationTests` sur 10 ans).
+- `SimulationRunner` : instancie `PiezometerReader` (Awake +
+  Rebuild), appelle `ReadAndRecord` dans TickLoop + FastForwardTo,
+  expose `Piezometer` et `FaunaSensor` en propriétés publiques.
+- 10 tests EditMode (`PiezometerReaderTests` + `FaunaSensorChannelsTests`).
+
+**B.2 — Infrastructure clic (commit `1665e96`)** :
+
+- `SensorClickedEventBus` (Couche 05, statique) : event
+  `Action<SensorType>` — copie du pattern `SensorHoverEventBus`.
+- `SensorClickHandler` (MonoBehaviour Couche 05) : `OnMouseDown`
+  legacy → publie sur le bus. Pas de `Physics2DRaycaster` requis
+  (`OnMouseDown` marche avec `Collider2D` seul, comme le hover).
+- `SensorVisualPlacer.BuildFrom` ajoute automatiquement
+  `SensorClickHandler` à chaque sprite capteur — aucune action
+  manuelle Unity requise côté scène.
+- 4 tests EditMode `SensorClickedEventBusTests` (notification,
+  fan-out, no-subscriber-safe, désabonnement).
+
+**B.3 — Graphe custom (commit `057d5d5`)** :
+
+- `SensorTimeSeriesChart : VisualElement` avec `generateVisualContent`
+  callback utilisant `Painter2D` (Unity 6 LTS). API :
+  `AddSeries(color, lineWidth, values)`, `AddThreshold(color,
+  lineWidth, value)`, `SetYBounds(min, max)`, `ClearSeries/Thresholds`.
+  Chaque mutation déclenche `MarkDirtyRepaint` automatique.
+- Helpers statiques purs `XForIndex` et `YForValue` (axe Y inversé
+  d'UI Toolkit).
+- 8 tests EditMode `SensorTimeSeriesChartTests`.
+
+**B.4 — Panneau modal d'inspection (commit `9bf243d`)** :
+
+- Modal `sensor-inspector-overlay` ajoutée au `Dashboard.uxml`
+  (overlay full-screen + carte 600 px + header titre/X + sous-titre
+  + chart1 caption + chart1 row (axe Y left + host) + chart2 caption
+  + chart2 row (caché par défaut, utilisé seulement par
+  WeatherStation) + footer info).
+- 11 nouvelles classes USS `.sensor-inspector-*`.
+- `SensorInspectorPanelBinding` (Couche 05) : abonné au bus, switch
+  sur `SensorType` → appelle `ConfigureFor*` correspondante. 5
+  layouts pré-câblés (cf ADR #53 §tableau). Charts instanciés
+  programmatiquement dans `TryWire()` et `Add()`és aux hosts UXML
+  (évite UxmlFactory boilerplate). Fermeture via X, MouseDown sur
+  l'overlay (pas Click — voir Pièges ci-dessous), Échap.
+- Trigger UI : `SensorListBinding` étendu — chaque ligne du panneau
+  « Capteurs déployés » publie aussi sur le bus au clic, pour offrir
+  un trigger UI en plus du clic sprite scène.
+- 10 tests EditMode `SensorInspectorPanelBindingTests` (extracteurs
+  de buffers, compteur trailing-days, reconstruction normales
+  mensuelles).
+
+**Décision pragmatique force-online (ADR #57)** :
+
+- Le concept « capteur en attente » (dot ocre) a été retiré de
+  l'UI : `SensorListBinding.BuildRow` applique inconditionnellement
+  `.sensor-status-dot--online`, et la légende online/deferred a été
+  retirée de `Dashboard.uxml`. Le champ `OnlineStatus` reste dans
+  le SO et `SensorMetadataTag` pour réactivation future (item
+  backlog « capteur en panne / maintenance »).
+
+### Tests EditMode (état final)
+
+**280 tests EditMode verts** au merge — 226 baseline + 54 ajoutés
+pendant E6 (6 RollingSensorHistory + 8 onglets + 4 modales Niveau B +
+5 Piezometer + 5 FaunaSensorChannels + 4 SensorClickedEventBus +
+8 SensorTimeSeriesChart + 10 SensorInspectorPanelBinding + 4
+CollapsiblePanelsBinding interlude abandonné = 54 nets).
+
+### Critère de validation atteint
+
+- Tests EditMode tous verts.
+- Démo : clic sprite ou ligne UI sur chacun des 5 capteurs → modale
+  d'inspection s'ouvre avec le bon layout + données du reader +
+  seuils + footer info. Fermeture via X / clic en dehors / Échap.
+- 3 boutons Niveau B en bas → 3 modales avec valeurs vivantes.
+- Liste de capteurs : 5 dots verts (force-online), pas de légende
+  parasite.
+
+### Pièges rencontrés (à ne pas refaire)
+
+1. **Compound class selectors USS** (`.panel-content.collapsed`)
+   ne semblent pas matcher dans cette version d'UI Toolkit / projet.
+   Plusieurs tentatives de toggle via classe ont échoué. Pattern
+   qui marche : **single-class** `.hidden { display: none; }`
+   (utilisée depuis des mois sur `decision-popup-overlay`). Adopté
+   pour les modales Niveau B et le panneau d'inspection.
+
+2. **Namespace shadowing** : `Bocage.Presentation.Weather` (le SO
+   `SeasonalWeatherDataAsset` qui sert E2) shadow le type
+   `Weather` au sein de `Bocage.Presentation.Bindings`. Un alias
+   `using Weather = Bocage.SimulationCore.Model.Weather` au niveau
+   FICHIER ne suffit pas (priorité inférieure au namespace
+   englobant). L'alias doit être placé **dans** le bloc
+   `namespace { }` pour primer. Touché 2 fois (`OngletClimatBinding`
+   puis `SensorInspectorPanelBinding`).
+
+3. **Race ClickEvent au clic sprite** : `OnMouseDown` legacy du
+   sprite scene + UI Toolkit MouseDownEvent sur l'overlay qui
+   apparaît dans le MÊME frame → l'event est traité comme un
+   click-outside, la modale se ferme immédiatement. Fix retenu :
+   `StartCoroutine(ShowOverlayNextFrame)` avec `yield return null`
+   avant `RemoveFromClassList("hidden")`. ConfigurePanel reste
+   synchrone, juste l'apparition décale d'1 frame.
+
+4. **Accordéon Niveau B échoué** : 5+ tentatives sur un
+   collapse/expand des 3 panneaux. Toggle via classe CSS, toggle
+   via `style.display`, toggle via `RemoveFromHierarchy` — chaque
+   approche laissait 2 lignes résiduelles à l'écran. Cause
+   profonde non identifiée (probable quirk renderer UI Toolkit
+   spécifique à ce build). Pivot UX → modale pour Niveau B et pour
+   l'inspecteur capteurs. Pattern fiable, retenu.
 
 ---
 

@@ -521,6 +521,212 @@
 }
 
 /* =========================================================================
+ *  Niveau B — trigger buttons + modal overlays (chantier E6 / ADR #54)
+ *  Three compact buttons sit at the bottom of the viewport in .body-row;
+ *  clicking one opens the matching `.level-b-modal-overlay`, which is
+ *  shown/hidden via the proven `.hidden` utility class (cf
+ *  decision-popup-overlay). NiveauBModalsBinding wires the clicks,
+ *  click-outside dismissal, and Escape key.
+ * ========================================================================= */
+
+.level-b-trigger {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin: 0 5px 0 5px;
+    padding: 8px 14px 8px 14px;
+    background-color: rgba(28, 31, 36, 0.94);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
+    color: rgba(238, 232, 217, 1);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.level-b-trigger:hover {
+    background-color: rgba(48, 52, 58, 0.96);
+    border-color: rgba(124, 168, 100, 0.55);
+    color: rgba(238, 232, 217, 1);
+}
+
+.level-b-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+}
+
+.level-b-modal-card {
+    width: 440px;
+    max-width: 85%;
+    padding: 14px 20px 16px 20px;
+    background-color: rgba(28, 31, 36, 0.98);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.40);
+    flex-direction: column;
+}
+
+.level-b-modal-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(170, 162, 145, 0.20);
+}
+
+.level-b-modal-title {
+    font-size: 16px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+}
+
+.level-b-modal-close {
+    margin: 0;
+    padding: 2px 10px 2px 10px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: rgba(220, 214, 198, 0.85);
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.level-b-modal-close:hover {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* =========================================================================
+ *  Sensor inspection panel (chantier E6 / ADR #53)
+ *  Modal popup opened by clicks on the 5 sensor sprites. Mirrors the
+ *  Niveau B modal structure (full-screen overlay + centred dark card)
+ *  but wider (charts need horizontal room) and with chart-specific rows.
+ * ========================================================================= */
+
+.sensor-inspector-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+}
+
+.sensor-inspector-card {
+    width: 600px;
+    max-width: 90%;
+    padding: 16px 22px 18px 22px;
+    background-color: rgba(28, 31, 36, 0.98);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.40);
+    flex-direction: column;
+}
+
+.sensor-inspector-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(170, 162, 145, 0.20);
+}
+
+.sensor-inspector-title {
+    font-size: 16px;
+    color: rgba(238, 232, 217, 1);
+    -unity-font-style: bold;
+}
+
+.sensor-inspector-close {
+    margin: 0;
+    padding: 2px 10px 2px 10px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: rgba(220, 214, 198, 0.85);
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.sensor-inspector-close:hover {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.sensor-inspector-subtitle {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.75);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-bottom: 10px;
+}
+
+.sensor-inspector-chart-caption {
+    font-size: 11px;
+    color: rgba(238, 232, 217, 0.85);
+    -unity-font-style: italic;
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+
+.sensor-inspector-chart-row {
+    flex-direction: row;
+    align-items: stretch;
+    height: 140px;
+}
+
+.sensor-inspector-axis-column {
+    flex-direction: column;
+    justify-content: space-between;
+    width: 48px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.sensor-inspector-axis-label {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.85);
+    -unity-text-align: middle-right;
+}
+
+.sensor-inspector-chart-host {
+    flex-grow: 1;
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.18);
+    border-radius: 3px;
+    background-color: rgba(16, 18, 22, 0.55);
+    padding: 4px 4px 4px 4px;
+}
+
+.sensor-chart {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.sensor-inspector-footer-info {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.85);
+    -unity-font-style: italic;
+    white-space: normal;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(170, 162, 145, 0.20);
+}
+
+/* =========================================================================
  *  Minimap — placeholder rectangle bottom-right (6c will fill it)
  * ========================================================================= */
 

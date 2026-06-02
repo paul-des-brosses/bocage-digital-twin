@@ -98,6 +98,7 @@ namespace Bocage.Presentation.Simulation
         private FaunaSensorReader _faunaSensorReader;
         private WeatherStationReader _weatherStationReader;
         private EddyTowerSensorReader _eddyTowerSensorReader;
+        private PiezometerReader _piezometerReader;
         // Cumulative profit-delta integrator for the « horizon de
         // rentabilité » indicator (chantier E5 / ADR #50). Stateful by
         // nature — the integral cannot be derived from a snapshot —
@@ -154,6 +155,28 @@ namespace Bocage.Presentation.Simulation
         /// consumes it yet.
         /// </summary>
         public EddyTowerSensorReader EddyTower => _eddyTowerSensorReader;
+
+        /// <summary>
+        /// On-site Piezometer sensor (chantier E6 / ADR #53). Owns the
+        /// noisy reading of today's water-table depth plus a 365-day
+        /// sliding window of paired (noisy, ground-truth) samples that
+        /// the inspection panel binding reads. Indicators and rules
+        /// continue to consume <see cref="EcosystemModel.WaterTableDepth"/>
+        /// directly — bruiter la nappe partout serait une refonte
+        /// scientifique non demandée par l'ADR.
+        /// </summary>
+        public PiezometerReader Piezometer => _piezometerReader;
+
+        /// <summary>
+        /// Fauna sensor composite (chantier E6 / ADR #53). Exposed so
+        /// the inspection panel can drill into the two underlying
+        /// channels via <c>FaunaSensor.Acoustic</c> and
+        /// <c>FaunaSensor.Camera</c>, each owning its own 365-day
+        /// history of paired (noisy, ground-truth) samples. The
+        /// detector still consumes the fused estimate, which is what
+        /// <see cref="FaunaSensorReader.ReadAndRecord"/> returns.
+        /// </summary>
+        public FaunaSensorReader FaunaSensor => _faunaSensorReader;
 
         /// <summary>
         /// Append-only history of events emitted by the Couche 2
@@ -230,6 +253,11 @@ namespace Bocage.Presentation.Simulation
             _faunaSensorReader = new FaunaSensorReader(new SeededRandom(masterSeed));
             _weatherStationReader = new WeatherStationReader(new SeededRandom(masterSeed));
             _eddyTowerSensorReader = new EddyTowerSensorReader(new SeededRandom(masterSeed));
+            // Piezometer (chantier E6 / ADR #53): observes the model's
+            // water-table depth, records a 365-day noisy history for the
+            // inspection panel. Indicators/rules still read truth from
+            // the model — this reader is consumed only by the panel.
+            _piezometerReader = new PiezometerReader(new SeededRandom(masterSeed));
             _investmentHorizon = new InvestmentHorizonIndicator();
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
@@ -281,9 +309,10 @@ namespace Bocage.Presentation.Simulation
                 _eventDetector.Detect(
                     _engine.Model,
                     _eventLog,
-                    _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
+                    _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation));
                 _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
                 _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
+                _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
                 PublishRecommendations();
                 // TickCompleted fires BEFORE PublishIndicators so that
                 // the shadow runner (subscriber) advances its own engine
@@ -357,6 +386,11 @@ namespace Bocage.Presentation.Simulation
             // SoilCarbonStock rather than against the previous run's
             // last stock.
             _eddyTowerSensorReader = new EddyTowerSensorReader(new SeededRandom(masterSeed));
+            // Piezometer (chantier E6 / ADR #53): observes the model's
+            // water-table depth, records a 365-day noisy history for the
+            // inspection panel. Indicators/rules still read truth from
+            // the model — this reader is consumed only by the panel.
+            _piezometerReader = new PiezometerReader(new SeededRandom(masterSeed));
             _investmentHorizon = new InvestmentHorizonIndicator();
 
             PublishIndicators();
@@ -403,9 +437,10 @@ namespace Bocage.Presentation.Simulation
                 _eventDetector.Detect(
                     _engine.Model,
                     _eventLog,
-                    _faunaSensorReader.Read(_engine.Model.FaunaPopulation));
+                    _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation));
                 _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
                 _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
+                _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
                 PublishRecommendations();
                 TickCompleted?.Invoke();
                 UpdateInvestmentHorizon();

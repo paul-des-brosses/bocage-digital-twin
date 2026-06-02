@@ -1535,3 +1535,58 @@ renuméroté en §19.
 
 **Alternative écartée** : conserver une stratégie de coupe « au cas
 où » — contredit le scope verrouillé et le principe directeur.
+
+---
+
+### 57. Tous les capteurs rendus comme « branché » — concept « en attente » reporté
+
+**Contexte** : `SensorPlacement_Default.asset` distinguait historiquement
+des capteurs `Online` et `Deferred` (visuellement : dot vert vs dot
+ocre dans la liste « Capteurs déployés », plus une légende au pied de
+la liste). État au 2026-06-02 (livraison E6) : les 5 capteurs ont tous
+une chaîne complète bout-en-bout — `PiezometerReader`,
+`WeatherStationReader`, `EddyTowerSensorReader`, et les deux canaux
+`AcousticSensorReader`/`CameraTrapSensorReader` exposés par
+`FaunaSensorReader` ont chacun un historique 365 j et alimentent le
+panneau d'inspection (ADR #53). Aucun capteur n'est plus « en
+attente » au sens technique.
+
+Mais corriger le SO (passer les 3 capteurs encore marqués `Deferred`
+à `Online`) a buté sur un cache Unity tenace : le fichier disque
+corrigé n'était pas relu, et même après reimport explicite la liste
+UI continuait à afficher gris. Forcer la valeur via l'Inspector Unity
+fonctionnait sur l'asset mais pas en runtime — déconnexion non
+diagnostiquée à temps raisonnable.
+
+**Décision** :
+
+- `SensorListBinding.BuildRow` ignore désormais `meta.OnlineStatus`
+  et applique inconditionnellement la classe `.sensor-status-dot--online`.
+- La légende online/deferred au pied de `Dashboard.uxml` (bloc
+  `.sensor-list-legend`) est supprimée — un seul état visuel ne mérite
+  pas une légende.
+- Le champ `OnlineStatus` reste présent dans `SensorPlacementDefinition`
+  et `SensorMetadataTag` pour ne pas perdre la donnée — quand un
+  backlog item « capteur en panne / maintenance » réactivera le
+  concept avec un VRAI cas d'usage scénaristique, le code y revient
+  en retirant la ligne hardcodée et en restaurant la légende.
+
+**Raison** : aligné avec le principe directeur §17 « tout élément
+présent doit avoir un effet observable et un intérêt narratif
+compréhensible ». Un dot ocre sans cas d'usage concret (pas de
+scénario panne, pas de maintenance simulée, pas d'événement « capteur
+défaillant ») est de l'info parasite — l'utilisateur portfolio voit
+3 dots gris et se demande légitimement « qu'est-ce qui ne marche pas
+chez moi ». Réponse : rien. Donc on retire le distinguo plutôt que
+d'expliquer un faux problème.
+
+**Conséquence opérationnelle** : aucune sur la roadmap E1-E7. Le
+ré-introduction du concept est conditionnée à un futur item backlog
+qui mettrait en scène un capteur intentionnellement offline (panne,
+maintenance, batterie morte d'un sensor solar-powered, etc.) — ce
+qui justifierait pédagogiquement la distinction visuelle.
+
+**Alternative écartée** : continuer à débugger le cache Unity et
+maintenir le distinguo. Diagnostic coûteux (déjà brûlé ~30 min sans
+identifier la cause racine), zéro gain narratif tant que le concept
+reste théorique.

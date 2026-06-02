@@ -170,6 +170,13 @@ namespace Bocage.Presentation.Bindings
                 string capturedSensorId = meta.SensorId;
                 row.RegisterCallback<PointerEnterEvent>(_ => SensorHoverEventBus.RaiseEnter(capturedSensorId));
                 row.RegisterCallback<PointerLeaveEvent>(_ => SensorHoverEventBus.RaiseExit(capturedSensorId));
+                // Click on the row opens the inspection panel for that
+                // sensor — same UX as clicking the sprite in the scene
+                // (chantier E6 / ADR #53). The list lives in regular UI
+                // Toolkit so ClickEvent is fine here (no overlapping
+                // legacy OnMouseDown to race against).
+                SensorType capturedType = meta.Type;
+                row.RegisterCallback<ClickEvent>(_ => SensorClickedEventBus.RaiseClicked(capturedType));
 
                 _rowsContainer.Add(row);
                 _rowsByDisplayName[key] = row;
@@ -191,9 +198,14 @@ namespace Bocage.Presentation.Bindings
 
             var dot = new VisualElement();
             dot.AddToClassList(statusDotClass);
-            dot.AddToClassList(meta.OnlineStatus == SensorOnlineStatus.Online
-                ? onlineModifierClass
-                : deferredModifierClass);
+            // Decision 2026-06-02 (user pragmatic call): the per-sensor
+            // online/deferred distinction has no concrete use today (no
+            // maintenance scenario, no intentional offline state) and the
+            // SO/UI plumbing kept de-syncing. All 5 sensors now have full
+            // chains (chantier E6 / B.1) so we render every dot as Online.
+            // The `OnlineStatus` field stays in the SO + SensorMetadataTag
+            // for the day a "capteur en panne" feature lands in backlog.
+            dot.AddToClassList(onlineModifierClass);
             row.Add(dot);
 
             var textBlock = new VisualElement();

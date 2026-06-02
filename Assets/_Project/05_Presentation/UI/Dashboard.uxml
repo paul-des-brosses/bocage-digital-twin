@@ -208,20 +208,75 @@
         </ui:VisualElement>
 
         <!--
-        Body — Level-B panels. Each panel is a column shell with title and
-        a placeholder paragraph. At sub-étape 6b only the structure exists;
-        honest sub-indicators land at Étapes 7 (économie) and 8 (faune).
+        Body — three Niveau B trigger buttons anchored at the bottom of the
+        viewport. Clicking one opens a centered modal popup holding the
+        panel's full content (chantier E6 / ADR #54). Reuses the proven
+        `.hidden` toggle pattern (cf decision-popup-overlay) — no
+        accordion/foldout collapse, no risk of orphan rows.
         -->
         <ui:VisualElement name="body-row" class="body-row">
+            <ui:Button name="biodiv-open" text="Biodiversité" class="level-b-trigger" />
+            <ui:Button name="climat-open" text="Climat &amp; ressources" class="level-b-trigger" />
+            <ui:Button name="economy-open" text="Économie" class="level-b-trigger" />
+        </ui:VisualElement>
 
-            <ui:VisualElement name="panel-biodiversity" class="level-b-panel">
-                <ui:Label text="Biodiversité" class="panel-title" />
-                <ui:Label text="Sous-indicateurs détaillés (richesse spécifique faune, indice de diversité végétale, qualité des lisières). Câblage honnête à l'Étape 8."
-                          class="panel-placeholder" />
+        <!--
+        Niveau B modal overlays. Each is hidden by default via the shared
+        `.hidden` class; NiveauBModalsBinding wires the open/close buttons,
+        click-outside dismissal, and Escape. The labels inside (e.g.
+        biodiv-composite-value) remain in the visual tree, so the three
+        OngletXxxBindings continue to find them via Q&lt;Label&gt;.
+        -->
+        <ui:VisualElement name="biodiv-modal-overlay" class="level-b-modal-overlay hidden">
+            <ui:VisualElement class="level-b-modal-card">
+                <ui:VisualElement class="level-b-modal-header">
+                    <ui:Label text="Biodiversité" class="level-b-modal-title" />
+                    <ui:Button name="biodiv-modal-close" text="✕" class="level-b-modal-close" />
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Indice composite" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-composite-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante habitat" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-habitat-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante eau" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-water-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante intrants" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-inputs-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Espèces visibles" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-species-count-value" text="—" class="panel-row-value" />
+                        <ui:Label text="/ 4" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
 
-            <ui:VisualElement name="panel-climate-resources" class="level-b-panel">
-                <ui:Label text="Climat &amp; ressources" class="panel-title" />
+        <ui:VisualElement name="climat-modal-overlay" class="level-b-modal-overlay hidden">
+            <ui:VisualElement class="level-b-modal-card">
+                <ui:VisualElement class="level-b-modal-header">
+                    <ui:Label text="Climat &amp; ressources" class="level-b-modal-title" />
+                    <ui:Button name="climat-modal-close" text="✕" class="level-b-modal-close" />
+                </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
                     <ui:Label text="Nappe phréatique" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
@@ -229,16 +284,133 @@
                         <ui:Label text="m" class="panel-row-unit" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label text="Sous-indicateurs détaillés (température moyenne, précipitations cumulées, stress hydrique). Câblage progressif aux étapes suivantes."
-                          class="panel-placeholder" />
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="T° moyenne (365 j)" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-temp-mean-value" text="—" class="panel-row-value" />
+                        <ui:Label text="°C" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Précip. cumulées (365 j)" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-precip-cumul-value" text="—" class="panel-row-value" />
+                        <ui:Label text="mm" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Stock carbone sol" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-soil-carbon-value" text="—" class="panel-row-value" />
+                        <ui:Label text="tC/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Flux net CO2" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-co2-flux-value" text="—" class="panel-row-value" />
+                        <ui:Label text="kg/ha/j" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
 
-            <ui:VisualElement name="panel-economy" class="level-b-panel">
-                <ui:Label text="Économie" class="panel-title" />
-                <ui:Label text="Sous-indicateurs détaillés (rendement cultures, coûts d'intrants, paiements pour services environnementaux). Câblage honnête à l'Étape 7."
-                          class="panel-placeholder" />
+        <ui:VisualElement name="economy-modal-overlay" class="level-b-modal-overlay hidden">
+            <ui:VisualElement class="level-b-modal-card">
+                <ui:VisualElement class="level-b-modal-header">
+                    <ui:Label text="Économie" class="level-b-modal-title" />
+                    <ui:Button name="economy-modal-close" text="✕" class="level-b-modal-close" />
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Rendement cultures" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-yield-value" text="—" class="panel-row-value" />
+                        <ui:Label text="t/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Coût intrants" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-input-cost-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Entretien haies" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-maintenance-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Paiement PSE" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-pse-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Paiement PAC" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-pac-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Investissement cumulé" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-total-investment-value" text="—" class="panel-row-value" />
+                        <ui:Label text="€/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Horizon rentabilité" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="eco-horizon-value" text="—" class="panel-row-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
 
+        <!--
+        Sensor inspection panel (chantier E6 / ADR #53). Opened by clicks
+        on the 5 sensor sprites in scene (via SensorClickedEventBus).
+        Layout is reconfigured per sensor by
+        SensorInspectorPanelBinding: title + subtitle, one or two chart
+        hosts (chart 2 only used by WeatherStation), and a footer info
+        line. The SensorTimeSeriesChart instances are inserted into the
+        chart hosts at wire time — keeps the UXML free of custom-element
+        factory boilerplate. Hidden by default via the proven `.hidden`
+        class (same pattern as the Niveau B modals).
+        -->
+        <ui:VisualElement name="sensor-inspector-overlay" class="sensor-inspector-overlay hidden">
+            <ui:VisualElement class="sensor-inspector-card">
+                <ui:VisualElement class="sensor-inspector-header">
+                    <ui:Label name="sensor-inspector-title" text="Capteur" class="sensor-inspector-title" />
+                    <ui:Button name="sensor-inspector-close" text="✕" class="sensor-inspector-close" />
+                </ui:VisualElement>
+                <ui:Label name="sensor-inspector-subtitle" text="" class="sensor-inspector-subtitle" />
+
+                <ui:Label name="sensor-inspector-chart1-caption" text="" class="sensor-inspector-chart-caption" />
+                <ui:VisualElement class="sensor-inspector-chart-row">
+                    <ui:VisualElement class="sensor-inspector-axis-column">
+                        <ui:Label name="sensor-inspector-chart1-ymax" text="" class="sensor-inspector-axis-label" />
+                        <ui:Label name="sensor-inspector-chart1-ymin" text="" class="sensor-inspector-axis-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="sensor-inspector-chart1-host" class="sensor-inspector-chart-host" />
+                </ui:VisualElement>
+
+                <ui:Label name="sensor-inspector-chart2-caption" text="" class="sensor-inspector-chart-caption hidden" />
+                <ui:VisualElement name="sensor-inspector-chart2-row" class="sensor-inspector-chart-row hidden">
+                    <ui:VisualElement class="sensor-inspector-axis-column">
+                        <ui:Label name="sensor-inspector-chart2-ymax" text="" class="sensor-inspector-axis-label" />
+                        <ui:Label name="sensor-inspector-chart2-ymin" text="" class="sensor-inspector-axis-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="sensor-inspector-chart2-host" class="sensor-inspector-chart-host" />
+                </ui:VisualElement>
+
+                <ui:Label name="sensor-inspector-footer-info" text="" class="sensor-inspector-footer-info" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!--
@@ -357,16 +529,12 @@
         <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
             <ui:Label text="Capteurs déployés" class="sensor-list-title" />
             <ui:VisualElement name="sensor-list-rows" class="sensor-list-rows" />
-            <ui:VisualElement class="sensor-list-legend">
-                <ui:VisualElement class="sensor-list-legend-row">
-                    <ui:VisualElement class="sensor-status-dot sensor-status-dot--online" />
-                    <ui:Label text="branché" class="sensor-list-legend-text" />
-                </ui:VisualElement>
-                <ui:VisualElement class="sensor-list-legend-row">
-                    <ui:VisualElement class="sensor-status-dot sensor-status-dot--deferred" />
-                    <ui:Label text="en attente" class="sensor-list-legend-text" />
-                </ui:VisualElement>
-            </ui:VisualElement>
+            <!-- Online/Deferred legend removed 2026-06-02: every sensor is
+                 rendered as online by SensorListBinding (no maintenance/
+                 offline scenario yet, see code comment there). When a
+                 backlog item reintroduces a real "capteur en panne" use
+                 case, restore the .sensor-list-legend block here. -->
+
         </ui:VisualElement>
 
         <!--
