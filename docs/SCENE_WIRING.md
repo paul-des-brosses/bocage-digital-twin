@@ -71,6 +71,11 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | `ScenarioControlsBinding` | `Runner` → `_Bootstrap/SimulationRunner` |
 | **`ScenarioPresetsBinding` ✨ (sub-étape 7c.2)** | `Runner` → `_Bootstrap/SimulationRunner` <br> `Controls Binding` → le component `ScenarioControlsBinding` sur **ce même GameObject** <br> `Presets` → tableau des 4 assets `ScenarioPreset_*.asset` (voir §5) |
 | **`SpeedControlsBinding` ✨ (sub-étape 7c.3)** | `Runner` → `_Bootstrap/SimulationRunner` <br> Les 7 noms d'éléments UXML (`speed-pause-button`, `speed-x1-button`, `speed-x5-button`, `speed-x10-button`, `speed-x20-button`, `speed-skip-end-button`, `speed-day-counter`) sont laissés à leur valeur par défaut — ils correspondent aux `name=""` posés dans `Dashboard.uxml`. |
+| **`OngletBiodivBinding` ✨ (chantier E6)** | `Biodiv Composite` → `RC_BiodiversityComposite.asset`. `Habitat` → `RC_FaunaFactorHabitat.asset`. `Water` → `RC_FaunaFactorWater.asset`. `Inputs` → `RC_FaunaFactorInputs.asset`. `Fauna Pool` → `_Scene_Visual/Fauna` (GameObject portant `FaunaPool`, pour le comptage espèces visibles). Tous les noms de labels en défaut. |
+| **`OngletClimatBinding` ✨ (chantier E6)** | `Runner` → `_Bootstrap/SimulationRunner`. `Soil Carbon` → `RC_SoilCarbonStock.asset`. Lit les historiques météo/eddy via `runner.WeatherStation` et `runner.EddyTower`. La ligne nappe phréatique reste pilotée par `WaterTableDetailLabelBinding` (rien à brancher en double). |
+| **`OngletEconomieBinding` ✨ (chantier E6)** | `Runner` → `_Bootstrap/SimulationRunner`. `Total Investment` → `RC_TotalInvestment.asset`. `Investment Horizon` → `RC_InvestmentHorizon.asset`. PSE/PAC sont recalculés depuis les constantes publiques de `IntegratedProfitabilityIndicator` pour ne jamais diverger du Hero KPI. |
+| **`NiveauBModalsBinding` ✨ (chantier E6)** | Aucun champ à brancher. Auto-câble les 3 boutons trigger (`biodiv-open`, `climat-open`, `economy-open`) avec leurs overlays (`biodiv-modal-overlay`, etc.) et leurs boutons X (`biodiv-modal-close`, etc.). Fermeture via X, clic en dehors de la card, ou Échap. |
+| **`SensorInspectorPanelBinding` ✨ (chantier E6 / ADR #53)** | `Runner` → `_Bootstrap/SimulationRunner`. Tous les autres champs (noms UXML overlay/close/title/chart hosts/footer) en défaut. S'abonne à `SensorClickedEventBus` ; au clic capteur (sprite scène ou ligne UI), reconfigure le panneau via une des 5 méthodes `ConfigureFor*` puis défère le show d'1 frame (évite la race avec `OnMouseDown` legacy du sprite — voir DECISIONS #53). Instancie 2 `SensorTimeSeriesChart` programmatiquement dans les hosts UXML. |
 
 ---
 
@@ -142,6 +147,30 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-06-02** — Chantier E6 livré (panneau inspection capteurs +
+  onglets Niveau B + force-online). Cf `ROADMAP.md` §8 pour le
+  détail des 4 sous-étapes (B.1 readers, B.2 click infra, B.3 graphe
+  custom, B.4 modale). **Actions utilisateur scène** :
+  1. Sur `_UI_Canvas` : Add Component ×5 (`OngletBiodivBinding`,
+     `OngletClimatBinding`, `OngletEconomieBinding`,
+     `NiveauBModalsBinding`, `SensorInspectorPanelBinding`) — cf
+     §3 ci-dessus pour les champs à brancher. `NiveauBModalsBinding`
+     n'a aucun champ. `SensorInspectorPanelBinding` n'a que
+     `Runner`. Les 3 `OngletXxxBinding` demandent les RC observables
+     correspondants.
+  2. **Aucune modification scène requise sur les sprites capteurs** :
+     `SensorVisualPlacer` ajoute automatiquement `SensorClickHandler`
+     au démarrage. **Aucun `Physics2DRaycaster` à ajouter**
+     (`OnMouseDown` legacy suffit, même pattern que le hover existant).
+  3. `_Bootstrap/SimulationRunner` expose 2 nouvelles propriétés
+     publiques (`Piezometer`, `FaunaSensor`) lues par
+     `SensorInspectorPanelBinding` — aucun champ Inspector
+     supplémentaire requis.
+  Aucun nouveau RC observable créé (les historiques 365 j vivent
+  dans les readers Couche 02, pas dans des SO). UI : layout final
+  du bas-dashboard = 3 boutons compacts Niveau B + modale au clic
+  (cf ADR #57 sur la force-online des dots capteurs).
 
 - **2026-05-29** — Chantier E5 livré (capital + biodiv 3 facteurs).
   5 nouveaux RC observables (`RC_TotalInvestment`,
@@ -401,38 +430,49 @@ slider magnitude et la rangée de boutons.
 (bordure haut + mono crème, cohérent avec
 `.decision-popup-magnitude-value`).
 
-### Chantier E6 — Panneau inspection capteurs + 3 onglets Niveau B
+### Chantier E6 — Panneau inspection capteurs + onglets Niveau B (livré 2026-06-02)
 
-**Configuration scène** (modifications scène `Main.unity`) :
+Câblage scène final tel que livré. Le détail des sous-étapes B.1→B.4
+est dans `ROADMAP.md` §8 ; ici on liste uniquement les actions
+manuelles Unity à reproduire sur une scène vierge.
 
-- Ajout de `Physics2DRaycaster` sur `_Camera/MainCamera` (composant
-  URP indispensable pour click sprites 2D).
-- Ajout d'un `BoxCollider2D` (size matchant le sprite) sur chacun
-  des 5 GameObjects capteurs visibles dans `_Scene_Visual` (sprites
-  `weather_station`, `piezometer`, `acoustic_sensor`, `photo_trap`,
-  `eddy_covariance_tower`).
-- Composant `SensorClickHandler` sur chacun des 5 sprites : publie
-  un event dans `SensorClickedEventBus` (statique, Couche 05) avec
-  le type de capteur cliqué.
-- L'EventSystem Unity doit être actif dans la scène (déjà en place
-  pour UI Toolkit ; vérifier).
+**Configuration scène (Main.unity)** :
 
-**Nouveaux composants sur `_UI_Canvas`** :
+- **Aucun ajout manuel sur les sprites capteurs**.
+  `SensorVisualPlacer.BuildFrom()` ajoute automatiquement aux 5
+  sprites : `BoxCollider2D`, `SensorMetadataTag`, `SensorHoverEmitter`,
+  `SensorHoverHighlight`, et désormais `SensorClickHandler`.
+- **Pas de `Physics2DRaycaster` à ajouter sur la caméra** :
+  `OnMouseDown` legacy fire directement sur le `Collider2D` (même
+  path que le hover éprouvé depuis des mois).
+- L'EventSystem Unity n'est pas requis pour ce chantier (le bus de
+  clic est statique, pas EventSystem).
 
-| Component | Champs sérialisés à brancher |
+**Nouveaux composants sur `_UI_Canvas`** (déjà détaillés dans le
+tableau §3 ci-dessus) :
+
+| Component | Action utilisateur |
 |---|---|
-| `SensorInspectorPanelBinding` (E6) | `Runner` → `_Bootstrap/SimulationRunner`. `Seasonal Weather Data` → asset `SeasonalWeatherData_Mortagne.asset` (pour normales mensuelles affichées en mode WeatherStation). S'abonne à `SensorClickedEventBus` pour ouvrir/configurer le panneau. |
-| `WeatherNormalsPanelBinding` (E6) | (sous-panneau du précédent — peut être merged dans `SensorInspectorPanelBinding` selon la complexité, à arbitrer à l'implémentation). |
-| `OngletBiodivBinding` (E6) | Containers : `RC_BiodiversityComposite`, `RC_FaunaFactorHabitat`, `RC_FaunaFactorWater`, `RC_FaunaFactorInputs`. `Pool` → `_Scene_Visual/Fauna` (pour comptage espèces visibles). |
-| `OngletClimatBinding` (E6) | `Runner` → `_Bootstrap/SimulationRunner` (lecture `WeatherStationReader` history + `EddyTowerSensorReader` history via sliding window). Containers : `RC_WaterTableDepth`, `RC_SoilCarbonStock`. |
-| `OngletEconomieBinding` (E6) | `Runner` → `_Bootstrap/SimulationRunner` (lecture `journal.TotalInvestment` + indicateurs). Containers : `RC_IntegratedProfitability`, `RC_TotalInvestment`, `RC_InvestmentHorizon`. |
+| `OngletBiodivBinding` | Add Component + brancher 4 RC + Fauna Pool. |
+| `OngletClimatBinding` | Add Component + brancher Runner + `RC_SoilCarbonStock`. |
+| `OngletEconomieBinding` | Add Component + brancher Runner + 2 RC investissement. |
+| `NiveauBModalsBinding` | Add Component. Aucun champ à régler. |
+| `SensorInspectorPanelBinding` | Add Component + brancher Runner. |
 
-**UXML / USS** :
+**UXML / USS** : `Dashboard.uxml` et `Dashboard.uss` enrichis en
+place. Aucun fichier UXML/USS séparé créé — tout vit dans le
+dashboard. Nouvelles classes USS principales : `.level-b-trigger`,
+`.level-b-modal-overlay/.card/.header/.title/.close`,
+`.sensor-inspector-overlay/.card/.header/.title/.close/.subtitle/
+.chart-row/.axis-column/.axis-label/.chart-host/.footer-info`,
+`.sensor-chart`.
 
-- `Assets/_Project/05_Presentation/UI/SensorInspectorPanel.uxml` +
-  `.uss` : panneau modal réutilisable, 5 layouts par capteur.
-- `Dashboard.uxml` : 3 onglets Niveau B existants enrichis (lignes
-  supplémentaires).
+**Décision force-online (ADR #57)** : la liste « Capteurs déployés »
+affiche les 5 dots en vert (Online) indépendamment de la valeur
+`OnlineStatus` du SO. La légende online/deferred a été retirée du
+UXML. Le champ `OnlineStatus` est préservé dans
+`SensorPlacementDefinition` et `SensorMetadataTag` pour réactivation
+ultérieure (item backlog « capteur en panne »).
 
 ### Chantier E7 — Polish + publication
 
@@ -444,17 +484,21 @@ DXT5 conditionnel sur sprites lourds, cf `docs/ASSETS_LIST.md` §6
 
 ## Mémo synthèse — nouveaux composants sur `_UI_Canvas` post-recadrage
 
-| Component | Chantier | ADR cadrant |
-|---|---|---|
-| `MonthSelectorBinding` | E2 | #52 |
-| `FaunaPoolBinding` | E4 | #49 |
-| `SensorInspectorPanelBinding` | E6 | #53 |
-| `WeatherNormalsPanelBinding` (optionnel, sub-panneau) | E6 | #53 |
-| `OngletBiodivBinding` | E6 | #54 |
-| `OngletClimatBinding` | E6 | #54 |
-| `OngletEconomieBinding` | E6 | #54 |
+| Component | Chantier | ADR cadrant | Statut |
+|---|---|---|---|
+| `MonthSelectorBinding` | E2 | #52 | livré |
+| `FaunaPoolBinding` | E4 | #49 | livré |
+| `OngletBiodivBinding` | E6 | #54 | livré |
+| `OngletClimatBinding` | E6 | #54 | livré |
+| `OngletEconomieBinding` | E6 | #54 | livré |
+| `NiveauBModalsBinding` | E6 | #54 (pivot UX) | livré |
+| `SensorInspectorPanelBinding` | E6 | #53 | livré |
 
-Au total : 6-7 nouveaux components sur `_UI_Canvas` à l'issue de la
-roadmap E1-E7. Aucune restructuration de la hiérarchie scène (les
-7 racines préfixées `_` restent inchangées, conformes `CLAUDE.md`
-§8).
+Au total : 7 nouveaux components sur `_UI_Canvas` post-recadrage,
+tous livrés à l'issue de E1-E6. Le `WeatherNormalsPanelBinding`
+initialement envisagé pour E6 a été absorbé dans
+`SensorInspectorPanelBinding` (les normales mois courant/suivant
+sont calculées dans le footer du layout WeatherStation, via le
+helper statique pur `MonthlyExpectedPrecipitationMm`). Aucune
+restructuration de la hiérarchie scène (les 7 racines préfixées `_`
+restent inchangées, conformes `CLAUDE.md` §8).
