@@ -373,6 +373,47 @@
         </ui:VisualElement>
 
         <!--
+        Sensor inspection panel (chantier E6 / ADR #53). Opened by clicks
+        on the 5 sensor sprites in scene (via SensorClickedEventBus).
+        Layout is reconfigured per sensor by
+        SensorInspectorPanelBinding: title + subtitle, one or two chart
+        hosts (chart 2 only used by WeatherStation), and a footer info
+        line. The SensorTimeSeriesChart instances are inserted into the
+        chart hosts at wire time — keeps the UXML free of custom-element
+        factory boilerplate. Hidden by default via the proven `.hidden`
+        class (same pattern as the Niveau B modals).
+        -->
+        <ui:VisualElement name="sensor-inspector-overlay" class="sensor-inspector-overlay hidden">
+            <ui:VisualElement class="sensor-inspector-card">
+                <ui:VisualElement class="sensor-inspector-header">
+                    <ui:Label name="sensor-inspector-title" text="Capteur" class="sensor-inspector-title" />
+                    <ui:Button name="sensor-inspector-close" text="✕" class="sensor-inspector-close" />
+                </ui:VisualElement>
+                <ui:Label name="sensor-inspector-subtitle" text="" class="sensor-inspector-subtitle" />
+
+                <ui:Label name="sensor-inspector-chart1-caption" text="" class="sensor-inspector-chart-caption" />
+                <ui:VisualElement class="sensor-inspector-chart-row">
+                    <ui:VisualElement class="sensor-inspector-axis-column">
+                        <ui:Label name="sensor-inspector-chart1-ymax" text="" class="sensor-inspector-axis-label" />
+                        <ui:Label name="sensor-inspector-chart1-ymin" text="" class="sensor-inspector-axis-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="sensor-inspector-chart1-host" class="sensor-inspector-chart-host" />
+                </ui:VisualElement>
+
+                <ui:Label name="sensor-inspector-chart2-caption" text="" class="sensor-inspector-chart-caption hidden" />
+                <ui:VisualElement name="sensor-inspector-chart2-row" class="sensor-inspector-chart-row hidden">
+                    <ui:VisualElement class="sensor-inspector-axis-column">
+                        <ui:Label name="sensor-inspector-chart2-ymax" text="" class="sensor-inspector-axis-label" />
+                        <ui:Label name="sensor-inspector-chart2-ymin" text="" class="sensor-inspector-axis-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="sensor-inspector-chart2-host" class="sensor-inspector-chart-host" />
+                </ui:VisualElement>
+
+                <ui:Label name="sensor-inspector-footer-info" text="" class="sensor-inspector-footer-info" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!--
         Decision panel — RIGHT side. Holds everything UNDER FARMER
         CONTROL: presets quick-pick, the two free sliders the farmer
         operates daily (hedge maintenance and input intensity), the
@@ -488,16 +529,12 @@
         <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
             <ui:Label text="Capteurs déployés" class="sensor-list-title" />
             <ui:VisualElement name="sensor-list-rows" class="sensor-list-rows" />
-            <ui:VisualElement class="sensor-list-legend">
-                <ui:VisualElement class="sensor-list-legend-row">
-                    <ui:VisualElement class="sensor-status-dot sensor-status-dot--online" />
-                    <ui:Label text="branché" class="sensor-list-legend-text" />
-                </ui:VisualElement>
-                <ui:VisualElement class="sensor-list-legend-row">
-                    <ui:VisualElement class="sensor-status-dot sensor-status-dot--deferred" />
-                    <ui:Label text="en attente" class="sensor-list-legend-text" />
-                </ui:VisualElement>
-            </ui:VisualElement>
+            <!-- Online/Deferred legend removed 2026-06-02: every sensor is
+                 rendered as online by SensorListBinding (no maintenance/
+                 offline scenario yet, see code comment there). When a
+                 backlog item reintroduces a real "capteur en panne" use
+                 case, restore the .sensor-list-legend block here. -->
+
         </ui:VisualElement>
 
         <!--

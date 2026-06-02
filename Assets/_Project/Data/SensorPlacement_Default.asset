@@ -40,9 +40,9 @@ MonoBehaviour:
   - id: sensor_eddy_tower_01
     displayName: Tour de covariance
     type: 2
-    onlineStatus: 1
-    observedModelVariable: 
-    deferredUntilStep: Etape 7-8
+    onlineStatus: 0
+    observedModelVariable: SoilCarbonStock
+    deferredUntilStep:
     sprite: {fileID: -1735820185115143466, guid: 87c1a6cc2a46bf941a38444741df460e, type: 3}
     worldPosition: {x: -7.09, y: 1.32}
     scale: {x: 0.69064, y: 0.69064}
@@ -52,9 +52,9 @@ MonoBehaviour:
   - id: sensor_acoustic01
     displayName: Capteur acoustique
     type: 3
-    onlineStatus: 1
-    observedModelVariable: 
-    deferredUntilStep: Etape 8
+    onlineStatus: 0
+    observedModelVariable: FaunaPopulation
+    deferredUntilStep:
     sprite: {fileID: 8567368235537765376, guid: e758268316c97d6409bf356ace099a58, type: 3}
     worldPosition: {x: 8.37, y: -1.7}
     scale: {x: 0.319144, y: 0.319144}
@@ -64,9 +64,9 @@ MonoBehaviour:
   - id: sensor_camera_trap_01
     displayName: "Pi\xE8ge photo"
     type: 4
-    onlineStatus: 1
+    onlineStatus: 0
     observedModelVariable: FaunaPopulation
-    deferredUntilStep: Etape 8
+    deferredUntilStep:
     sprite: {fileID: -2897591438096116089, guid: 79e6a67bc69c8fb4b888f82581865712, type: 3}
     worldPosition: {x: -2.63, y: -2.68}
     scale: {x: 0.18675248, y: 0.18675248}

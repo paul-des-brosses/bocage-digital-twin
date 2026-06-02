@@ -3092,6 +3092,7 @@ GameObject:
   - component: {fileID: 1463489843}
   - component: {fileID: 1463489842}
   - component: {fileID: 1463489845}
+  - component: {fileID: 1463489846}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -3522,6 +3523,33 @@ MonoBehaviour:
   - openButtonName: economy-open
     closeButtonName: economy-modal-close
     overlayName: economy-modal-overlay
+--- !u!114 &1463489846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbe78de83c47e2c47abe8916f41bfa11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.SensorInspectorPanelBinding
+  runner: {fileID: 2115294099}
+  overlayName: sensor-inspector-overlay
+  closeButtonName: sensor-inspector-close
+  titleLabelName: sensor-inspector-title
+  subtitleLabelName: sensor-inspector-subtitle
+  chart1CaptionName: sensor-inspector-chart1-caption
+  chart1HostName: sensor-inspector-chart1-host
+  chart1YMaxName: sensor-inspector-chart1-ymax
+  chart1YMinName: sensor-inspector-chart1-ymin
+  chart2CaptionName: sensor-inspector-chart2-caption
+  chart2RowName: sensor-inspector-chart2-row
+  chart2HostName: sensor-inspector-chart2-host
+  chart2YMaxName: sensor-inspector-chart2-ymax
+  chart2YMinName: sensor-inspector-chart2-ymin
+  footerInfoName: sensor-inspector-footer-info
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0
