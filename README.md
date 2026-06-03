@@ -2,10 +2,14 @@
 
 *A digital twin of a Norman bocage countryside, instrumented and resilient.*
 
-[TODO: live demo link → https://[username].github.io/[repo-name]/]
+**▶ [Open the live demo](https://paul-des-brosses.github.io/bocage-digital-twin/)** — runs in the browser (WebGL, desktop ≥ 1280px).
 
-[TODO: hero GIF or screenshot of the running demo, 10-15s capture showing
-scene + dashboard + a preset change]
+<!--
+  HERO MEDIA — insert a 10-15s GIF (or MP4) of the running demo showing the
+  scene + dashboard + one preset change. Drop the file under docs/media/ and
+  reference it here, e.g.:
+  ![Bocage Digital Twin — live demo](docs/media/hero.gif)
+-->
 
 ---
 
@@ -22,7 +26,10 @@ answer.
 
 ## What it shows
 
-[TODO: screenshot of the full UI in dark mode]
+<!--
+  SCREENSHOT — the full UI in dark mode. Drop the file under docs/media/ and
+  reference it here, e.g.:  ![Full dashboard in dark mode](docs/media/ui-dark.png)
+-->
 
 The interface displays a single live scene of a fictional but plausible
 Perche bocage site with:
@@ -120,17 +127,27 @@ diagram and module description.
 
 ## Status
 
-Currently finishing **Step 10 — polish and first public release**. Steps
-1 to 9 are delivered (simulation core, instrumented scene, 5 honest Hero
-KPIs, full dashboard, event → recommendation → arbitrage pipeline,
-shadow run for TechDelta, model-driven pond / meadow / hedgerow shaders).
-The GitHub Pages deployment is not yet live.
+**Feature-complete MVP (v1.0).** The simulation runs end to end: five
+sensor chains — weather station, eddy-covariance tower, piezometer,
+acoustic and camera-trap fauna sensors — feed measured variables all the
+way to the displayed indicators, the recommendations and the visible
+fauna. No visual element is driven by the calendar: every variation traces
+back to a sensor measurement or a model variable (the *sensor primacy*
+rule, see [CLAUDE.md](CLAUDE.md) §9).
 
-The current state, completed work and deferred items are tracked in
-[docs/ROADMAP.md](docs/ROADMAP.md) and [docs/BACKLOG.md](docs/BACKLOG.md).
-A scientific overview of what is simulated, with sources, lives in a
-working document under `docs/SIMULATION_OVERVIEW.md` (not yet committed —
-work in progress).
+Delivered across seven worksites (E1-E7, see [docs/ROADMAP.md](docs/ROADMAP.md)):
+the five-layer architecture and core simulation, seasonal weather (Markov
+rain on Mortagne-au-Perche normals), a one-pool soil-carbon model, four
+biodiversity-driven fauna species, an investment / profitability horizon,
+clickable per-sensor inspection panels with time-series charts, and the
+three Level-B thematic panels (biodiversity, climate & resources, economy).
+A **280-test EditMode suite** covers the simulation core, the indicators,
+the recommendation journal and the sensor noise models.
+
+A scientific overview of what is simulated, with its sources, lives in
+[docs/SIMULATION_OVERVIEW.md](docs/SIMULATION_OVERVIEW.md). Items
+deliberately deferred past v1 are tracked, each with implementation hooks,
+in [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Getting started
 
