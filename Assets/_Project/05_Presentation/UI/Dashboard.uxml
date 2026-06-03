@@ -161,7 +161,7 @@
                             <ui:Label text="Mois de démarrage" class="scenario-control-label" />
                         </ui:VisualElement>
                         <ui:DropdownField name="starting-month-dropdown" class="scenario-dropdown" />
-                        <ui:Label name="starting-month-hint" text="Appliqué immédiatement au lancement." class="scenario-control-hint" />
+                        <ui:Label name="starting-month-hint" text="Pris en compte au lancement ; en cours de run, au prochain Réinitialiser." class="scenario-control-hint" />
                     </ui:VisualElement>
 
                     <ui:VisualElement class="scenario-control">
@@ -274,9 +274,11 @@
                         <!--
                         Manual interventions — the 3 algorithm-driven actions
                         (plant hedges, irrigation, reduce inputs) are also
-                        accessible permanently as farmer buttons. Effects
-                        bypass the journal but DO diverge real vs shadow run,
-                        so the TechDelta KPI captures them.
+                        accessible permanently as farmer buttons. Each click is
+                        journalled by the runner as an AutoAccepted manual entry
+                        (ADR #47, no triggering event) and mutates only the real
+                        run, so its cost feeds the cumulative investment and the
+                        real vs shadow divergence feeds the TechDelta KPI.
                         -->
                         <ui:Label text="Interventions ponctuelles" class="scenario-section-title scenario-section-title--decision" tooltip="Actions « ponctuelles » que l'agriculteur peut déclencher à tout moment, indépendamment des recommandations algorithmiques. Effet immédiat sur le modèle." />
 
@@ -286,7 +288,7 @@
                                 <ui:Label name="manual-plant-hedges-value" text="30 m/ha" class="scenario-control-value" />
                             </ui:VisualElement>
                             <ui:Slider name="manual-plant-hedges-slider" low-value="0" high-value="50" value="30" class="scenario-slider" show-input-field="true" />
-                            <ui:Button name="manual-plant-hedges-button" text="Planter" class="manual-action-button" tooltip="Ajoute la magnitude choisie (m/ha) à la densité courante des haies. Coût d'investissement non modélisé en v1 (cf BACKLOG.md #9)." />
+                            <ui:Button name="manual-plant-hedges-button" text="Planter" class="manual-action-button" tooltip="Ajoute la magnitude choisie (m/ha) à la densité courante des haies. Coût d'investissement (≈ 5 €/m planté) comptabilisé dans l'investissement cumulé et l'horizon de rentabilité." />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">

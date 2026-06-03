@@ -9,9 +9,10 @@ namespace Bocage.Sensors.Events
     /// least <see cref="EventDetector.DroughtConsecutiveDaysThreshold"/>
     /// consecutive simulated days.
     /// <para>
-    /// Sources: OFB / RMT Zones humides flag 5 m + 30 days as the
-    /// threshold for amphibian mortality and lasting agricultural
-    /// stress in Perche-like bocage.
+    /// Sources: OFB / RMT Zones humides — prolonged deep water table as a
+    /// proxy for amphibian mortality and lasting agricultural stress in
+    /// Perche-like bocage. Model threshold (calibrated 2026-05-21):
+    /// > 3.5 m for ≥ 30 days, see EventDetector.DroughtDepthThresholdMeters.
     /// </para>
     /// </summary>
     public sealed class DroughtProlongedEvent : IEvent

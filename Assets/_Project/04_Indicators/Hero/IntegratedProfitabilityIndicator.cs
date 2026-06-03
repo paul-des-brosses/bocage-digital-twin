@@ -31,7 +31,7 @@ namespace Bocage.Indicators.Hero
     /// elle ne booste plus le pic. Évite double-comptage.
     /// </para>
     /// <para>
-    /// <b>Display bounds</b>: <c>[-500, 1000] €/ha/yr</c>. Le profit
+    /// <b>Display bounds</b>: <c>[-500, 1500] €/ha/yr</c>. Le profit
     /// peut être négatif (ferme déficitaire sous mauvaises conditions
     /// et intrants chers), atteindre +500-800 sous conditions
     /// optimales avec PSE et MAEC actifs. Marges réelles fermes
@@ -75,8 +75,8 @@ namespace Bocage.Indicators.Hero
 
         /// <summary>
         /// Returns the normalized profitability in <c>[0,1]</c>, mapping
-        /// the display range [Min, Max] linearly. Centred so 0.5
-        /// corresponds to break-even profit ≈ 250 €/ha/yr.
+        /// the display range [Min, Max] linearly. The midpoint t=0.5
+        /// maps to ≈ 500 €/ha/yr; break-even (0 €/ha/yr) sits at t ≈ 0.25.
         /// </summary>
         public static double Normalize(double eurosPerHectare)
         {

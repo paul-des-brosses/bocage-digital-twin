@@ -70,7 +70,9 @@ namespace Bocage.Sensors
             return true;
         }
 
-        /// <summary>Drops all samples; capacity is unchanged. Called on the runner's Rebuild.</summary>
+        /// <summary>Drops all samples; capacity is unchanged. Used by the test
+        /// suite to reset a history between cases — the runner rebuilds fresh
+        /// readers on Rebuild rather than clearing existing ones.</summary>
         public void Clear()
         {
             _head = 0;

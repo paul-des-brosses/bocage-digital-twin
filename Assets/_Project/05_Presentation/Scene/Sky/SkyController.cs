@@ -7,10 +7,11 @@ namespace Bocage.Presentation.Scene.Sky
     /// via a MaterialPropertyBlock (so the shared material asset is never
     /// mutated and the binding stays cheap).
     /// <para>
-    /// At Étape 4, values are inspector-driven defaults — used to validate
-    /// the visual composition. The hook to model-driven values (weather
-    /// state from <c>EcosystemModel</c>, respecting CLAUDE.md §9 primauté
-    /// du capteur) lands in a later step alongside the indicator bindings.
+    /// The sky is a deliberate static backdrop: its gradient is set once
+    /// from these inspector values and never varies at runtime. CLAUDE.md
+    /// §9 (primauté du capteur) governs visual *variation* derived from a
+    /// measurement; a fixed backdrop carries none, so there is nothing to
+    /// drive from the model here.
     /// </para>
     /// <para>
     /// Shader contract: the assigned material's shader must expose three

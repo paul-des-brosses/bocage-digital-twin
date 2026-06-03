@@ -12,9 +12,10 @@ namespace Bocage.Decision.Recommendations
     /// <para>
     /// Sources : Hallmann et al. 2017 / MNHN 2024 / Vigie-Nature —
     /// pesticide reduction is the fastest lever to recover farmland
-    /// insect abundance. The mechanical scaling per intensity unit
-    /// (+0.05 fauna index, −200 €/ha/an input cost) is calibrated in
-    /// <see cref="Bocage.Decision.AutoActionPipeline.ApplyOne"/>.
+    /// insect abundance. The mechanical scaling per intensity-cut unit
+    /// (+0.05 fauna index, −200 €/ha/an input cost) is defined by
+    /// <see cref="FaunaBoostPerCutUnit"/> / <see cref="InputCostReductionPerCutUnit"/>
+    /// below and applied in <see cref="Bocage.Decision.AutoActionPipeline.ApplyOne"/>.
     /// </para>
     /// </summary>
     public sealed class ReduceInputsRecommendation : IRecommendation

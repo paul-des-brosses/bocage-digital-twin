@@ -22,9 +22,10 @@ namespace Bocage.Presentation.Bindings
     /// </para>
     /// <para>
     /// Each slider's value is rendered live in a sibling label; the
-    /// button click sends the current magnitude to the runner. No
-    /// debounce, no journal entry — the action is fire-and-forget
-    /// with a SimLogger.UserActionLog line for auditability.
+    /// button click sends the current magnitude to the runner, which
+    /// journals it as an AutoAccepted manual entry (ADR #47) and logs a
+    /// SimLogger.UserActionLog line for auditability. The binding itself
+    /// keeps no state — it is a thin fire-and-forget dispatcher.
     /// </para>
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
