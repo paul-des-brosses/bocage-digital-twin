@@ -1,5 +1,4 @@
 using Bocage.Decision.Recommendations;
-using Bocage.SimulationCore.Model;
 
 namespace Bocage.Decision.Outcomes
 {
@@ -29,16 +28,16 @@ namespace Bocage.Decision.Outcomes
         public const int ShortHorizonDays = 30;
         public const int LongHorizonDays = 365;
 
-        public static OutcomeDistribution[] Project(IRecommendation recommendation, EcosystemModel currentState)
+        public static OutcomeDistribution[] Project(IRecommendation recommendation)
         {
             return new[]
             {
-                ProjectAtHorizon(recommendation, currentState, ShortHorizonDays),
-                ProjectAtHorizon(recommendation, currentState, LongHorizonDays),
+                ProjectAtHorizon(recommendation, ShortHorizonDays),
+                ProjectAtHorizon(recommendation, LongHorizonDays),
             };
         }
 
-        private static OutcomeDistribution ProjectAtHorizon(IRecommendation recommendation, EcosystemModel _, int horizonDays)
+        private static OutcomeDistribution ProjectAtHorizon(IRecommendation recommendation, int horizonDays)
         {
             // Dispatch on the concrete recommendation type. Cleaner than
             // adding a "Kind" enum on IRecommendation and switching, and

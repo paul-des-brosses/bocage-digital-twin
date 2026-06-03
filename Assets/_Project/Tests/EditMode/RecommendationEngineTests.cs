@@ -115,7 +115,7 @@ namespace Bocage.Tests.EditMode
         public void OutcomeProjector_returns_two_horizons()
         {
             var rec = new PlantHedgesRecommendation(10, "evt#10");
-            var outcomes = OutcomeProjector.Project(rec, new EcosystemModel());
+            var outcomes = OutcomeProjector.Project(rec);
             Assert.AreEqual(2, outcomes.Length);
             Assert.AreEqual(OutcomeProjector.ShortHorizonDays, outcomes[0].HorizonInDays);
             Assert.AreEqual(OutcomeProjector.LongHorizonDays, outcomes[1].HorizonInDays);
@@ -125,7 +125,7 @@ namespace Bocage.Tests.EditMode
         public void OutcomeProjector_plant_hedges_costs_short_term_gains_long_term()
         {
             var rec = new PlantHedgesRecommendation(10, "evt#10");
-            var outcomes = OutcomeProjector.Project(rec, new EcosystemModel());
+            var outcomes = OutcomeProjector.Project(rec);
             // Short term expected profit delta should be negative
             // (implementation cost) and biodiversity ≈ 0.
             Assert.Less(outcomes[0].ProfitDeltaExpected, 0.0,
@@ -148,7 +148,7 @@ namespace Bocage.Tests.EditMode
             };
             foreach (var rec in recs)
             {
-                var outcomes = OutcomeProjector.Project(rec, new EcosystemModel());
+                var outcomes = OutcomeProjector.Project(rec);
                 foreach (var o in outcomes)
                 {
                     Assert.LessOrEqual(o.ProfitDeltaWorstCase, o.ProfitDeltaExpected, rec.Id);

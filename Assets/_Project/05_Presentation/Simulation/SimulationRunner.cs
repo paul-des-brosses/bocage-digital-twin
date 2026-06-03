@@ -317,27 +317,39 @@ namespace Bocage.Presentation.Simulation
                 float interval = ticksPerSecond <= 0f ? 1f : 1f / ticksPerSecond;
                 yield return new WaitForSecondsRealtime(interval);
 
-                _engine.Tick();
-                _currentDay++;
-                _eventDetector.Detect(
-                    _engine.Model,
-                    _eventLog,
-                    _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation));
-                _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
-                _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
-                _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
-                PublishRecommendations();
-                // TickCompleted fires BEFORE PublishIndicators so that
-                // the shadow runner (subscriber) advances its own engine
-                // FIRST, and any auto-actions (also subscribers) modify
-                // the real model — then PublishIndicators reads the
-                // synchronized post-tick state of BOTH engines.
-                // Without this order, TechDelta would drift by an
-                // off-by-one tick under sustained scenario stress.
-                TickCompleted?.Invoke();
-                UpdateInvestmentHorizon();
+                StepOneDay();
                 PublishIndicators();
             }
+        }
+
+        /// <summary>
+        /// Advances the engine by exactly one simulated day: ticks the model,
+        /// records every sensor, runs detection + recommendations, then fires
+        /// TickCompleted (so the shadow runner advances and auto-actions mutate
+        /// the real model) and updates the investment horizon. Does NOT publish
+        /// indicators — callers decide when (every tick in the live loop, once
+        /// at the end of a fast-forward).
+        /// </summary>
+        private void StepOneDay()
+        {
+            _engine.Tick();
+            _currentDay++;
+            _eventDetector.Detect(
+                _engine.Model,
+                _eventLog,
+                _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation));
+            _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
+            _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
+            _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
+            PublishRecommendations();
+            // TickCompleted fires BEFORE the caller's PublishIndicators so the
+            // shadow runner (subscriber) advances its own engine FIRST, and any
+            // auto-actions (also subscribers) modify the real model — then
+            // PublishIndicators reads the synchronized post-tick state of BOTH
+            // engines. Without this order, TechDelta would drift by an
+            // off-by-one tick under sustained scenario stress.
+            TickCompleted?.Invoke();
+            UpdateInvestmentHorizon();
         }
 
         /// <summary>
@@ -445,18 +457,7 @@ namespace Bocage.Presentation.Simulation
 
             for (int i = 0; i < budget; i++)
             {
-                _engine.Tick();
-                _currentDay++;
-                _eventDetector.Detect(
-                    _engine.Model,
-                    _eventLog,
-                    _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation));
-                _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
-                _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
-                _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
-                PublishRecommendations();
-                TickCompleted?.Invoke();
-                UpdateInvestmentHorizon();
+                StepOneDay();
             }
             PublishIndicators();
             SimLogger.SimulationLog(

@@ -416,7 +416,7 @@ namespace Bocage.Presentation.Bindings
             container.Clear();
             if (rec == null || modelOrNull == null) return;
 
-            var outcomes = OutcomeProjector.Project(rec, modelOrNull);
+            var outcomes = OutcomeProjector.Project(rec);
             for (int i = 0; i < outcomes.Length; i++)
             {
                 container.Add(BuildOutcomeBlock(outcomes[i]));

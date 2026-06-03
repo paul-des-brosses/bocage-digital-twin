@@ -75,10 +75,12 @@ namespace Bocage.Decision
                     model.SetHedgerowDensity(model.HedgerowDensity + magnitude);
                     break;
                 case IrrigationAdviceRecommendation _:
-                    // Reduce depth (water rises). Floor at 0.5 m so the
-                    // water table doesn't surface absurdly.
+                    // Reduce depth (water rises). Floor so the water table
+                    // doesn't surface absurdly — same constant as the rationale
+                    // text (IrrigationAdviceRecommendation): single source of truth.
+                    double floor = IrrigationAdviceRecommendation.WaterTableFloorMeters;
                     double newDepth = model.WaterTableDepth - magnitude;
-                    if (newDepth < 0.5) newDepth = 0.5;
+                    if (newDepth < floor) newDepth = floor;
                     model.SetWaterTableDepth(newDepth);
                     break;
                 case ReduceInputsRecommendation _:
