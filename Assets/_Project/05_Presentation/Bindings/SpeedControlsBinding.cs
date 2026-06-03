@@ -76,6 +76,7 @@ namespace Bocage.Presentation.Bindings
             {
                 runner.TickCompleted += OnTickCompleted;
                 runner.Rebuilt += OnRunnerRebuilt;
+                runner.TickingStateChanged += OnTickingStateChanged;
             }
             RefreshDayLabel();
         }
@@ -101,6 +102,7 @@ namespace Bocage.Presentation.Bindings
             {
                 runner.TickCompleted -= OnTickCompleted;
                 runner.Rebuilt -= OnRunnerRebuilt;
+                runner.TickingStateChanged -= OnTickingStateChanged;
             }
         }
 
@@ -129,6 +131,25 @@ namespace Bocage.Presentation.Bindings
             if (tps < 7.5f) return SpeedState.X5;
             if (tps < 15f) return SpeedState.X10;
             return SpeedState.X20;
+        }
+
+        /// <summary>
+        /// Mirrors the runner's actual ticking state onto the speed bar.
+        /// Fired by <see cref="SimulationRunner.TickingStateChanged"/>
+        /// whenever StartTicking/StopTicking flips IsRunning — notably the
+        /// fresh « Lancer la simulation » path, where Rebuild fires the
+        /// Rebuilt event while still paused and StartTicking(×1) runs only
+        /// afterwards. Reusing the same inference as
+        /// <see cref="OnRunnerRebuilt"/> keeps the highlight honest in
+        /// every entry path (boot, launch, mid-run reset, manual speed).
+        /// </summary>
+        private void OnTickingStateChanged()
+        {
+            if (runner == null) return;
+            _state = !runner.IsRunning
+                ? SpeedState.Paused
+                : InferStateFromTicksPerSecond(runner.TicksPerSecond);
+            UpdateActiveVisualState();
         }
 
         private void ResolveElements()

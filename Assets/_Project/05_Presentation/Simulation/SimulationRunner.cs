@@ -235,6 +235,17 @@ namespace Bocage.Presentation.Simulation
         /// </summary>
         public event System.Action Rebuilt;
 
+        /// <summary>
+        /// Fired whenever the tick coroutine starts or stops (i.e. whenever
+        /// <see cref="IsRunning"/> flips). Lets the speed-control UI mirror
+        /// the runner's *actual* ticking state instead of inferring it at
+        /// the wrong moment — e.g. « Lancer la simulation » rebuilds (which
+        /// fires <see cref="Rebuilt"/> while the runner is still paused) and
+        /// only then starts ticking at ×1. Without this signal the speed bar
+        /// would stay highlighted on Pause while the engine runs at ×1.
+        /// </summary>
+        public event System.Action TickingStateChanged;
+
         private void Awake()
         {
             _seasonalWeather = seasonalWeatherAsset != null
@@ -285,6 +296,7 @@ namespace Bocage.Presentation.Simulation
         {
             if (_tickRoutine != null) return;
             _tickRoutine = StartCoroutine(TickLoop());
+            TickingStateChanged?.Invoke();
         }
 
         public void StopTicking()
@@ -292,6 +304,7 @@ namespace Bocage.Presentation.Simulation
             if (_tickRoutine == null) return;
             StopCoroutine(_tickRoutine);
             _tickRoutine = null;
+            TickingStateChanged?.Invoke();
         }
 
         private IEnumerator TickLoop()
