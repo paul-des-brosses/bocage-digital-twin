@@ -52,11 +52,6 @@ namespace Bocage.SimulationCore
             return (NextUInt64() >> 11) * (1.0 / (1UL << 53));
         }
 
-        public float NextFloat()
-        {
-            return (float)NextDouble();
-        }
-
         public int NextInt(int minInclusive, int maxExclusive)
         {
             if (maxExclusive <= minInclusive)
@@ -64,11 +59,6 @@ namespace Bocage.SimulationCore
             ulong span = (ulong)((long)maxExclusive - minInclusive);
             ulong r = NextUInt64() % span;
             return (int)((long)minInclusive + (long)r);
-        }
-
-        public double NextRange(double minInclusive, double maxExclusive)
-        {
-            return minInclusive + (maxExclusive - minInclusive) * NextDouble();
         }
 
         public double NextGaussian(double mean, double stdDev)

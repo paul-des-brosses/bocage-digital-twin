@@ -15,13 +15,11 @@ namespace Bocage.Presentation.Bindings
     /// and exposes online/deferred status more clearly than dots over a
     /// dummy background.
     /// <para>
-    /// Each row is a small visual element with a status dot (green for
-    /// Online, ocre for Deferred), a sensor name and a subtitle showing
-    /// either the observed model variable (Online) or the deferred-until
-    /// step (Deferred). The row also caches the source
-    /// <see cref="SensorMetadataTag"/> so the bidirectional hover sync at
-    /// 6c.3 can iterate <see cref="RowsByDisplayName"/> without
-    /// re-querying the scene.
+    /// Each row is a small visual element with a green status dot and the
+    /// sensor name. The online/deferred distinction and the per-row
+    /// subtitle were both dropped; see the notes in BuildRow/BuildRows.
+    /// Rows are cached by sensor id so the bidirectional hover sync can
+    /// highlight the matching row without re-querying the scene.
     /// </para>
     /// <para>
     /// Scan happens at Start (same reasoning as the earlier dot binding
@@ -48,9 +46,6 @@ namespace Bocage.Presentation.Bindings
         [SerializeField, Tooltip("USS class for an Online sensor's status dot.")]
         private string onlineModifierClass = "sensor-status-dot--online";
 
-        [SerializeField, Tooltip("USS class for a Deferred sensor's status dot.")]
-        private string deferredModifierClass = "sensor-status-dot--deferred";
-
         [SerializeField, Tooltip("USS class for the row's text-block container.")]
         private string textBlockClass = "sensor-row-text";
 
@@ -63,19 +58,10 @@ namespace Bocage.Presentation.Bindings
         private UIDocument _document;
         private VisualElement _rowsContainer;
         private readonly Dictionary<string, VisualElement> _rowsByDisplayName = new Dictionary<string, VisualElement>(8);
-        private readonly Dictionary<string, SensorMetadataTag> _tagsByDisplayName = new Dictionary<string, SensorMetadataTag>(8);
         // Keyed by sensor id so the hover event bus (which uses sensor ids)
         // can find the matching row directly.
         private readonly Dictionary<string, VisualElement> _rowsBySensorId = new Dictionary<string, VisualElement>(8);
         private bool _subscribedToBus;
-
-        /// <summary>
-        /// Read-only access to (key → row) used by 6c.3 hover sync.
-        /// The key is the sensor display name (falling back to id when
-        /// empty), unique across the dashboard.
-        /// </summary>
-        public IReadOnlyDictionary<string, VisualElement> RowsByDisplayName => _rowsByDisplayName;
-        public IReadOnlyDictionary<string, SensorMetadataTag> TagsByDisplayName => _tagsByDisplayName;
 
         private void Awake()
         {
@@ -180,7 +166,6 @@ namespace Bocage.Presentation.Bindings
 
                 _rowsContainer.Add(row);
                 _rowsByDisplayName[key] = row;
-                _tagsByDisplayName[key] = meta;
                 if (!string.IsNullOrEmpty(meta.SensorId))
                 {
                     _rowsBySensorId[meta.SensorId] = row;
@@ -236,7 +221,6 @@ namespace Bocage.Presentation.Bindings
                 }
             }
             _rowsByDisplayName.Clear();
-            _tagsByDisplayName.Clear();
             _rowsBySensorId.Clear();
         }
     }

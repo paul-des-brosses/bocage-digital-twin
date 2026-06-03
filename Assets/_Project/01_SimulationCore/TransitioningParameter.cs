@@ -60,8 +60,5 @@ namespace Bocage.SimulationCore
     {
         public static TransitioningParameter<double> ForDouble(double initial)
             => new TransitioningParameter<double>(initial, (a, b, t) => a + (b - a) * t);
-
-        public static TransitioningParameter<float> ForFloat(float initial)
-            => new TransitioningParameter<float>(initial, (a, b, t) => a + (b - a) * (float)t);
     }
 }

@@ -21,7 +21,6 @@ namespace Bocage.Decision.Recommendations
     public sealed class ReduceInputsRecommendation : IRecommendation
     {
         public const double IntensityCutPerStep = 0.2;
-        public const double IntensityFloor = 0.5;
         private const double FaunaBoostPerCutUnit = 0.05;
         private const double InputCostReductionPerCutUnit = 200.0;
         private static readonly CultureInfo FrFr = CultureInfo.GetCultureInfo("fr-FR");

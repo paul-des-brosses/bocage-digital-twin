@@ -183,17 +183,6 @@
     border-color: rgba(255, 255, 255, 0.04);
 }
 
-/*
- * Deferred KPI cards (Biodiversité, Rentabilité, Delta tech at 6b).
- * Slightly muted background and dashed border so the user instantly
- * recognises a non-honest card vs an honest one — same "à venir"
- * literacy pattern used in the Niveau B panels.
- */
-.kpi-card--deferred {
-    background-color: rgba(28, 31, 36, 0.70);
-    border-color: rgba(170, 162, 145, 0.22);
-}
-
 .kpi-label {
     font-size: 12px;
     color: rgba(220, 214, 198, 0.75);    /* crème désaturée */
@@ -213,11 +202,6 @@
     margin-right: 6px;
 }
 
-/* Em dash + reduced contrast for deferred KPIs. */
-.kpi-value--deferred {
-    color: rgba(170, 162, 145, 0.55);
-}
-
 .kpi-unit {
     font-size: 12px;
     color: rgba(170, 162, 145, 0.85);    /* ocre désaturé */
@@ -225,22 +209,10 @@
 }
 
 /*
- * Small italic chip below the em dash on a deferred card, telling the
- * reader *when* the KPI becomes honest.
- */
-.kpi-deferred-tag {
-    font-size: 10px;
-    color: rgba(170, 162, 145, 0.65);
-    -unity-font-style: italic;
-    margin-top: 2px;
-}
-
-/*
  * Permanent inline caption appended to a Hero KPI card to clarify its
  * meaning at a glance (used by tech-delta to surface the shadow-run
  * mechanic without requiring a tooltip hover). Sub-étape 10a friction
- * #1 fix. Same visual register as .kpi-deferred-tag but slightly
- * brighter — it is information that ANCHORS reading, not a placeholder.
+ * #1 fix. A small italic chip that ANCHORS reading, not a placeholder.
  */
 .kpi-caption {
     font-size: 10px;
@@ -632,29 +604,11 @@
     margin-top: 1px;
 }
 
-.level-b-panel {
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-right: 10px;
-    padding: 10px 14px 12px 14px;
-    background-color: rgba(28, 31, 36, 0.94);
-    border-radius: 6px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.04);
-}
-
 .panel-title {
     font-size: 14px;
     color: rgba(238, 232, 217, 1);
     -unity-font-style: bold;
     margin-bottom: 6px;
-}
-
-.panel-placeholder {
-    font-size: 11px;
-    color: rgba(170, 162, 145, 0.55);
-    -unity-font-style: italic;
-    white-space: normal;                   /* allow wrap */
 }
 
 /* Honest sub-indicator row inside a Level-B panel. */
@@ -932,13 +886,6 @@
     color: rgba(238, 232, 217, 1);
     -unity-font-style: bold;
     margin-bottom: 6px;
-}
-
-.decision-summary {
-    font-size: 10px;
-    color: rgba(170, 162, 145, 0.85);
-    -unity-font-style: italic;
-    margin-bottom: 8px;
 }
 
 /*
@@ -1254,12 +1201,6 @@
     white-space: normal;
 }
 
-.decision-history-row-day {
-    font-size: 10px;
-    color: rgba(170, 162, 145, 0.85);
-    -unity-font-style: italic;
-}
-
 /*
  * Provenance sub-line inside a history row — sub-étape 10a friction #2.
  * Smaller and lower contrast than the title so the row still reads
@@ -1444,10 +1385,6 @@
     background-color: rgba(124, 168, 100, 1);    /* vert pâle, branché */
 }
 
-.sensor-status-dot--deferred {
-    background-color: rgba(170, 162, 145, 0.55);  /* ocre désaturé, en attente */
-}
-
 .sensor-row-text {
     flex-direction: column;
     flex-grow: 1;
@@ -1456,14 +1393,6 @@
 .sensor-row-name {
     font-size: 12px;
     color: rgba(238, 232, 217, 1);                /* ivoire */
-}
-
-.sensor-row-subtitle {
-    display: none;                                /* hidden in the compact bottom bar — full detail on the sensor inspector modal */
-    font-size: 10px;
-    color: rgba(170, 162, 145, 0.75);             /* ocre désaturé */
-    -unity-font-style: italic;
-    white-space: normal;
 }
 
 .sensor-list-legend {

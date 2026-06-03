@@ -52,13 +52,6 @@ namespace Bocage.Decision
         public IReadOnlyList<Entry> Entries => _entries;
 
         /// <summary>
-        /// Number of unique events for which the journal already holds
-        /// a recommendation (any verdict state). Exposed for telemetry
-        /// and the decision panel summary.
-        /// </summary>
-        public int CoveredEventCount => _coveredEventIds.Count;
-
-        /// <summary>
         /// True if a recommendation has already been appended to the
         /// journal for the given event instance id
         /// (cf <see cref="RecommendationEngine.MakeEventInstanceId"/>).
