@@ -248,16 +248,46 @@
     margin-right: 10px;
 }
 
-/* Empty placeholder panel filling the bottom strip to the right of the
-   sensor list — reserved for future content (kept on purpose, ADR-free). */
+/* Activity console — fills the bottom strip between the Niveau B tabs and the
+   sensor list, mirroring the SimLogger UserAction channel via ConsoleBinding. */
 .bottom-placeholder {
     flex-grow: 1;
     min-width: 80px;
     margin-left: 10px;
-    background-color: rgba(28, 31, 36, 0.55);
+    padding: 8px 10px;
+    background-color: rgba(28, 31, 36, 0.94);
     border-radius: 6px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.04);
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.console-title {
+    font-size: 11px;
+    color: rgba(220, 214, 198, 0.75);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.console-log-lines {
+    flex-grow: 1;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.console-line {
+    font-size: 10px;
+    color: rgba(170, 162, 145, 0.80);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-bottom: 1px;
+}
+
+.console-line--latest {
+    color: rgba(238, 232, 217, 1);
 }
 
 /* =========================================================================

@@ -206,7 +206,10 @@
                         <ui:Button name="climat-open" text="Climat &amp; ressources" class="level-b-trigger" />
                         <ui:Button name="economy-open" text="Économie" class="level-b-trigger" />
                     </ui:VisualElement>
-                    <ui:VisualElement name="bottom-placeholder" class="bottom-placeholder" />
+                    <ui:VisualElement name="bottom-placeholder" class="bottom-placeholder">
+                        <ui:Label text="Journal d'activité" class="console-title" />
+                        <ui:VisualElement name="console-log-lines" class="console-log-lines" />
+                    </ui:VisualElement>
                     <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
                         <ui:Label text="Capteurs déployés" class="sensor-list-title" />
                         <ui:VisualElement name="sensor-list-rows" class="sensor-list-rows" />
