@@ -3,24 +3,23 @@
     <ui:VisualElement name="dashboard-root" class="dashboard-root">
 
         <!--
-        Hero strip — 5 Hero KPI cards in the order locked by
-        DECISIONS.md #39 (pyramide cause → effet):
-            Haies → Nappe → Biodiversité → Rentabilité → Delta tech
+        FLEX FRAME (refacto E7.3, 2026-06-02). dashboard-root is a vertical
+        flex column: speed-bar, then hero-strip, then a flex-grow main-band
+        holding the three side-by-side columns (left scenario / centre scene
+        spacer / right farmer+sensors). The full-screen overlays (Niveau B
+        modals, sensor inspector, decision popups, viewport warning) stay as
+        absolute siblings AFTER main-band so they stack on top (UI Toolkit
+        z-order = DOM order). Replaces the previous absolute-pixel tiling
+        which crushed the right panel and left a gap under it.
+        -->
 
-        Honesty status:
-        - Haies and Nappe are wired to real model variables and update each tick.
-        - Biodiversité, Rentabilité, Delta tech are placeholders until their
-          state variables exist (cf DECISIONS.md #40). They render the card
-          shell with an em dash and an italic deferral label.
-        -->
         <!--
-        Speed bar (sub-étape 7c.3) — overlaid centre-top of the hero strip.
-        Four buttons (pause / x1 / x10 / skip-to-end) plus a day counter.
-        Wired by SpeedControlsBinding on the same UIDocument GameObject.
-        The last selected play-speed (x1 or x10) is persisted in PlayerPrefs.
-        Skip-to-end advances by exactly ScenarioContext.HorizonInDays
-        and leaves the runner paused.
+        Speed bar (sub-étape 7c.3) — centred top row. Six buttons
+        (pause / x1 / x5 / x10 / x20 / skip-to-end) plus a day counter.
+        Wired by SpeedControlsBinding. The active play-speed gets the green
+        accent via the active speed-button modifier class.
         -->
+        <ui:VisualElement name="top-band" class="top-band">
         <ui:VisualElement name="speed-bar" class="speed-bar">
             <ui:Button name="speed-pause-button" text="⏸" tooltip="Pause" class="speed-button" />
             <ui:Button name="speed-x1-button" text="▶ ×1" tooltip="Lecture vitesse réelle (1 jour simulé / seconde)" class="speed-button" />
@@ -31,6 +30,11 @@
             <ui:Label name="speed-day-counter" text="Jour 0" class="speed-day-counter" />
         </ui:VisualElement>
 
+        <!--
+        Hero strip — 5 Hero KPI cards in the order locked by DECISIONS.md
+        #39 (pyramide cause → effet): Haies → Nappe → Biodiversité →
+        Rentabilité → Delta tech.
+        -->
         <ui:VisualElement name="hero-strip" class="hero-strip">
 
             <ui:VisualElement name="kpi-hedgerow-density" class="kpi-card" tooltip="Densité linéaire de haies par hectare. Source : variable d'état du modèle, lecture directe.">
@@ -71,162 +75,263 @@
                     <ui:Label name="tech-delta-value" text="—" class="kpi-value" />
                     <ui:Label name="tech-delta-unit" text="%" class="kpi-unit" />
                 </ui:VisualElement>
-                <!--
-                Permanent caption: makes the shadow-run mechanic legible
-                without requiring the visitor to hover the tooltip
-                (sub-étape 10a friction #1). Stays present even when the
-                value is at 0 (no decisions yet) so the framing reads
-                even on a fresh run.
-                -->
                 <ui:Label name="tech-delta-caption" text="Réel vs run fantôme (sans décisions)" class="kpi-caption" />
             </ui:VisualElement>
 
         </ui:VisualElement>
+        </ui:VisualElement>
 
         <!--
-        Scenario panel (left side) — 6 physical inputs + horizon,
-        organised in three sections: Climat, Agriculture, Politique.
-        Replaces the abstract [0,1] sliders from the first iteration of
-        7c.1. Each input has a real unit (°C, %, m/ha/an, €/m/an, etc.)
-        and is bound to a ScenarioContext field by ScenarioControlsBinding.
-        Continuous params transition over 10 simulated days
-        (CLAUDE.md §15); horizon is applied directly (it's a deadline,
-        not a smoothed setpoint).
+        MAIN BAND — flex row that fills the height below the hero strip.
+        Three columns: left scenario panel | centre scene spacer (transparent,
+        Niveau B triggers pinned at its bottom) | right farmer column.
+        picking-mode=Ignore so clicks in the transparent centre fall through
+        to the world sprites (sensor OnMouseDown); the opaque panels and the
+        Niveau B buttons keep their own picking.
         -->
-        <!--
-        Scenario panel — LEFT side. Holds everything that is EXOGENOUS to
-        the farmer: climate (subi), public policy framework (MAEC, PSE
-        rates set by the EU/State), and the deployed sensors (passive
-        observations of the world). Restructured 2026-05-21 so the
-        "what is imposed" vs "what the farmer decides" boundary is
-        visually unambiguous (cf. decision-panel on the right).
-        -->
-        <ui:VisualElement name="scenario-panel" class="scenario-panel">
-            <ui:Label text="Cadre extérieur" class="scenario-panel-title" tooltip="Conditions imposées à l'exploitation : climat subi et politiques publiques en vigueur. Les capteurs (à droite, en bas) observent passivement le système." />
+        <ui:VisualElement name="main-band" class="main-band" picking-mode="Ignore">
 
             <!--
-            Preset row — one button per ScenarioPresetDefinition. A
-            preset is a "Cadre extérieur" shortcut: climate × public
-            policy combo. It NEVER touches the farmer's sliders
-            (arrachage haies, intensité d'intrants) which stay under
-            user control in the right-hand "Espace agriculteur".
+            Scenario panel — LEFT column. Everything EXOGENOUS to the farmer:
+            climate (subi), public policy framework (MAEC, PSE), initial
+            bocage conditions. Title fixed; the rest scrolls so the controls
+            never crush.
             -->
-            <ui:Label text="Préréglages de cadre" class="scenario-section-title scenario-section-title--preset" tooltip="Un clic = un cadre climatique + politique sourcé. Les sliders ci-dessous restent libres pour ajuster finement. Les décisions de l'agriculteur (à droite) ne sont JAMAIS modifiées par un preset." />
-            <ui:VisualElement name="scenario-presets-row" class="scenario-presets-row" />
+            <ui:VisualElement name="scenario-panel" class="scenario-panel">
+                <ui:Label text="Cadre extérieur" class="scenario-panel-title" tooltip="Conditions imposées à l'exploitation : climat subi et politiques publiques en vigueur. Les capteurs (à droite, en bas) observent passivement le système." />
 
-            <ui:Label text="Conditions naturelles (subies)" class="scenario-section-title scenario-section-title--natural" tooltip="Conditions climatiques et météorologiques imposées de l'extérieur à l'exploitation. Le scénario climatique sous-jacent (RCP4.5, RCP8.5, etc.) façonne ces deux paramètres." />
+                <ui:ScrollView name="scenario-scroll" class="panel-scroll" mode="Vertical">
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Anomalie T° moyenne" class="scenario-control-label" />
-                    <ui:Label name="temperature-anomaly-value" text="0.0 °C" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="temperature-anomaly-slider" low-value="-2" high-value="5" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="−2 °C (refroidissement) à +5 °C (RCP8.5 horizon 2100). Affecte météo, nappe, rendement, intrants." class="scenario-control-hint" />
-            </ui:VisualElement>
+                    <ui:Label text="Préréglages de cadre" class="scenario-section-title scenario-section-title--preset" tooltip="Un clic = un cadre climatique + politique sourcé. Les sliders ci-dessous restent libres pour ajuster finement. Les décisions de l'agriculteur (à droite) ne sont JAMAIS modifiées par un preset." />
+                    <ui:VisualElement name="scenario-presets-row" class="scenario-presets-row" />
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Anomalie précipitations" class="scenario-control-label" />
-                    <ui:Label name="precipitation-anomaly-value" text="0 %" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="precipitation-anomaly-slider" low-value="-60" high-value="20" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="−60 % (sécheresse extrême) à +20 % (excès humidité). Référence Perche ≈ 730 mm/an." class="scenario-control-hint" />
-            </ui:VisualElement>
+                    <ui:Label text="Conditions naturelles (subies)" class="scenario-section-title scenario-section-title--natural" tooltip="Conditions climatiques et météorologiques imposées de l'extérieur à l'exploitation. Le scénario climatique sous-jacent (RCP4.5, RCP8.5, etc.) façonne ces deux paramètres." />
 
-            <ui:Label text="Politiques publiques (cadre)" class="scenario-section-title scenario-section-title--policy" tooltip="Cadre financier MAEC + PSE défini par l'État et la PAC. Les taux ne sont pas choisis par l'agriculteur ; il peut seulement s'engager ou non dans ces dispositifs." />
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Anomalie T° moyenne" class="scenario-control-label" />
+                            <ui:Label name="temperature-anomaly-value" text="0.0 °C" class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="temperature-anomaly-slider" low-value="-2" high-value="5" value="0" class="scenario-slider" show-input-field="true" tooltip="−2 °C (refroidissement) à +5 °C (RCP8.5 horizon 2100). Affecte météo, nappe, rendement, intrants." />
+                    </ui:VisualElement>
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Couverture MAEC" class="scenario-control-label" />
-                    <ui:Label name="maec-coverage-value" text="0 %" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="maec-coverage-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="Part de la ferme sous contrat MAEC (% SAU). Réduit le coût d'intrants jusqu'à −30 % à 100 %." class="scenario-control-hint" />
-            </ui:VisualElement>
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Anomalie précipitations" class="scenario-control-label" />
+                            <ui:Label name="precipitation-anomaly-value" text="0 %" class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="precipitation-anomaly-slider" low-value="-60" high-value="20" value="0" class="scenario-slider" show-input-field="true" tooltip="−60 % (sécheresse extrême) à +20 % (excès humidité). Référence Perche ≈ 730 mm/an." />
+                    </ui:VisualElement>
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Taux PSE" class="scenario-control-label" />
-                    <ui:Label name="pse-rate-value" text="0.00 €/m/an" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="pse-rate-slider" low-value="0" high-value="1" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="Paiement pour Services Environnementaux par mètre de haie. 0.30 à 0.80 selon contrat MAEC linéaire + PNR Perche." class="scenario-control-hint" />
+                    <ui:Label text="Politiques publiques (cadre)" class="scenario-section-title scenario-section-title--policy" tooltip="Cadre financier MAEC + PSE défini par l'État et la PAC. Les taux ne sont pas choisis par l'agriculteur ; il peut seulement s'engager ou non dans ces dispositifs." />
+
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Couverture MAEC" class="scenario-control-label" />
+                            <ui:Label name="maec-coverage-value" text="0 %" class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="maec-coverage-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de la ferme sous contrat MAEC (% SAU). Réduit le coût d'intrants jusqu'à −30 % à 100 %." />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Taux PSE" class="scenario-control-label" />
+                            <ui:Label name="pse-rate-value" text="0.00 €/m/an" class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="pse-rate-slider" low-value="0" high-value="1" value="0" class="scenario-slider" show-input-field="true" tooltip="Paiement pour Services Environnementaux par mètre de haie. 0.30 à 0.80 selon contrat MAEC linéaire + PNR Perche." />
+                    </ui:VisualElement>
+
+                    <!--
+                    Initial conditions (sub-étape 8c.4) — state of the bocage
+                    at day 0. Editable only while CurrentDay == 0; locked once
+                    the simulation has started. "Réinitialiser le bocage"
+                    rebuilds the EcosystemModel with the current slider values
+                    and resets the day counter, preserving the scenario.
+                    -->
+                    <ui:Label text="Conditions initiales du bocage" class="scenario-section-title scenario-section-title--initial" tooltip="État du bocage au jour 0 du run. Modifiable uniquement avant le démarrage ; verrouillé une fois la simulation lancée. Le bouton Réinitialiser permet de repartir à zéro avec les valeurs choisies." />
+
+                    <!--
+                    Mois de démarrage (chantier E2 / ADR #52). Phase d'entrée
+                    du cycle saisonnier au jour 0. Snapshotée par la
+                    WeatherUpdateRule à la construction du moteur, donc un
+                    changement mid-run ne s'applique qu'au prochain Reset.
+                    -->
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Mois de démarrage" class="scenario-control-label" />
+                        </ui:VisualElement>
+                        <ui:DropdownField name="starting-month-dropdown" class="scenario-dropdown" />
+                        <ui:Label name="starting-month-hint" text="Appliqué immédiatement au lancement." class="scenario-control-hint" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Densité de haies (t=0)" class="scenario-control-label" />
+                            <ui:Label name="initial-hedgerow-density-value" text="90 m/ha" class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="initial-hedgerow-density-slider" low-value="0" high-value="200" value="90" class="scenario-slider" show-input-field="true" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Profondeur nappe (t=0)" class="scenario-control-label" />
+                            <ui:Label name="initial-water-table-depth-value" text="2.0 m" class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="initial-water-table-depth-slider" low-value="0.5" high-value="10" value="2" class="scenario-slider" show-input-field="true" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="scenario-control">
+                        <ui:VisualElement class="scenario-control-header">
+                            <ui:Label text="Abondance faune (t=0)" class="scenario-control-label" />
+                            <ui:Label name="initial-fauna-population-value" text="1.00 × réf." class="scenario-control-value" />
+                        </ui:VisualElement>
+                        <ui:Slider name="initial-fauna-population-slider" low-value="0" high-value="1.5" value="1" class="scenario-slider" show-input-field="true" />
+                    </ui:VisualElement>
+
+                    <ui:Label name="initial-lock-hint" text="Ajustez puis cliquez Réinitialiser pour appliquer." class="initial-lock-hint" />
+                    <ui:Button name="initial-reset-button" text="Réinitialiser le bocage" tooltip="Reconstruit l'EcosystemModel avec les valeurs ci-dessus et remet le compteur de jours à 0. Préserve le scénario (climat, politiques, horizon)." class="initial-reset-button" />
+
+                </ui:ScrollView>
             </ui:VisualElement>
 
             <!--
-            Initial conditions (sub-étape 8c.4) — state of the bocage at
-            day 0. Editable only while CurrentDay == 0 (locked once the
-            simulation has started). The "Réinitialiser le bocage"
-            button rebuilds the EcosystemModel with the current slider
-            values and resets the day counter to 0, preserving the
-            scenario (climate, policies, horizon).
+            Centre column — transparent spacer the scene renders behind.
+            picking-mode=Ignore so world sprites stay clickable. The three
+            Niveau B trigger buttons are pinned to its bottom edge.
             -->
-            <ui:Label text="Conditions initiales du bocage" class="scenario-section-title scenario-section-title--initial" tooltip="État du bocage au jour 0 du run. Modifiable uniquement avant le démarrage ; verrouillé une fois la simulation lancée. Le bouton Réinitialiser permet de repartir à zéro avec les valeurs choisies." />
+            <ui:VisualElement name="center-column" class="center-column" picking-mode="Ignore">
+                <ui:VisualElement name="bottom-strip" class="bottom-strip" picking-mode="Ignore">
+                    <ui:VisualElement name="body-row" class="body-row" picking-mode="Ignore">
+                        <ui:Button name="biodiv-open" text="Biodiversité" class="level-b-trigger" />
+                        <ui:Button name="climat-open" text="Climat &amp; ressources" class="level-b-trigger" />
+                        <ui:Button name="economy-open" text="Économie" class="level-b-trigger" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="bottom-placeholder" class="bottom-placeholder" />
+                    <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
+                        <ui:Label text="Capteurs déployés" class="sensor-list-title" />
+                        <ui:VisualElement name="sensor-list-rows" class="sensor-list-rows" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
 
             <!--
-            Mois de démarrage (chantier E2 / ADR #52). Phase d'entrée du
-            cycle saisonnier au jour 0. La valeur est snapshotée par la
-            WeatherUpdateRule à la construction du moteur, donc un
-            changement mid-run ne s'applique qu'au prochain Reset.
+            Right column — the « Espace agriculteur » decision panel, now
+            taking the full band height. The deployed-sensors list moved to
+            the bottom strip beside the Niveau B tabs, freeing this column so
+            its controls fit without scrolling.
             -->
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Mois de démarrage" class="scenario-control-label" />
-                </ui:VisualElement>
-                <ui:DropdownField name="starting-month-dropdown" class="scenario-dropdown" />
-                <ui:Label name="starting-month-hint" text="Appliqué immédiatement au lancement." class="scenario-control-hint" />
-            </ui:VisualElement>
+            <ui:VisualElement name="right-column" class="right-column">
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Densité de haies (t=0)" class="scenario-control-label" />
-                    <ui:Label name="initial-hedgerow-density-value" text="90 m/ha" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="initial-hedgerow-density-slider" low-value="0" high-value="200" value="90" class="scenario-slider" show-input-field="true" />
-            </ui:VisualElement>
+                <ui:VisualElement name="decision-panel" class="decision-panel">
+                    <ui:Label text="Espace agriculteur" class="decision-panel-title" tooltip="Tout ce que l'agriculteur contrôle directement : ses pratiques quotidiennes, l'horizon de simulation, l'arbitrage des recommandations." />
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Profondeur nappe (t=0)" class="scenario-control-label" />
-                    <ui:Label name="initial-water-table-depth-value" text="2.0 m" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="initial-water-table-depth-slider" low-value="0.5" high-value="10" value="2" class="scenario-slider" show-input-field="true" />
-            </ui:VisualElement>
+                    <ui:ScrollView name="decision-scroll" class="panel-scroll" mode="Vertical">
 
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Abondance faune (t=0)" class="scenario-control-label" />
-                    <ui:Label name="initial-fauna-population-value" text="1.00 × réf." class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="initial-fauna-population-slider" low-value="0" high-value="1.5" value="1" class="scenario-slider" show-input-field="true" />
-            </ui:VisualElement>
+                        <ui:Label text="Décisions quotidiennes" class="scenario-section-title scenario-section-title--decision" tooltip="Choix sous le contrôle direct de l'agriculteur : entretien du bocage, intensité des pratiques agricoles." />
 
-            <ui:Label name="initial-lock-hint" text="Ajustez puis cliquez Réinitialiser pour appliquer." class="initial-lock-hint" />
-            <ui:Button name="initial-reset-button" text="Réinitialiser le bocage" tooltip="Reconstruit l'EcosystemModel avec les valeurs ci-dessus et remet le compteur de jours à 0. Préserve le scénario (climat, politiques, horizon)." class="initial-reset-button" />
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Taux d'arrachage de haies" class="scenario-control-label" />
+                                <ui:Label name="hedge-removal-value" text="0.0 m/ha/an" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="hedge-removal-slider" low-value="0" high-value="10" value="0" class="scenario-slider" show-input-field="true" tooltip="0 = aucune destruction. 5 = remembrement agressif (Perche 1970-90)." />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Intensité d'intrants" class="scenario-control-label" />
+                                <ui:Label name="input-intensity-value" text="1.0× réf." class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="input-intensity-slider" low-value="0.5" high-value="2" value="1" class="scenario-slider" show-input-field="true" tooltip="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Couverts d'interculture" class="scenario-control-label" />
+                                <ui:Label name="cover-crops-value" text="0 %" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="cover-crops-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de la sole semée en couverts entre cultures. 0 = sol nu. 100 = couverts intégraux (Solagro Afterres 2050)." />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Restitution des résidus" class="scenario-control-label" />
+                                <ui:Label name="residue-restitution-value" text="0 %" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="residue-restitution-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part des résidus de récolte laissés au sol (vs. exportés en paille/ensilage)." />
+                        </ui:VisualElement>
+
+                        <ui:Label text="Horizon de simulation" class="scenario-section-title scenario-section-title--decision" tooltip="Durée totale du run sur laquelle l'agriculteur veut projeter sa stratégie." />
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Durée du run" class="scenario-control-label" />
+                                <ui:Label name="horizon-value" text="365 j" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:SliderInt name="horizon-slider" low-value="30" high-value="1825" value="365" class="scenario-slider" show-input-field="true" tooltip="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end." />
+                        </ui:VisualElement>
+
+                        <!--
+                        Manual interventions — the 3 algorithm-driven actions
+                        (plant hedges, irrigation, reduce inputs) are also
+                        accessible permanently as farmer buttons. Effects
+                        bypass the journal but DO diverge real vs shadow run,
+                        so the TechDelta KPI captures them.
+                        -->
+                        <ui:Label text="Interventions ponctuelles" class="scenario-section-title scenario-section-title--decision" tooltip="Actions « ponctuelles » que l'agriculteur peut déclencher à tout moment, indépendamment des recommandations algorithmiques. Effet immédiat sur le modèle." />
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Replanter des haies" class="scenario-control-label" />
+                                <ui:Label name="manual-plant-hedges-value" text="30 m/ha" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="manual-plant-hedges-slider" low-value="0" high-value="50" value="30" class="scenario-slider" show-input-field="true" />
+                            <ui:Button name="manual-plant-hedges-button" text="Planter" class="manual-action-button" tooltip="Ajoute la magnitude choisie (m/ha) à la densité courante des haies. Coût d'investissement non modélisé en v1 (cf BACKLOG.md #9)." />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Irriguer / soulager la nappe" class="scenario-control-label" />
+                                <ui:Label name="manual-irrigation-value" text="0.5 m" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="manual-irrigation-slider" low-value="0" high-value="3" value="0.5" class="scenario-slider" show-input-field="true" />
+                            <ui:Button name="manual-irrigation-button" text="Irriguer" class="manual-action-button" tooltip="Remonte le toit de la nappe de la profondeur choisie (m). Floor à 0.5 m pour éviter l'engorgement." />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Baisser intrants (pulse)" class="scenario-control-label" />
+                                <ui:Label name="manual-reduce-inputs-value" text="0.20× réf." class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="manual-reduce-inputs-slider" low-value="0" high-value="0.5" value="0.2" class="scenario-slider" show-input-field="true" />
+                            <ui:Button name="manual-reduce-inputs-button" text="Appliquer" class="manual-action-button" tooltip="Pulse de réduction d'intrants : boost faune ponctuel + baisse instantanée des coûts. Pour une réduction continue, utilise plutôt le slider Intensité d'intrants ci-dessus." />
+                        </ui:VisualElement>
+
+                        <ui:Label text="Recommandations algorithmiques" class="scenario-section-title scenario-section-title--decision" tooltip="Les recos produites par l'algorithme apparaissent comme un popup centré qui met la simulation en pause. Le bouton ci-dessous ouvre la liste des recommandations en attente (dont celles que tu as différées via Voir plus tard)." />
+                        <ui:Button name="decision-history-open-button" text="Aucune recommandation en cours" class="decision-history-open-button" tooltip="Ouvre la liste des recommandations actuellement en attente. Click sur une ligne = ré-ouvre la popup de recommandation pour l'examiner." />
+
+                    </ui:ScrollView>
+                </ui:VisualElement>
+
+                <!--
+                Sensor list — deployed sensors with status. Rows spawned by
+                SensorListBinding from each SensorMetadataTag in the scene.
+                Now a fixed footer of the right column (was a floating
+                bottom-right panel) so there is no gap above it.
+                -->
+            </ui:VisualElement>
 
         </ui:VisualElement>
 
         <!--
-        Body — three Niveau B trigger buttons anchored at the bottom of the
-        viewport. Clicking one opens a centered modal popup holding the
-        panel's full content (chantier E6 / ADR #54). Reuses the proven
-        `.hidden` toggle pattern (cf decision-popup-overlay) — no
-        accordion/foldout collapse, no risk of orphan rows.
+        ===================================================================
+        OVERLAYS — absolute, full-screen, hidden by default. Placed AFTER
+        main-band so they stack above the whole dashboard (z-order = DOM
+        order within parent). Their inner labels stay in the visual tree so
+        the OngletXxxBindings / inspector bindings keep finding them by name.
+        ===================================================================
         -->
-        <ui:VisualElement name="body-row" class="body-row">
-            <ui:Button name="biodiv-open" text="Biodiversité" class="level-b-trigger" />
-            <ui:Button name="climat-open" text="Climat &amp; ressources" class="level-b-trigger" />
-            <ui:Button name="economy-open" text="Économie" class="level-b-trigger" />
-        </ui:VisualElement>
 
-        <!--
-        Niveau B modal overlays. Each is hidden by default via the shared
-        `.hidden` class; NiveauBModalsBinding wires the open/close buttons,
-        click-outside dismissal, and Escape. The labels inside (e.g.
-        biodiv-composite-value) remain in the visual tree, so the three
-        OngletXxxBindings continue to find them via Q&lt;Label&gt;.
-        -->
         <ui:VisualElement name="biodiv-modal-overlay" class="level-b-modal-overlay hidden">
             <ui:VisualElement class="level-b-modal-card">
                 <ui:VisualElement class="level-b-modal-header">
@@ -373,15 +478,9 @@
         </ui:VisualElement>
 
         <!--
-        Sensor inspection panel (chantier E6 / ADR #53). Opened by clicks
-        on the 5 sensor sprites in scene (via SensorClickedEventBus).
-        Layout is reconfigured per sensor by
-        SensorInspectorPanelBinding: title + subtitle, one or two chart
-        hosts (chart 2 only used by WeatherStation), and a footer info
-        line. The SensorTimeSeriesChart instances are inserted into the
-        chart hosts at wire time — keeps the UXML free of custom-element
-        factory boilerplate. Hidden by default via the proven `.hidden`
-        class (same pattern as the Niveau B modals).
+        Sensor inspection panel (chantier E6 / ADR #53). Opened by clicks on
+        the 5 sensor sprites (via SensorClickedEventBus). Reconfigured per
+        sensor by SensorInspectorPanelBinding. Charts inserted at wire time.
         -->
         <ui:VisualElement name="sensor-inspector-overlay" class="sensor-inspector-overlay hidden">
             <ui:VisualElement class="sensor-inspector-card">
@@ -414,148 +513,13 @@
         </ui:VisualElement>
 
         <!--
-        Decision panel — RIGHT side. Holds everything UNDER FARMER
-        CONTROL: presets quick-pick, the two free sliders the farmer
-        operates daily (hedge maintenance and input intensity), the
-        run horizon, and the recommendations the algorithm produces for
-        the farmer to arbitrate. Restructured 2026-05-21 to co-locate
-        all "agriculteur" UI (was split between scenario-panel and a
-        separate decision-panel above the sensor list).
-        -->
-        <ui:VisualElement name="decision-panel" class="decision-panel">
-            <ui:Label text="Espace agriculteur" class="decision-panel-title" tooltip="Tout ce que l'agriculteur contrôle directement : ses pratiques quotidiennes, l'horizon de simulation, l'arbitrage des recommandations." />
-
-            <ui:Label text="Décisions quotidiennes" class="scenario-section-title scenario-section-title--decision" tooltip="Choix sous le contrôle direct de l'agriculteur : entretien du bocage, intensité des pratiques agricoles." />
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Taux d'arrachage de haies" class="scenario-control-label" />
-                    <ui:Label name="hedge-removal-value" text="0.0 m/ha/an" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="hedge-removal-slider" low-value="0" high-value="10" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="0 = aucune destruction. 5 = remembrement agressif (Perche 1970-90)." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Intensité d'intrants" class="scenario-control-label" />
-                    <ui:Label name="input-intensity-value" text="1.0× réf." class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="input-intensity-slider" low-value="0.5" high-value="2" value="1" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Couverts d'interculture" class="scenario-control-label" />
-                    <ui:Label name="cover-crops-value" text="0 %" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="cover-crops-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="Part de la sole semée en couverts entre cultures. 0 = sol nu. 100 = couverts intégraux (Solagro Afterres 2050)." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Restitution des résidus" class="scenario-control-label" />
-                    <ui:Label name="residue-restitution-value" text="0 %" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="residue-restitution-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="Part des résidus de récolte laissés au sol (vs. exportés en paille/ensilage)." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <ui:Label text="Horizon de simulation" class="scenario-section-title scenario-section-title--decision" tooltip="Durée totale du run sur laquelle l'agriculteur veut projeter sa stratégie." />
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Durée du run" class="scenario-control-label" />
-                    <ui:Label name="horizon-value" text="365 j" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:SliderInt name="horizon-slider" low-value="30" high-value="1825" value="365" class="scenario-slider" show-input-field="true" />
-                <ui:Label text="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end." class="scenario-control-hint" />
-            </ui:VisualElement>
-
-            <!--
-            Manual interventions — sub-étape 10a friction fix:
-            the 3 algorithm-driven actions (plant hedges, irrigation,
-            reduce inputs) are now also accessible permanently as
-            farmer buttons, not only when a recommendation is shown.
-            Each has its own magnitude slider with the same range as
-            the recommendation popup. Effects bypass the journal (no
-            arbitrage history) but DO diverge real vs shadow run, so
-            the TechDelta KPI captures them.
-            -->
-            <ui:Label text="Interventions ponctuelles" class="scenario-section-title scenario-section-title--decision" tooltip="Actions « ponctuelles » que l'agriculteur peut déclencher à tout moment, indépendamment des recommandations algorithmiques. Effet immédiat sur le modèle." />
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Replanter des haies" class="scenario-control-label" />
-                    <ui:Label name="manual-plant-hedges-value" text="30 m/ha" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="manual-plant-hedges-slider" low-value="0" high-value="50" value="30" class="scenario-slider" show-input-field="true" />
-                <ui:Button name="manual-plant-hedges-button" text="Planter" class="manual-action-button" tooltip="Ajoute la magnitude choisie (m/ha) à la densité courante des haies. Coût d'investissement non modélisé en v1 (cf BACKLOG.md #9)." />
-            </ui:VisualElement>
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Irriguer / soulager la nappe" class="scenario-control-label" />
-                    <ui:Label name="manual-irrigation-value" text="0.5 m" class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="manual-irrigation-slider" low-value="0" high-value="3" value="0.5" class="scenario-slider" show-input-field="true" />
-                <ui:Button name="manual-irrigation-button" text="Irriguer" class="manual-action-button" tooltip="Remonte le toit de la nappe de la profondeur choisie (m). Floor à 0.5 m pour éviter l'engorgement." />
-            </ui:VisualElement>
-
-            <ui:VisualElement class="scenario-control">
-                <ui:VisualElement class="scenario-control-header">
-                    <ui:Label text="Baisser intrants (pulse)" class="scenario-control-label" />
-                    <ui:Label name="manual-reduce-inputs-value" text="0.20× réf." class="scenario-control-value" />
-                </ui:VisualElement>
-                <ui:Slider name="manual-reduce-inputs-slider" low-value="0" high-value="0.5" value="0.2" class="scenario-slider" show-input-field="true" />
-                <ui:Button name="manual-reduce-inputs-button" text="Appliquer" class="manual-action-button" tooltip="Pulse de réduction d'intrants : boost faune ponctuel + baisse instantanée des coûts. Pour une réduction continue, utilise plutôt le slider Intensité d'intrants ci-dessus." />
-            </ui:VisualElement>
-
-            <ui:Label text="Recommandations algorithmiques" class="scenario-section-title scenario-section-title--decision" tooltip="Les recos produites par l'algorithme apparaissent comme un popup centré qui met la simulation en pause. Le bouton ci-dessous ouvre la liste des recommandations en attente (dont celles que tu as différées via Voir plus tard)." />
-            <ui:Button name="decision-history-open-button" text="Aucune recommandation en cours" class="decision-history-open-button" tooltip="Ouvre la liste des recommandations actuellement en attente. Click sur une ligne = ré-ouvre la popup de recommandation pour l'examiner." />
-
-        </ui:VisualElement>
-
-        <!--
-        Sensor list — floating bottom-right panel listing the deployed
-        sensors with status (online / deferred). Rows spawned by
-        SensorListBinding from each SensorMetadataTag in the scene.
-        Kept as a separate floating element rather than inlined in
-        the scenario-panel: sensors are a passive readout of the world,
-        independent from the climate/policy framework.
-        -->
-        <ui:VisualElement name="sensor-list-container" class="sensor-list-container">
-            <ui:Label text="Capteurs déployés" class="sensor-list-title" />
-            <ui:VisualElement name="sensor-list-rows" class="sensor-list-rows" />
-            <!-- Online/Deferred legend removed 2026-06-02: every sensor is
-                 rendered as online by SensorListBinding (no maintenance/
-                 offline scenario yet, see code comment there). When a
-                 backlog item reintroduces a real "capteur en panne" use
-                 case, restore the .sensor-list-legend block here. -->
-
-        </ui:VisualElement>
-
-        <!--
-        Decision popup overlay (sub-étape 8c.3 post-livraison iteration).
-        Modal centred popup that opens when the DecisionJournal has at
-        least one pending entry. Pauses the simulation while visible,
-        resumes at the previous speed once the queue is empty. Spawned
-        at the END of dashboard-root so it stacks above every other
-        element (UI Toolkit's z-order is DOM order within parent).
+        Decision popup overlay. Modal centred popup that opens when the
+        DecisionJournal has a pending entry. Pauses the simulation while
+        visible, resumes once the queue is empty.
         -->
         <ui:VisualElement name="decision-popup-overlay" class="decision-popup-overlay hidden">
             <ui:VisualElement name="decision-popup-card" class="decision-popup-card">
                 <ui:Label name="decision-popup-title" text="Recommandation" class="decision-popup-title" />
-                <!--
-                Source-event line: makes the « capteur → événement →
-                recommandation » causal chain visible without doc
-                (sub-étape 10a friction #2). Populated at runtime by
-                DecisionPopupBinding via RecommendationProvenance.Format.
-                Empty string by default so the line collapses cleanly
-                when no recommendation is shown.
-                -->
                 <ui:Label name="decision-popup-source-event" text="" class="decision-popup-source-event" />
                 <ui:Label name="decision-popup-rationale" text="..." class="decision-popup-rationale" />
 
@@ -568,14 +532,6 @@
                 </ui:VisualElement>
                 <ui:Slider name="decision-popup-magnitude-slider" low-value="0" high-value="1" value="0" class="decision-popup-magnitude-slider" show-input-field="true" />
 
-                <!--
-                Upfront capital cost line (chantier E5 / ADR #50).
-                Visible only for PlantHedges recs (positive cost);
-                hidden for Irrigation, ReduceInputs and any rec whose
-                InvestmentCostFor(magnitude) returns 0. DecisionPopupBinding
-                toggles the .hidden class at ShowPopupFor and refreshes
-                the value live on slider change.
-                -->
                 <ui:Label name="decision-popup-investment" text="" class="decision-popup-investment hidden" />
 
                 <ui:VisualElement class="decision-popup-actions">
@@ -587,12 +543,8 @@
         </ui:VisualElement>
 
         <!--
-        History list overlay — centred modal popup that lists every
-        pending recommendation. Spawned by DecisionPanelBinding when
-        the user clicks "Recommandations en cours". Rows are built
-        dynamically by DecisionPanelBinding.BuildHistoryRow; each row
-        has a title + day issued + "Examiner" button that re-opens
-        the single-rec popup for that recommendation.
+        History list overlay — centred modal listing every pending
+        recommendation. Rows built dynamically by DecisionPanelBinding.
         -->
         <ui:VisualElement name="decision-history-overlay" class="decision-history-overlay hidden">
             <ui:VisualElement class="decision-history-card">
@@ -607,9 +559,9 @@
         </ui:VisualElement>
 
         <!--
-        Viewport warning banner — hidden by default, made visible by
-        ViewportWarningBinding when Screen.width is below the recommended
-        threshold (1280 px per CLAUDE.md §12, desktop only).
+        Viewport warning banner — hidden by default, shown by
+        ViewportWarningBinding when Screen.width is below 1280 px
+        (CLAUDE.md §12, desktop only).
         -->
         <ui:VisualElement name="viewport-warning" class="viewport-warning hidden">
             <ui:Label text="Cette expérience est optimisée pour un affichage de 1280 pixels de large ou plus. Agrandissez la fenêtre pour une meilleure lecture du tableau de bord."

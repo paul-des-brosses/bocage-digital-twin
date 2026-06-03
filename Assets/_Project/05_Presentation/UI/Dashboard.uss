@@ -25,7 +25,73 @@
 
 .dashboard-root {
     flex-grow: 1;
+    flex-direction: column;
     background-color: rgba(0, 0, 0, 0); /* transparent — scene shows through */
+}
+
+/* =========================================================================
+ *  Flex frame containers (refacto E7.3, 2026-06-02) — replaces the previous
+ *  absolute-pixel tiling. main-band fills the height below the hero strip;
+ *  three columns sit inside it: left scenario panel / centre scene spacer /
+ *  right farmer+sensors column.
+ * ========================================================================= */
+
+.main-band {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 0;                          /* lets the panels' ScrollViews bound their height instead of growing */
+}
+
+.center-column {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: flex-end;              /* Niveau B triggers pinned to the bottom; scene shows through above */
+}
+
+.right-column {
+    width: 264px;
+    flex-shrink: 0;
+    min-height: 0;                          /* bounded by main-band so the decision panel + sensor footer fit the band height */
+    flex-direction: column;
+    margin: 12px 16px 16px 0;
+}
+
+/* Scrollable content region inside the left/right panels — controls keep
+   their natural height and scroll rather than crush (the old absolute
+   layout shrank rows until the slider dragger overlapped its own label). */
+.panel-scroll {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+/* ScrollView dark theming: thin desaturated thumb, no arrow buttons, no
+   horizontal bar. */
+.panel-scroll .unity-scroller--vertical {
+    width: 9px;
+    background-color: rgba(0, 0, 0, 0);
+}
+.panel-scroll .unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+.panel-scroll .unity-scroller--vertical .unity-base-slider__dragger {
+    background-color: rgba(170, 162, 145, 0.28);
+    border-width: 0;
+    border-radius: 4px;
+    width: 6px;
+}
+.panel-scroll .unity-scroller--vertical .unity-base-slider__dragger:hover {
+    background-color: rgba(170, 162, 145, 0.50);
+}
+.panel-scroll .unity-scroller__low-button,
+.panel-scroll .unity-scroller__high-button {
+    display: none;
+}
+.panel-scroll .unity-scroller--horizontal {
+    display: none;
 }
 
 /* =========================================================================
@@ -38,11 +104,20 @@
  * counter label. Active play-speed gets the green accent border via
  * .speed-button--active (mirrors .scenario-preset-button--active).
  */
+/* Fixed-height top band wrapping the speed bar + hero strip. Height = the
+   scene's TOP margin in px at 1920×1080: (1 − rect.top) × 1080 = 158. The
+   camera viewportRect is left untouched, so this band and the scene derive
+   from the same number — the hero can never overlap the scene. */
+.top-band {
+    flex-shrink: 0;
+    height: 158px;
+}
+
 .speed-bar {
-    position: absolute;
-    top: 6px;
-    left: 50%;
-    translate: -50% 0;
+    align-self: center;                     /* centred horizontally in the column root */
+    flex-shrink: 0;
+    margin-top: 6px;
+    margin-bottom: 2px;
     flex-direction: row;
     align-items: center;
     padding: 4px 8px 4px 8px;
@@ -88,12 +163,9 @@
  * ========================================================================= */
 
 .hero-strip {
-    position: absolute;
-    top: 36px;                            /* leaves room for the speed-bar above */
-    left: 0;
-    right: 0;
+    flex-shrink: 0;                       /* fixed-height top band; never compresses */
     flex-direction: row;
-    justify-content: center;              /* 5 KPI cards centred — the empty right-edge band has no purpose */
+    justify-content: center;              /* 5 KPI cards centred as a tight group */
     padding: 12px 16px 12px 16px;
     background-color: rgba(20, 22, 26, 0.92);
     border-bottom-width: 1px;
@@ -186,13 +258,34 @@
  * Anchored bottom-left, leaving the bottom-right corner for the minimap.
  * Three columns side-by-side, equal width via flex-grow.
  */
-.body-row {
-    position: absolute;
-    bottom: 12px;
-    left: 290px;                           /* scenario-panel reserves the left gutter (260+16+~14) */
-    right: 310px;                          /* decision-panel reserves the right gutter (280+16+~14) */
+/* Bottom strip — Niveau B tab group + sensor list side by side, pinned to
+   the bottom of the centre column. Sensors moved here out of the right
+   column so the decision panel gets the full height (no scroll). */
+.bottom-strip {
+    flex-shrink: 0;
     flex-direction: row;
     align-items: stretch;
+    height: 162px;                          /* scene's BOTTOM margin at 1920×1080: rect.y × 1080 = 162 — matches the camera rect */
+    margin: 0 8px 0 8px;
+}
+
+.body-row {
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: stretch;
+    margin-right: 10px;
+}
+
+/* Empty placeholder panel filling the bottom strip to the right of the
+   sensor list — reserved for future content (kept on purpose, ADR-free). */
+.bottom-placeholder {
+    flex-grow: 1;
+    min-width: 80px;
+    margin-left: 10px;
+    background-color: rgba(28, 31, 36, 0.55);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.04);
 }
 
 /* =========================================================================
@@ -200,11 +293,10 @@
  * ========================================================================= */
 
 .scenario-panel {
-    position: absolute;
-    top: 170px;                           /* touches the bottom edge of hero-strip (36+~134 incl. tech-delta caption row) */
-    bottom: 16px;
-    left: 16px;
-    width: 260px;
+    width: 264px;
+    flex-shrink: 0;
+    min-height: 0;                        /* bounded by main-band so the inner ScrollView scrolls instead of overflowing */
+    margin: 12px 0 16px 16px;
     padding: 10px 14px 12px 14px;
     background-color: rgba(28, 31, 36, 0.94);
     border-radius: 6px;
@@ -225,9 +317,9 @@
     font-size: 10px;
     color: rgba(170, 162, 145, 0.85);
     -unity-font-style: italic;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    padding-top: 4px;
+    margin-top: 3px;
+    margin-bottom: 2px;
+    padding-top: 2px;
     padding-left: 6px;
     border-top-width: 1px;
     border-top-color: rgba(255, 255, 255, 0.06);
@@ -345,14 +437,14 @@
 
 .scenario-control {
     flex-direction: column;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .scenario-control-header {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 .scenario-control-label {
@@ -373,9 +465,9 @@
  * Hide the auto-generated label (we have our own header row).
  */
 .scenario-slider {
-    margin-top: 2px;
-    margin-bottom: 2px;
-    min-height: 18px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    min-height: 16px;
 }
 
 /* Hide the auto inline label of the slider. */
@@ -457,11 +549,87 @@
     flex-grow: 1;
 }
 
+/*
+ * .scenario-dropdown — start-month picker (chantier E2 / ADR #52).
+ * UI Toolkit's DropdownField ships with light editor chrome AND reserves a
+ * ~120px label column on the left even when no label attribute is set; both
+ * clash badly with the dark panel (the empty column pushes the box off to
+ * the right). The .scenario-control-header above already carries the
+ * "Mois de démarrage" label, so we drop the field's own label column and
+ * restyle the closed box + the open popup menu to the dashboard palette,
+ * mirroring the slider text-field treatment above. Theming the popup with
+ * global .unity-base-dropdown__* selectors is safe: this is the only
+ * DropdownField in the whole UXML.
+ */
+.scenario-dropdown {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+/* Drop the reserved (empty) label column so the field spans the full row. */
+.scenario-dropdown .unity-base-field__label {
+    display: none;
+    min-width: 0;
+    width: 0;
+}
+
+/* The closed, clickable field box. */
+.scenario-dropdown .unity-base-field__input {
+    background-color: rgba(16, 18, 22, 1);
+    border-width: 1px;
+    border-color: rgba(170, 162, 145, 0.30);
+    border-radius: 3px;
+    padding: 3px 8px 3px 8px;
+    min-height: 24px;
+}
+
+.scenario-dropdown:hover .unity-base-field__input,
+.scenario-dropdown:focus .unity-base-field__input {
+    border-color: rgba(124, 168, 100, 0.85);
+    background-color: rgba(20, 24, 22, 1);
+}
+
+/* The selected month text. */
+.scenario-dropdown .unity-base-popup-field__text {
+    color: rgba(238, 232, 217, 1);
+    font-size: 11px;
+    -unity-text-align: middle-left;
+}
+
+/* The drop caret on the right of the box. */
+.scenario-dropdown .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: rgba(170, 162, 145, 0.85);
+}
+
+/* ---- Open popup menu (the list shown on click) ---- */
+.unity-base-dropdown__container-outer {
+    background-color: rgba(20, 24, 22, 1);
+    border-width: 1px;
+    border-color: rgba(124, 168, 100, 0.45);
+    border-radius: 3px;
+}
+
+.unity-base-dropdown__item {
+    padding: 4px 8px 4px 8px;
+    color: rgba(220, 214, 198, 0.90);
+    font-size: 11px;
+}
+
+.unity-base-dropdown__item:hover {
+    background-color: rgba(28, 38, 28, 0.85);
+}
+
+/* Accent the currently-selected month's checkmark. */
+.unity-base-dropdown__checkmark {
+    -unity-background-image-tint-color: rgba(124, 168, 100, 1);
+}
+
 .scenario-control-hint {
     font-size: 9px;
-    color: rgba(170, 162, 145, 0.55);
+    color: rgba(170, 162, 145, 0.72);     /* contrast bumped 0.55 → 0.72 for legibility (E7.3) */
     -unity-font-style: italic;
     white-space: normal;
+    margin-top: 1px;
 }
 
 .level-b-panel {
@@ -530,8 +698,10 @@
  * ========================================================================= */
 
 .level-b-trigger {
-    flex-grow: 1;
-    flex-basis: 0;
+    flex-grow: 0;
+    flex-basis: auto;
+    width: 150px;
+    white-space: normal;
     margin: 0 5px 0 5px;
     padding: 8px 14px 8px 14px;
     background-color: rgba(28, 31, 36, 0.94);
@@ -746,11 +916,9 @@
  * farmer-controlled UI lives in one place.
  */
 .decision-panel {
-    position: absolute;
-    top: 154px;                            /* touches the bottom edge of hero-strip */
-    right: 16px;
-    bottom: 248px;                         /* clears the bottom-right sensor-list panel (max-height 220 + 12 gap + 16 margin) */
-    width: 280px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;                         /* bounded by the right column so the inner ScrollView scrolls */
     padding: 10px 14px 12px 14px;
     background-color: rgba(28, 31, 36, 0.94);
     border-radius: 6px;
@@ -1209,12 +1377,11 @@
  * ========================================================================= */
 
 .sensor-list-container {
-    position: absolute;
-    bottom: 12px;
-    right: 16px;
-    width: 256px;
-    max-height: 220px;                     /* bounded so it cannot grow up into the decision-panel above */
-    padding: 10px 12px 10px 12px;
+    flex-shrink: 0;
+    margin-left: 10px;
+    width: 240px;
+    max-height: 178px;
+    padding: 6px 12px 6px 12px;
     background-color: rgba(28, 31, 36, 0.94);
     border-radius: 6px;
     border-width: 1px;
@@ -1227,7 +1394,7 @@
     font-size: 12px;
     color: rgba(220, 214, 198, 0.75);
     -unity-font-style: italic;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
 }
 
 .sensor-list-rows {
@@ -1243,8 +1410,8 @@
 .sensor-list-row {
     flex-direction: row;
     align-items: flex-start;
-    padding-top: 4px;
-    padding-bottom: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
     padding-left: 4px;
     padding-right: 4px;
     border-bottom-width: 1px;
@@ -1292,6 +1459,7 @@
 }
 
 .sensor-row-subtitle {
+    display: none;                                /* hidden in the compact bottom bar — full detail on the sensor inspector modal */
     font-size: 10px;
     color: rgba(170, 162, 145, 0.75);             /* ocre désaturé */
     -unity-font-style: italic;
