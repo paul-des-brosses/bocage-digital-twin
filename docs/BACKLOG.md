@@ -615,6 +615,59 @@ en E5 (ADR #51). Le 4ème facteur Diversité paysage reste post-MVP.
 
 ---
 
+### #29 — Gestion biodiversité espèce-résolue : régulation (chasse) + réintroduction
+
+**Origine** : demande utilisateur du 2026-06-03. Vérifiée cohérente
+avec la thèse et le modèle — mais sous conditions (voir garde-fous),
+et de taille V2 (hors MVP).
+
+**Pourquoi backlog** : la faune est aujourd'hui un **indice composite**
+unique (`FaunaPopulation` / `FaunaDynamicsRule`) ; les 4 espèces
+visibles (`FaunaPool`, E4) ne sont qu'un reflet décoratif de cet
+indice, pas des populations simulées. Gérer « certaines espèces »
+suppose donc d'abord de passer à un modèle **espèce / guilde résolu**
+(dynamiques de population par espèce) — extension significative, hors
+complétude MVP §17.
+
+**Cible** (deux leviers, fit thèse asymétrique) :
+
+- **Régulation / chasse** (sanglier, chevreuil en surpopulation :
+  dégâts cultures, haies, régénération). *Fort* fit thèse : levier
+  éco↔rentabilité réel (surpopulation = dégâts rendement ; régulation
+  = rendement protégé + régénération saine) et **instrumentable** — le
+  piège photo (`CameraTrapSensorReader`, déjà livré) détecte la densité
+  → événement surpopulation → reco de régulation.
+- **Réintroduction / import d'espèces** (une fois l'habitat capable de
+  les soutenir). Fit thèse *plus faible* : action de conservation, peu
+  liée à la rentabilité et peu pilotée par un capteur. Revient
+  consciemment sur la note de l'item #3 (« pas de réintroduction
+  prévue »).
+
+**Garde-fous (conditions de cohérence — non négociables)** :
+
+- **Distinguer pression-ravageur et valeur-biodiversité** : abattre un
+  sanglier surnuméraire ne doit PAS lire « biodiversité en baisse »
+  dans l'indice. Le modèle doit gagner un axe « surpopulation /
+  pression » distinct de l'indice biodiv, sinon la chasse contredit le
+  cadre « plus de faune = plus vert ».
+- **Réintroduction conditionnée à l'habitat** : effet gaté par l'état
+  mesuré (densité de haies, nappe, intrants au-dessus de seuils). On ne
+  doit pas pouvoir « importer » son chemin vers une biodiversité
+  élevée — l'habitat doit réellement soutenir l'espèce, sinon c'est un
+  trucage de l'indice (viole §9 / §17).
+- **Primauté du capteur (§9)** : chaque effet reste dérivé d'une mesure
+  (densité caméra pour la régulation ; indicateurs d'habitat pour la
+  maturité de réintroduction). Aucune logique scénique.
+
+**Pré-requis** : modèle faune espèce / guilde résolu (extension de
+`FaunaDynamicsRule`). Synergies avec #17 (réalisme capteurs faune) et
+#28 (diversité paysage).
+
+**Estimation** : large (4-7 jours) — l'essentiel est l'extension
+multi-espèces du modèle, pas les boutons.
+
+---
+
 ## 6. Liens cross-document
 
 - Items basculés MVP : voir `docs/ROADMAP.md` (chantiers E1-E7) et
