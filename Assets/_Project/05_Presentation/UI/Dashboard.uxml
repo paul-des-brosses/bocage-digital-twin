@@ -69,13 +69,13 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-tech-delta" class="kpi-card" tooltip="Avantage relatif (en %) de la run réelle sur la run fantôme, sur la rentabilité intégrée. Le DT fait tourner en parallèle une seconde simulation à laquelle aucune décision tech n'est appliquée — la différence chiffre l'apport net des arbitrages de l'agriculteur.">
-                <ui:Label name="tech-delta-label" text="Delta tech" class="kpi-label" />
+            <ui:VisualElement name="kpi-tech-delta" class="kpi-card" tooltip="Apport cumulé de la technologie, en euros par hectare : ce que les décisions (capteurs + recommandations) ont rapporté depuis le début, vs une run fantôme identique sans aucune décision. Mesuré sur le long terme : une action ponctuelle plafonne, une stratégie soutenue fait croître le total.">
+                <ui:Label name="tech-delta-label" text="Apport de la techno" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
                     <ui:Label name="tech-delta-value" text="—" class="kpi-value" />
-                    <ui:Label name="tech-delta-unit" text="%" class="kpi-unit" />
+                    <ui:Label name="tech-delta-unit" text="€/ha" class="kpi-unit" />
                 </ui:VisualElement>
-                <ui:Label name="tech-delta-caption" text="Réel vs run fantôme (sans décisions)" class="kpi-caption" />
+                <ui:Label name="tech-delta-caption" text="Gain cumulé vs run sans décisions" class="kpi-caption" />
             </ui:VisualElement>
 
         </ui:VisualElement>

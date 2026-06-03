@@ -79,7 +79,7 @@ namespace Bocage.Presentation.Simulation
         private RC_HedgerowHealth hedgerowHealthContainer;
 
         [Header("Shadow run (sub-étape 8b)")]
-        [SerializeField, Tooltip("Optional. If assigned, the shadow runner provides the second EcosystemModel against which the real run is compared by TechDeltaIndicator. If left null, the tech-delta KPI is computed against the real run itself (delta = 0).")]
+        [SerializeField, Tooltip("Optional. If assigned, the shadow runner provides the second EcosystemModel against which the real run is compared for the cumulative tech-value KPI. If left null, the comparison degenerates to real vs real (delta = 0).")]
         private ShadowSimulationRunner shadowRunner;
 
         private SimulationEngine _engine;
@@ -105,6 +105,7 @@ namespace Bocage.Presentation.Simulation
         // so we own one instance per real run and reset it on Rebuild
         // so each trajectory starts with a clean cumul.
         private InvestmentHorizonIndicator _investmentHorizon;
+        private CumulativeTechValueIndicator _techValue;
         // Per-type counters for manual actions (ADR #47). Disambiguates
         // multiple clicks on the same simulated day — each click gets a
         // unique recommendation id even though the day suffix collides.
@@ -270,6 +271,7 @@ namespace Bocage.Presentation.Simulation
             // the model — this reader is consumed only by the panel.
             _piezometerReader = new PiezometerReader(new SeededRandom(masterSeed));
             _investmentHorizon = new InvestmentHorizonIndicator();
+            _techValue = new CumulativeTechValueIndicator();
             SimLogger.SimulationLog(
                 "[SimulationRunner] engine built seed=" + masterSeed +
                 " initialHedgerowDensity=" + _engine.Model.HedgerowDensity.ToString("F1") + " m/ha");
@@ -349,7 +351,7 @@ namespace Bocage.Presentation.Simulation
             // engines. Without this order, TechDelta would drift by an
             // off-by-one tick under sustained scenario stress.
             TickCompleted?.Invoke();
-            UpdateInvestmentHorizon();
+            UpdateProfitAccumulators();
         }
 
         /// <summary>
@@ -417,6 +419,7 @@ namespace Bocage.Presentation.Simulation
             // the model — this reader is consumed only by the panel.
             _piezometerReader = new PiezometerReader(new SeededRandom(masterSeed));
             _investmentHorizon = new InvestmentHorizonIndicator();
+            _techValue = new CumulativeTechValueIndicator();
 
             PublishIndicators();
             // Rebuild does NOT touch the ticking state — the caller
@@ -479,7 +482,8 @@ namespace Bocage.Presentation.Simulation
         /// model has been updated and indicators republished.
         /// <para>
         /// The shadow run is not touched — that asymmetry is exactly
-        /// what feeds <see cref="Bocage.Indicators.Hero.TechDeltaIndicator"/>.
+        /// what feeds the cumulative tech-value KPI
+        /// (<see cref="Bocage.Indicators.Hero.CumulativeTechValueIndicator"/>).
         /// Manual actions are cumulable (per ADR #47): two clicks on the
         /// same simulated day produce two distinct journal entries via
         /// the per-type sequence counter, both applied.
@@ -615,18 +619,15 @@ namespace Bocage.Presentation.Simulation
                 }
             }
 
-            if (techDeltaContainer != null)
+            if (techDeltaContainer != null && _techValue != null)
             {
-                // If no shadow runner is wired, the comparison degenerates
-                // to "real vs real" → delta = 0. This is honest reporting:
-                // we publish the value that the indicator computes from
-                // whatever shadow model is available.
-                var shadowModel = shadowRunner != null && shadowRunner.ShadowModel != null
-                    ? shadowRunner.ShadowModel
-                    : model;
-                double raw = TechDeltaIndicator.Compute(model, shadowModel, _engine.Scenario);
-                double normalized = TechDeltaIndicator.Normalize(raw);
-                techDeltaContainer.Set((float)raw, (float)normalized);
+                // « Apport de la techno »: mirror the cumulative €/ha advantage
+                // banked so far (the integral is advanced once per tick in
+                // UpdateProfitAccumulators). Long-term and honest — a transient
+                // action plateaus instead of collapsing back to 0.
+                double cumulative = _techValue.CumulativeEurosPerHa;
+                double normalized = CumulativeTechValueIndicator.Normalize(cumulative);
+                techDeltaContainer.Set((float)cumulative, (float)normalized);
             }
 
             if (soilCarbonContainer != null)
@@ -676,25 +677,42 @@ namespace Bocage.Presentation.Simulation
         }
 
         /// <summary>
-        /// Per-tick contribution of the integrated profitability delta
-        /// to the « horizon de rentabilité » accumulator (chantier E5 /
-        /// ADR #50). Called from the tick loops AFTER the real and
-        /// shadow engines have both advanced, so the two annualised
-        /// profits are taken on synchronised post-tick state. Idempotent
-        /// against a missing shadow runner: the comparison degenerates
-        /// to <c>real − real == 0</c>, which leaves the integral idle.
+        /// Per-tick update of the two trajectory-based accumulators, from a
+        /// single real/shadow profit computation. Called once per simulated
+        /// day from the tick loops AFTER both engines have advanced, so the
+        /// annualised profits are read on synchronised post-tick state.
+        /// <list type="bullet">
+        ///   <item>« Apport de la techno » (<c>CumulativeTechValueIndicator</c>):
+        ///         integrated from day 0, ungated.</item>
+        ///   <item>« Horizon de rentabilité » (<c>InvestmentHorizonIndicator</c>,
+        ///         chantier E5 / ADR #50): only once an investment exists.</item>
+        /// </list>
+        /// Idempotent against a missing shadow runner: the comparison
+        /// degenerates to <c>real − real == 0</c>, leaving both integrals idle.
         /// </summary>
-        private void UpdateInvestmentHorizon()
+        private void UpdateProfitAccumulators()
         {
-            if (_investmentHorizon == null || _engine == null || _decisionJournal == null) return;
-            double totalInvestment = _decisionJournal.TotalInvestmentEurosPerHectare;
-            if (totalInvestment <= 0.0) return; // no investment yet — keep idle.
+            if (_engine == null) return;
             double realProfit = IntegratedProfitabilityIndicator.Compute(_engine.Model, _engine.Scenario);
             var shadowModel = shadowRunner != null && shadowRunner.ShadowModel != null
                 ? shadowRunner.ShadowModel
                 : _engine.Model;
             double shadowProfit = IntegratedProfitabilityIndicator.Compute(shadowModel, _engine.Scenario);
-            _investmentHorizon.Update(realProfit, shadowProfit, totalInvestment, _currentDay);
+
+            // Cumulative « apport de la techno »: integrated from day 0,
+            // ungated — every day's real-vs-shadow profit gap is banked.
+            if (_techValue != null) _techValue.Update(realProfit, shadowProfit);
+
+            // Payback horizon: only accumulates once an investment exists to
+            // amortise (latches the first day the cumul covers the bill).
+            if (_investmentHorizon != null && _decisionJournal != null)
+            {
+                double totalInvestment = _decisionJournal.TotalInvestmentEurosPerHectare;
+                if (totalInvestment > 0.0)
+                {
+                    _investmentHorizon.Update(realProfit, shadowProfit, totalInvestment, _currentDay);
+                }
+            }
         }
     }
 }

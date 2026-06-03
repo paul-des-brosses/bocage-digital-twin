@@ -10,9 +10,9 @@ namespace Bocage.Presentation.Decision
     /// into <see cref="SimulationRunner.TickCompleted"/> and applies
     /// any newly-accepted recommendation to the real engine's model
     /// and scenario. The shadow engine is never touched — that's
-    /// precisely the asymmetry that gives the
-    /// <see cref="Bocage.Indicators.Hero.TechDeltaIndicator"/> a
-    /// non-zero value once the user (or auto-accept config) accepts
+    /// precisely the asymmetry that gives the cumulative tech-value KPI
+    /// (<see cref="Bocage.Indicators.Hero.CumulativeTechValueIndicator"/>)
+    /// a non-zero value once the user (or auto-accept config) accepts
     /// a recommendation.
     /// <para>
     /// Order of operations per tick on the real run:
