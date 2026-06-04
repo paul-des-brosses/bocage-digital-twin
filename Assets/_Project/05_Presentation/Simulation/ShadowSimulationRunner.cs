@@ -1,30 +1,32 @@
 using Bocage.SimulationCore;
 using Bocage.SimulationCore.Logging;
 using Bocage.SimulationCore.Model;
+using Bocage.SimulationCore.Scenario;
 using UnityEngine;
 
 namespace Bocage.Presentation.Simulation
 {
     /// <summary>
     /// Runs a parallel "shadow" simulation alongside the real
-    /// <see cref="SimulationRunner"/>. Same master seed, same shared
-    /// <see cref="Bocage.SimulationCore.Scenario.ScenarioContext"/>
-    /// reference, fresh independent <see cref="EcosystemModel"/>. The
-    /// shadow advances one tick whenever the real runner fires its
+    /// <see cref="SimulationRunner"/> — the « passive farmer » baseline.
+    /// Same master seed, fresh independent <see cref="EcosystemModel"/>, and a
+    /// <b>frozen-baseline scenario</b> built by
+    /// <c>ScenarioContext.CreateFrozenShadowFrom</c>: the exogenous parameters
+    /// (climate, MAEC, PSE) are SHARED with the real run, while the
+    /// farmer-decision parameters are FROZEN at their launch values. So every
+    /// decision the user makes (a slider move or an applied action) moves the
+    /// real run away from this baseline, and the tech-value KPI measures the
+    /// gap. The shadow advances one tick whenever the real runner fires its
     /// <see cref="SimulationRunner.TickCompleted"/> event, using
-    /// <see cref="SimulationEngine.TickWithoutAdvancingScenario"/> so the
-    /// scenario's <c>TransitioningParameter</c> values are only stepped
-    /// once per simulated day (the real run owns the canonical
-    /// scenario tick).
+    /// <see cref="SimulationEngine.TickWithoutAdvancingScenario"/> so the shared
+    /// exogenous transitions (owned and stepped by the real run) are not
+    /// double-advanced and the frozen farmer values stay constant.
     /// <para>
-    /// At sub-étape 8b the shadow trajectory is mathematically identical
-    /// to the real trajectory because no decisions or auto-actions
-    /// differentiate them yet. That makes <see cref="ShadowModel"/>
-    /// equal to <see cref="SimulationRunner.Model"/> at every tick, and
-    /// the tech-delta KPI displays 0 by construction. The component
-    /// exists at 8b so the plumbing is in place; meaningful divergence
-    /// emerges at sub-étape 8c when <c>AutoActions</c> are applied to
-    /// the real engine but skipped on the shadow.
+    /// Before any decision diverges them, <see cref="ShadowModel"/> equals
+    /// <see cref="SimulationRunner.Model"/> at every tick and the tech-value
+    /// KPI reads 0 by construction — the honest "tech makes no difference yet"
+    /// reading. Divergence then comes from any farmer-decision change: a slider
+    /// move on the real run, or an applied action skipped on the shadow.
     /// </para>
     /// <para>
     /// Execution order: this runner has no DefaultExecutionOrder so its
@@ -60,7 +62,8 @@ namespace Bocage.Presentation.Simulation
             // its SubStream RNG produces an identical sequence — only
             // divergent decisions (8c) will move the two trajectories apart.
             var shadowModel = new EcosystemModel();
-            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario, realRunner.SeasonalWeather);
+            var shadowScenario = ScenarioContext.CreateFrozenShadowFrom(realRunner.Scenario);
+            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, shadowScenario, realRunner.SeasonalWeather);
 
             realRunner.TickCompleted += OnRealTickCompleted;
             realRunner.Rebuilt += OnRealRebuilt;
@@ -94,7 +97,8 @@ namespace Bocage.Presentation.Simulation
                 initialWaterTableDepth: realRunner.Model.WaterTableDepth,
                 initialHedgerowDensity: realRunner.Model.HedgerowDensity,
                 initialFaunaPopulation: realRunner.Model.FaunaPopulation);
-            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, realRunner.Scenario, realRunner.SeasonalWeather);
+            var shadowScenario = ScenarioContext.CreateFrozenShadowFrom(realRunner.Scenario);
+            _engine = DefaultSimulation.Build(realRunner.MasterSeed, shadowModel, shadowScenario, realRunner.SeasonalWeather);
         }
     }
 }

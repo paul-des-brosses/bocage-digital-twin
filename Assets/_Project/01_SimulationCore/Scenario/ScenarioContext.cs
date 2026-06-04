@@ -111,6 +111,61 @@ namespace Bocage.SimulationCore.Scenario
             HorizonInDays = horizonInDays;
         }
 
+        // Instance-based constructor used by CreateFrozenShadowFrom: lets the
+        // shadow scenario SHARE the exogenous parameter instances with the real
+        // run (so climate/policy track in lockstep) while holding its own frozen
+        // copies of the farmer-decision parameters.
+        private ScenarioContext(
+            TransitioningParameter<double> temperatureAnomalyC,
+            TransitioningParameter<double> precipitationAnomalyPercent,
+            TransitioningParameter<double> hedgeRemovalRate,
+            TransitioningParameter<double> inputIntensityFactor,
+            TransitioningParameter<double> maecCoveragePercent,
+            TransitioningParameter<double> pseSubsidyRate,
+            TransitioningParameter<double> coverCropsCoveragePercent,
+            TransitioningParameter<double> residueRestitutionPercent,
+            int startingMonth,
+            int horizonInDays)
+        {
+            TemperatureAnomalyC = temperatureAnomalyC;
+            PrecipitationAnomalyPercent = precipitationAnomalyPercent;
+            HedgeRemovalRate = hedgeRemovalRate;
+            InputIntensityFactor = inputIntensityFactor;
+            MaecCoveragePercent = maecCoveragePercent;
+            PseSubsidyRate = pseSubsidyRate;
+            CoverCropsCoveragePercent = coverCropsCoveragePercent;
+            ResidueRestitutionPercent = residueRestitutionPercent;
+            StartingMonth = startingMonth < 1 ? 1 : (startingMonth > 12 ? 12 : startingMonth);
+            HorizonInDays = horizonInDays;
+        }
+
+        /// <summary>
+        /// Builds the « passive farmer » baseline scenario for the shadow run.
+        /// The four exogenous parameters (temperature, precipitation, MAEC, PSE)
+        /// are SHARED by reference with <paramref name="real"/>, so external
+        /// conditions stay identical in both runs even if the user changes them
+        /// mid-run. The four farmer-decision parameters (hedge removal, input
+        /// intensity, cover crops, residue restitution) are FROZEN copies at the
+        /// values they hold when this is called (launch / reset), so every later
+        /// decision the user makes on those moves the real run away from this
+        /// baseline — which is exactly what the tech-value KPI measures.
+        /// StartingMonth and HorizonInDays are copied (run-level).
+        /// </summary>
+        public static ScenarioContext CreateFrozenShadowFrom(ScenarioContext real)
+        {
+            return new ScenarioContext(
+                temperatureAnomalyC: real.TemperatureAnomalyC,                 // shared (exogenous)
+                precipitationAnomalyPercent: real.PrecipitationAnomalyPercent, // shared (exogenous)
+                hedgeRemovalRate: TransitioningParameter.ForDouble(real.HedgeRemovalRate.Current),           // frozen
+                inputIntensityFactor: TransitioningParameter.ForDouble(real.InputIntensityFactor.Current),   // frozen
+                maecCoveragePercent: real.MaecCoveragePercent,                 // shared (exogenous policy)
+                pseSubsidyRate: real.PseSubsidyRate,                           // shared (exogenous policy)
+                coverCropsCoveragePercent: TransitioningParameter.ForDouble(real.CoverCropsCoveragePercent.Current),   // frozen
+                residueRestitutionPercent: TransitioningParameter.ForDouble(real.ResidueRestitutionPercent.Current),   // frozen
+                startingMonth: real.StartingMonth,
+                horizonInDays: real.HorizonInDays);
+        }
+
         public void Tick()
         {
             TemperatureAnomalyC.Tick();
