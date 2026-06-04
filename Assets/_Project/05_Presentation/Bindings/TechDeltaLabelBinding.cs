@@ -7,11 +7,12 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Listens to <see cref="RC_TechDelta"/> and writes the cumulative
-    /// « apport de la techno » (€/ha banked by the real run over the shadow
-    /// run) into the <c>tech-delta-value</c> Label. Format: signed integer
-    /// (e.g. "+150", "-40", "0"); the "€/ha" unit lives in a sibling Label.
-    /// Reads 0 until a tech decision diverges the two runs.
+    /// Listens to <see cref="RC_TechDelta"/> and writes the NET « apport de
+    /// la techno » (€/ha banked by the real run over the shadow run, minus
+    /// the cumulative action investment) into the <c>tech-delta-value</c>
+    /// Label. Format: signed integer (e.g. "+150", "-40", "0"); the "€/ha"
+    /// unit lives in a sibling Label. Reads 0 until a decision diverges the
+    /// two runs; can read negative when the capital outlay outruns the gains.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class TechDeltaLabelBinding : MonoBehaviour
@@ -35,7 +36,7 @@ namespace Bocage.Presentation.Bindings
             if (container != null)
             {
                 container.OnChanged += HandleChanged;
-                HandleChanged(container.CumulativeEurosPerHa);
+                HandleChanged(container.NetEurosPerHa);
             }
             else
             {
@@ -58,7 +59,7 @@ namespace Bocage.Presentation.Bindings
             }
         }
 
-        private void HandleChanged(float cumulativeEurosPerHa)
+        private void HandleChanged(float netEurosPerHa)
         {
             if (_label == null)
             {
@@ -66,7 +67,7 @@ namespace Bocage.Presentation.Bindings
                 if (_label == null) return;
             }
             // Signed integer so "+150" reads better than "150"; unit is separate.
-            _label.text = cumulativeEurosPerHa.ToString("+0;-0;0", CultureInfo.InvariantCulture);
+            _label.text = netEurosPerHa.ToString("+0;-0;0", CultureInfo.InvariantCulture);
         }
     }
 }

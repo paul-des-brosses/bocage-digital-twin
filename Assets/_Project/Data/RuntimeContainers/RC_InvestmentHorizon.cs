@@ -5,27 +5,25 @@ namespace Bocage.Data.RuntimeContainers
 {
     /// <summary>
     /// Observable container for the « horizon de rentabilité » metric
-    /// (chantier E5 / ADR #50). Single-writer pattern: written by
-    /// <c>SimulationRunner.PublishIndicators</c> from
+    /// (chantier E5 / ADR #50, refondu E8). Single-writer pattern: written
+    /// by <c>SimulationRunner.PublishIndicators</c> from
     /// <see cref="Bocage.Indicators.Hero.InvestmentHorizonIndicator"/>,
-    /// read by the popup and Économie tab bindings (chantier E6).
+    /// read by the Économie tab binding (chantier E6).
     /// <para>
-    /// Three channels:
+    /// Two channels:
     /// <list type="bullet">
-    ///   <item><see cref="IsReached"/> — true once the cumul matched
-    ///         total investment at least once. When false, UI bindings
-    ///         must display « Non encore atteint » instead of the
-    ///         numeric value, no matter what
-    ///         <see cref="HorizonYears"/> says.</item>
-    ///   <item><see cref="HorizonYears"/> — simulated years to break
-    ///         even, latched on first crossing. Undefined while
-    ///         <see cref="IsReached"/> is false; readers must gate
-    ///         on the flag.</item>
-    ///   <item><see cref="CumulativeProfitDeltaEurosPerHa"/> — running
-    ///         integral of (real − shadow) / 365 since first investment,
-    ///         in € / ha. Useful for the popup « écart accumulé » line
-    ///         even before the horizon is reached.</item>
+    ///   <item><see cref="IsReached"/> — true once the NET tech value
+    ///         reached break-even at least once while an investment
+    ///         existed. When false, UI bindings display « Non atteint »
+    ///         (or « Sans objet » if no investment has been made yet),
+    ///         no matter what <see cref="HorizonYears"/> says.</item>
+    ///   <item><see cref="HorizonYears"/> — simulated years from day 0 to
+    ///         break-even, latched on first crossing. Undefined while
+    ///         <see cref="IsReached"/> is false; readers must gate on the
+    ///         flag.</item>
     /// </list>
+    /// The running NET itself is surfaced by the Hero KPI
+    /// (<c>RC_TechDelta</c>), so it is not duplicated here.
     /// </para>
     /// </summary>
     [CreateAssetMenu(
@@ -35,22 +33,17 @@ namespace Bocage.Data.RuntimeContainers
     {
         [SerializeField] private bool isReached;
         [SerializeField] private float horizonYears;
-        [SerializeField] private float cumulativeProfitDeltaEurosPerHa;
 
         public event Action<bool> OnChanged;
 
         public bool IsReached => isReached;
         public float HorizonYears => horizonYears;
-        public float CumulativeProfitDeltaEurosPerHa => cumulativeProfitDeltaEurosPerHa;
 
-        public void Set(bool newIsReached, float newHorizonYears, float newCumulativeDelta)
+        public void Set(bool newIsReached, float newHorizonYears)
         {
-            if (isReached == newIsReached
-                && horizonYears == newHorizonYears
-                && cumulativeProfitDeltaEurosPerHa == newCumulativeDelta) return;
+            if (isReached == newIsReached && horizonYears == newHorizonYears) return;
             isReached = newIsReached;
             horizonYears = newHorizonYears;
-            cumulativeProfitDeltaEurosPerHa = newCumulativeDelta;
             OnChanged?.Invoke(isReached);
         }
 
@@ -58,7 +51,6 @@ namespace Bocage.Data.RuntimeContainers
         {
             isReached = false;
             horizonYears = 0f;
-            cumulativeProfitDeltaEurosPerHa = 0f;
             OnChanged?.Invoke(false);
         }
     }

@@ -17,26 +17,22 @@ namespace Bocage.Decision
     /// <c>SimulationRunner.TickCompleted</c>.
     /// </para>
     /// <para>
-    /// <b>Honesty note on the ReduceInputs action</b>. The "right" way to
-    /// reduce input intensity would be to lower
-    /// <c>ScenarioContext.InputIntensityFactor</c> — but that's the
-    /// shared scenario, so changing it would also affect the shadow run
-    /// and collapse the tech-delta KPI to zero. As a pragmatic
-    /// alternative for sub-étape 8c.3, the action applies its visible
-    /// effects directly on the real model: a fauna abundance boost
-    /// (+0.05 index, representing the immediate insect rebound from
-    /// pesticide cessation) and an input-cost reduction (−200 €/ha/yr,
-    /// representing the savings). This is a one-shot model nudge, not
-    /// a sustained scenario change — a future refactor could introduce
-    /// a per-run "tech adjustment" axis on the model to express this
-    /// cleanly without the shared-scenario tension.
+    /// <b>How ReduceInputs is applied.</b> Lowering input intensity is a
+    /// sustained PRACTICE change, so the action lowers the real run's
+    /// <c>ScenarioContext.InputIntensityFactor</c> (the same value the
+    /// « Intensité d'intrants » slider drives) by the chosen magnitude, via a
+    /// CLAUDE.md §15 transition, floored at the organic-extensive end
+    /// (<see cref="ReduceInputsRecommendation.MinInputIntensityFactor"/>). The
+    /// shadow run keeps its frozen baseline intensity (chantier E8), so the
+    /// resulting profit gap is exactly what the tech-value KPI measures — no
+    /// shared-scenario collapse, no one-shot model nudge.
     /// </para>
     /// </summary>
     public static class AutoActionPipeline
     {
         // ReduceInputs lowers the real run's input intensity toward the
-        // organic-extensive end of the slider, over a CLAUDE.md §15 transition.
-        private const double IntensityFloor = 0.5;
+        // organic-extensive floor (ReduceInputsRecommendation.MinInputIntensityFactor),
+        // over a CLAUDE.md §15 transition.
         private const int IntensityTransitionDays = 10;
 
         /// <summary>
@@ -97,8 +93,9 @@ namespace Bocage.Decision
                     // The shadow keeps its frozen baseline intensity, so this
                     // is what the tech-value KPI measures. Floored at the
                     // slider's organic-extensive end.
+                    double floorIntensity = ReduceInputsRecommendation.MinInputIntensityFactor;
                     double targetIntensity = scenario.InputIntensityFactor.Current - magnitude;
-                    if (targetIntensity < IntensityFloor) targetIntensity = IntensityFloor;
+                    if (targetIntensity < floorIntensity) targetIntensity = floorIntensity;
                     scenario.InputIntensityFactor.SetTarget(targetIntensity, IntensityTransitionDays);
                     break;
             }

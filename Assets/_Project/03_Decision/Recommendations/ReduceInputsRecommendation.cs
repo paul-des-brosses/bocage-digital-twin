@@ -25,6 +25,18 @@ namespace Bocage.Decision.Recommendations
     {
         /// <summary>Default intensity reduction proposed by the recommendation.</summary>
         public const double IntensityCutPerStep = 0.2;
+
+        /// <summary>
+        /// Organic-extensive floor of the input-intensity factor: the lowest
+        /// value the slider, the auto-action clamp and the recommendation
+        /// coherence guard all respect (0.5 = bio extensif, -50% inputs vs
+        /// conventional). Single source of truth for that floor — kept in sync
+        /// with the « input-intensity-slider » low-value in Dashboard.uxml
+        /// (UXML cannot reference a C# const). Below it the yield/cost/fauna
+        /// response curves are no longer calibrated, and a productive farm
+        /// still uses some inputs, so 0 is not a meaningful setpoint.
+        /// </summary>
+        public const double MinInputIntensityFactor = 0.5;
         private static readonly CultureInfo FrFr = CultureInfo.GetCultureInfo("fr-FR");
 
         public string Id { get; }

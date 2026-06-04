@@ -122,14 +122,38 @@ namespace Bocage.Presentation.Bindings
             EnsureResolved();
             if (_totalInvestmentLabel != null)
                 _totalInvestmentLabel.text = eurosPerHectare.ToString("F0", CultureInfo.InvariantCulture);
+            // The « Sans objet » vs « Non atteint » horizon wording depends on
+            // whether any capital has been invested, so refresh it here too —
+            // the horizon RC's OnChanged does not fire when only the investment
+            // changes (IsReached / HorizonYears stay put).
+            RefreshHorizonLabel();
         }
 
         private void HandleHorizonChanged(bool _)
         {
+            RefreshHorizonLabel();
+        }
+
+        /// <summary>
+        /// Three-state « horizon de rentabilité » row:
+        /// <list type="bullet">
+        ///   <item><b>Sans objet</b> — no capital invested yet, nothing to
+        ///         amortise.</item>
+        ///   <item><b>Non atteint</b> — invested, but the NET tech value has
+        ///         not reached break-even.</item>
+        ///   <item><b>X.X ans</b> — simulated years from day 0 to the day the
+        ///         NET first broke even.</item>
+        /// </list>
+        /// </summary>
+        private void RefreshHorizonLabel()
+        {
             EnsureResolved();
             if (_horizonLabel == null) return;
+            bool hasInvestment = totalInvestment != null && totalInvestment.EurosPerHectare > 0f;
             if (investmentHorizon != null && investmentHorizon.IsReached)
                 _horizonLabel.text = investmentHorizon.HorizonYears.ToString("F1", CultureInfo.InvariantCulture) + " ans";
+            else if (!hasInvestment)
+                _horizonLabel.text = "Sans objet";
             else
                 _horizonLabel.text = "Non atteint";
         }

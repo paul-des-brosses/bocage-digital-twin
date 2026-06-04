@@ -4,6 +4,7 @@ using Bocage.Decision.Recommendations;
 using Bocage.Sensors;
 using Bocage.Sensors.Events;
 using Bocage.SimulationCore.Model;
+using Bocage.SimulationCore.Scenario;
 using NUnit.Framework;
 
 namespace Bocage.Tests.EditMode
@@ -23,16 +24,31 @@ namespace Bocage.Tests.EditMode
         public void DroughtEvent_produces_IrrigationAdviceRecommendation()
         {
             var ev = new DroughtProlongedEvent(detectedOnDay: 50, waterTableDepthMeters: 6.0, consecutiveDryDays: 30);
-            var rec = RecommendationEngine.TryProduceFor(ev);
+            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext());
             Assert.IsInstanceOf<IrrigationAdviceRecommendation>(rec);
         }
 
         [Test]
-        public void FaunaEvent_produces_ReduceInputsRecommendation()
+        public void FaunaEvent_above_floor_intensity_produces_ReduceInputsRecommendation()
         {
+            // Default scenario intensity is 1.0 (conventional), well above the
+            // organic-extensive floor, so there is headroom to cut.
             var ev = new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3);
-            var rec = RecommendationEngine.TryProduceFor(ev);
+            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext(initialInputIntensityFactor: 1.0));
             Assert.IsInstanceOf<ReduceInputsRecommendation>(rec);
+        }
+
+        [Test]
+        public void FaunaEvent_at_floor_intensity_produces_no_recommendation()
+        {
+            // §17 coherence guard: input intensity is already at the organic-
+            // extensive floor, so "reduce inputs" cannot move the model — the
+            // engine must decline rather than show an impossible action.
+            var ev = new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3);
+            var atFloor = new ScenarioContext(
+                initialInputIntensityFactor: ReduceInputsRecommendation.MinInputIntensityFactor);
+            var rec = RecommendationEngine.TryProduceFor(ev, atFloor);
+            Assert.IsNull(rec);
         }
 
         // ---------------- Engine vs journal ----------------
@@ -46,7 +62,7 @@ namespace Bocage.Tests.EditMode
             log.Append(new FaunaAcousticAnomalyEvent(10, 0.3));
             log.Append(new DroughtProlongedEvent(20, 6.0, 30));
 
-            var recs = engine.ProduceRecommendations(log, journal);
+            var recs = engine.ProduceRecommendations(log, journal, new ScenarioContext());
             Assert.AreEqual(2, recs.Count);
         }
 
@@ -60,12 +76,12 @@ namespace Bocage.Tests.EditMode
             log.Append(ev);
 
             // First pass: produces 1 rec, append it.
-            var firstPass = engine.ProduceRecommendations(log, journal);
+            var firstPass = engine.ProduceRecommendations(log, journal, new ScenarioContext());
             Assert.AreEqual(1, firstPass.Count);
             journal.Append(firstPass[0], currentDay: 10);
 
             // Second pass: same log, journal now covers the event → 0 new.
-            var secondPass = engine.ProduceRecommendations(log, journal);
+            var secondPass = engine.ProduceRecommendations(log, journal, new ScenarioContext());
             Assert.AreEqual(0, secondPass.Count,
                 "Re-running the engine should not re-issue covered recs.");
         }

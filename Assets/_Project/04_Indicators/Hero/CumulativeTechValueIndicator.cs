@@ -4,7 +4,9 @@ namespace Bocage.Indicators.Hero
     /// "Apport de la techno" Hero KPI: the running integral, in € / ha, of
     /// the integrated-profitability advantage of the real run (tech decisions
     /// applied) over the shadow run (same seed/scenario, no tech decisions),
-    /// accumulated from day 0.
+    /// accumulated from day 0. This class owns only the GROSS operational
+    /// integral; the Hero KPI shown to the user is the NET (this value minus
+    /// the cumulative action investment, subtracted at the publish site).
     /// <para>
     /// <b>Why cumulative, not instantaneous.</b> A one-shot action (a drought
     /// irrigation, an input-reduction pulse) creates a transient profit gap
@@ -21,7 +23,7 @@ namespace Bocage.Indicators.Hero
     /// Instance-stateful (the integral depends on the trajectory, not the
     /// current state). The owner (<c>SimulationRunner</c>) calls
     /// <see cref="Update"/> once per simulated day after both engines have
-    /// advanced, and <see cref="Reset"/> at every Rebuild. Pure C#, no Unity
+    /// advanced. Pure C#, no Unity
     /// dependency — Couche 04.
     /// </para>
     /// </summary>
@@ -54,7 +56,7 @@ namespace Bocage.Indicators.Hero
             _cumulativeEurosPerHa += (realProfitAnnualised - shadowProfitAnnualised) / DaysPerYear;
         }
 
-        /// <summary>Wipes the integral back to 0 (called on Rebuild).</summary>
+        /// <summary>Wipes the integral back to 0 for a clean restart.</summary>
         public void Reset()
         {
             _cumulativeEurosPerHa = 0.0;

@@ -527,7 +527,7 @@ namespace Bocage.Presentation.Simulation
         /// </summary>
         private void PublishRecommendations()
         {
-            var pending = _recommendationEngine.ProduceRecommendations(_eventLog, _decisionJournal);
+            var pending = _recommendationEngine.ProduceRecommendations(_eventLog, _decisionJournal, _engine.Scenario);
             for (int i = 0; i < pending.Count; i++)
             {
                 _decisionJournal.Append(pending[i], _currentDay);
@@ -600,13 +600,18 @@ namespace Bocage.Presentation.Simulation
 
             if (techDeltaContainer != null && _techValue != null)
             {
-                // « Apport de la techno »: mirror the cumulative €/ha advantage
-                // banked so far (the integral is advanced once per tick in
-                // UpdateProfitAccumulators). Long-term and honest — a transient
-                // action plateaus instead of collapsing back to 0.
-                double cumulative = _techValue.CumulativeEurosPerHa;
-                double normalized = CumulativeTechValueIndicator.Normalize(cumulative);
-                techDeltaContainer.Set((float)cumulative, (float)normalized);
+                // « Apport de la techno » = NET: the cumulative operational €/ha
+                // advantage banked so far (integral advanced once per tick in
+                // UpdateProfitAccumulators) MINUS the upfront capital invested in
+                // actions (read live, so a fresh plantation drops the NET the
+                // instant it lands). Sensor costs not counted. Long-term and
+                // honest — a transient action plateaus, a sustained strategy keeps
+                // growing, and a reckless one can push the NET red.
+                double gross = _techValue.CumulativeEurosPerHa;
+                double totalInvestment = _decisionJournal != null ? _decisionJournal.TotalInvestmentEurosPerHectare : 0.0;
+                double net = gross - totalInvestment;
+                double normalized = CumulativeTechValueIndicator.Normalize(net);
+                techDeltaContainer.Set((float)net, (float)normalized);
             }
 
             if (soilCarbonContainer != null)
@@ -633,12 +638,11 @@ namespace Bocage.Presentation.Simulation
                 hedgerowHealthContainer.Set((float)health, (float)normalized);
             }
 
-            // ---- Capital + horizon (chantier E5 / ADR #50) ----
-            // _investmentHorizon is updated separately in TickLoop /
-            // FastForwardTo so the per-tick integral is only counted
-            // once per simulated day (not on manual-action publishes
-            // that happen between ticks). PublishIndicators just mirrors
-            // its current state to the observable containers.
+            // ---- Capital + horizon (chantier E5 / ADR #50, refondu E8) ----
+            // _investmentHorizon is a latch advanced once per simulated day in
+            // UpdateProfitAccumulators (not on manual-action publishes that
+            // happen between ticks). PublishIndicators just mirrors its current
+            // state to the observable containers.
             if (totalInvestmentContainer != null)
             {
                 double total = _decisionJournal != null ? _decisionJournal.TotalInvestmentEurosPerHectare : 0.0;
@@ -650,24 +654,25 @@ namespace Bocage.Presentation.Simulation
             {
                 investmentHorizonContainer.Set(
                     _investmentHorizon.IsHorizonReached,
-                    (float)_investmentHorizon.HorizonYears,
-                    (float)_investmentHorizon.CumulativeProfitDeltaEurosPerHa);
+                    (float)_investmentHorizon.HorizonYears);
             }
         }
 
         /// <summary>
-        /// Per-tick update of the two trajectory-based accumulators, from a
-        /// single real/shadow profit computation. Called once per simulated
-        /// day from the tick loops AFTER both engines have advanced, so the
-        /// annualised profits are read on synchronised post-tick state.
+        /// Per-tick update of the gross-value integral and the payback latch,
+        /// from a single real/shadow profit computation. Called once per
+        /// simulated day from the tick loops AFTER both engines have advanced,
+        /// so the annualised profits are read on synchronised post-tick state.
         /// <list type="bullet">
         ///   <item>« Apport de la techno » (<c>CumulativeTechValueIndicator</c>):
-        ///         integrated from day 0, ungated.</item>
+        ///         gross operational gap integrated from day 0, ungated.</item>
         ///   <item>« Horizon de rentabilité » (<c>InvestmentHorizonIndicator</c>,
-        ///         chantier E5 / ADR #50): only once an investment exists.</item>
+        ///         chantier E5 / ADR #50): latches the first day the NET
+        ///         (gross minus investment) breaks even.</item>
         /// </list>
         /// Idempotent against a missing shadow runner: the comparison
-        /// degenerates to <c>real − real == 0</c>, leaving both integrals idle.
+        /// degenerates to <c>real − real == 0</c>, so the gross integral stays
+        /// flat and the payback latch never fires.
         /// </summary>
         private void UpdateProfitAccumulators()
         {
@@ -678,19 +683,20 @@ namespace Bocage.Presentation.Simulation
                 : _engine.Model;
             double shadowProfit = IntegratedProfitabilityIndicator.Compute(shadowModel, _engine.Scenario);
 
-            // Cumulative « apport de la techno »: integrated from day 0,
-            // ungated — every day's real-vs-shadow profit gap is banked.
+            // Cumulative GROSS « apport de la techno »: integrated from day 0,
+            // ungated — every day's real-vs-shadow operational profit gap is
+            // banked. The Hero KPI subtracts the action investment to show the NET.
             if (_techValue != null) _techValue.Update(realProfit, shadowProfit);
 
-            // Payback horizon: only accumulates once an investment exists to
-            // amortise (latches the first day the cumul covers the bill).
-            if (_investmentHorizon != null && _decisionJournal != null)
+            // Payback horizon: feed the latch the same NET the Hero KPI shows
+            // (gross banked minus the capital invested in actions). It self-gates
+            // on « an investment exists to amortise » and latches the first day
+            // the NET reaches break-even.
+            if (_investmentHorizon != null && _decisionJournal != null && _techValue != null)
             {
                 double totalInvestment = _decisionJournal.TotalInvestmentEurosPerHectare;
-                if (totalInvestment > 0.0)
-                {
-                    _investmentHorizon.Update(realProfit, shadowProfit, totalInvestment, _currentDay);
-                }
+                double net = _techValue.CumulativeEurosPerHa - totalInvestment;
+                _investmentHorizon.Update(net, totalInvestment, _currentDay);
             }
         }
     }
