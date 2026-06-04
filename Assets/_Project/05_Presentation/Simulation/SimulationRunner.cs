@@ -338,7 +338,9 @@ namespace Bocage.Presentation.Simulation
             _eventDetector.Detect(
                 _engine.Model,
                 _eventLog,
-                _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation));
+                _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation),
+                IntegratedProfitabilityIndicator.Compute(_engine.Model, _engine.Scenario),
+                BiodiversityCompositeIndicator.Compute(_engine.Model, _engine.Scenario));
             _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
             _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
             _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);

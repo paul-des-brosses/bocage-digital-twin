@@ -44,6 +44,10 @@ namespace Bocage.Sensors
         // residue restitution) it drifts well below. Source: INRAE 4 pour 1000 /
         // BDAT reference stocks.
         public const double SoilCarbonLowThresholdTonnesPerHectare = 45.0;
+        // Profitability (EUR/ha/yr) below this is "abnormally low": the farm is in
+        // real tension (real Perche margins run 100-400; neutral year ~335). Only
+        // then does the engine offer an economy-for-ecology trade-off.
+        public const double ProfitLowThresholdEurosPerHectare = 50.0;
         public const int CooldownDays = 30;
 
         private int _consecutiveDryDays;
@@ -64,6 +68,17 @@ namespace Bocage.Sensors
         /// </para>
         /// </summary>
         public int Detect(EcosystemModel model, EventLog log, double measuredFaunaPopulation)
+            => Detect(model, log, measuredFaunaPopulation, double.MaxValue, 1.0);
+
+        /// <summary>
+        /// Full detection pass, adding the economic
+        /// <see cref="Bocage.Sensors.Events.LowProfitabilityEvent"/> driven by the
+        /// caller-supplied profitability + biodiversity indicators. Couche 04
+        /// computes those; the detector only thresholds them, exactly as the fauna
+        /// path thresholds the sensor-measured fauna index.
+        /// </summary>
+        public int Detect(EcosystemModel model, EventLog log, double measuredFaunaPopulation,
+            double currentProfitEurosPerHa, double currentBiodiversity01)
         {
             int appended = 0;
 
@@ -109,6 +124,19 @@ namespace Bocage.Sensors
                 log.Append(new SoilCarbonLowEvent(
                     detectedOnDay: model.CurrentDay,
                     soilCarbon: model.SoilCarbonStock));
+                appended++;
+            }
+
+            // ---- Low profitability: the economic alert. Profit + biodiversity
+            // are computed by Couche 04 and passed in (the detector only
+            // thresholds them). Drives the economic counter-recommendations. ----
+            if (currentProfitEurosPerHa < ProfitLowThresholdEurosPerHectare
+                && InCooldown<LowProfitabilityEvent>(log, model.CurrentDay) == false)
+            {
+                log.Append(new LowProfitabilityEvent(
+                    detectedOnDay: model.CurrentDay,
+                    profitEurosPerHectare: currentProfitEurosPerHa,
+                    biodiversity: currentBiodiversity01));
                 appended++;
             }
 

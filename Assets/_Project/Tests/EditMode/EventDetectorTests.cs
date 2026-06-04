@@ -152,5 +152,42 @@ namespace Bocage.Tests.EditMode
             var latest = log.LatestOfType<FaunaAcousticAnomalyEvent>();
             Assert.IsNull(latest);
         }
+
+        // ---------------- Low profitability (economic alert) ----------------
+
+        [Test]
+        public void LowProfitability_event_fires_below_threshold()
+        {
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var model = new EcosystemModel();
+            // Profit below the 50 EUR/ha alert, fauna healthy. The detector only
+            // thresholds the caller-supplied indicators.
+            detector.Detect(model, log, 1.0, currentProfitEurosPerHa: 20.0, currentBiodiversity01: 0.6);
+            Assert.IsNotNull(log.LatestOfType<LowProfitabilityEvent>());
+        }
+
+        [Test]
+        public void LowProfitability_event_silent_above_threshold()
+        {
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var model = new EcosystemModel();
+            detector.Detect(model, log, 1.0, currentProfitEurosPerHa: 300.0, currentBiodiversity01: 0.6);
+            Assert.IsNull(log.LatestOfType<LowProfitabilityEvent>());
+        }
+
+        [Test]
+        public void Detect_three_arg_overload_never_fires_low_profitability()
+        {
+            // The convenience overload (used by the older detector tests and any
+            // non-economic call site) passes a sentinel profit, so it never emits
+            // a LowProfitabilityEvent.
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var model = new EcosystemModel();
+            detector.Detect(model, log, 1.0);
+            Assert.IsNull(log.LatestOfType<LowProfitabilityEvent>());
+        }
     }
 }

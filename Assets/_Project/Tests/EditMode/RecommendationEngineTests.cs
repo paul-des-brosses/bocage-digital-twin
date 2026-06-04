@@ -94,6 +94,53 @@ namespace Bocage.Tests.EditMode
             Assert.IsInstanceOf<RestoreResidueRecommendation>(rec);
         }
 
+        // ---------------- Economic counter-recommendations (E9) ----------------
+
+        [Test]
+        public void LowProfitability_below_optimum_with_healthy_fauna_raises_inputs()
+        {
+            var ev = new LowProfitabilityEvent(detectedOnDay: 300, profitEurosPerHectare: 20.0, biodiversity: 0.6);
+            var scenario = new ScenarioContext(initialInputIntensityFactor: 0.5);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, new EcosystemModel());
+            Assert.IsInstanceOf<RaiseInputsRecommendation>(rec);
+        }
+
+        [Test]
+        public void LowProfitability_does_not_trade_away_critical_biodiversity()
+        {
+            // Profit is low AND there is an input lever, but biodiversity is below
+            // the critical threshold -> the engine refuses the economy-for-ecology
+            // trade and stays silent (the ecological recos interrupt instead).
+            var ev = new LowProfitabilityEvent(detectedOnDay: 300, profitEurosPerHectare: 20.0, biodiversity: 0.2);
+            var scenario = new ScenarioContext(initialInputIntensityFactor: 0.5);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, new EcosystemModel());
+            Assert.IsNull(rec);
+        }
+
+        [Test]
+        public void LowProfitability_overdense_unsubsidised_hedges_are_thinned()
+        {
+            // No input lever (already at the optimum), but hedges are over-dense
+            // and weakly subsidised -> thinning recovers margin.
+            var ev = new LowProfitabilityEvent(detectedOnDay: 300, profitEurosPerHectare: 20.0, biodiversity: 0.6);
+            var scenario = new ScenarioContext(
+                initialInputIntensityFactor: RaiseInputsRecommendation.ProfitOptimalIntensityFactor,
+                initialPseSubsidyRate: 0.0);
+            var overdense = new EcosystemModel(initialHedgerowDensity: 160.0);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, overdense);
+            Assert.IsInstanceOf<IncreaseHedgeRemovalRecommendation>(rec);
+        }
+
+        [Test]
+        public void LowProfitability_at_optimum_with_normal_hedges_stays_silent()
+        {
+            var ev = new LowProfitabilityEvent(detectedOnDay: 300, profitEurosPerHectare: 20.0, biodiversity: 0.6);
+            var scenario = new ScenarioContext(
+                initialInputIntensityFactor: RaiseInputsRecommendation.ProfitOptimalIntensityFactor);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, new EcosystemModel());
+            Assert.IsNull(rec);
+        }
+
         // ---------------- Engine vs journal ----------------
 
         [Test]

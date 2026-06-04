@@ -52,6 +52,16 @@ namespace Bocage.Decision
         // below this, leaving meaningful room for the reco to raise it.
         private const double CoveragePercentFullTolerance = 99.0;
 
+        // Biodiversity composite below this is "ecologically critical" — the
+        // engine will not offer to trade it away for profit.
+        private const double BiodiversityCriticalThreshold = 0.30;
+        // Hedge density (m/ha) clearly above the agronomic optimum (~90): beyond
+        // it, extra hedges start costing yield via the bell penalty.
+        private const double HedgeOverdenseThresholdMeters = 120.0;
+        // PSE rate (EUR/m/yr) below which hedges are weakly subsidised, so an
+        // over-dense stand can cost more (maintenance + yield) than it returns.
+        private const double PseLowThresholdEurosPerMeter = 1.0;
+
         /// <summary>
         /// Walks the <paramref name="eventLog"/> and returns the recommendations
         /// to issue now, given the <paramref name="journal"/> of past decisions
@@ -95,6 +105,8 @@ namespace Bocage.Decision
                     return ChooseFaunaResponse(ev.DetectedOnDay, instanceId, scenario, model);
                 case SoilCarbonLowEvent _:
                     return ChooseSoilCarbonResponse(ev.DetectedOnDay, instanceId, scenario);
+                case LowProfitabilityEvent lpe:
+                    return ChooseEconomicResponse(ev.DetectedOnDay, instanceId, scenario, model, lpe.BiodiversityAtDetection);
                 default:
                     return null;
             }
@@ -140,6 +152,33 @@ namespace Bocage.Decision
                 return new SowCoverCropsRecommendation(day, evtId);
             if (scenario.ResidueRestitutionPercent.Current < CoveragePercentFullTolerance)
                 return new RestoreResidueRecommendation(day, evtId);
+            return null;
+        }
+
+        // Low profitability: the economic counterweight. Steer toward the profit
+        // optimum from whichever side, but never trade away already-critical fauna
+        // for margin — when biodiversity is critical only the ecological recos
+        // (which interrupt) should fire.
+        private static IRecommendation ChooseEconomicResponse(
+            int day, string evtId, ScenarioContext scenario, EcosystemModel model, double biodiversity)
+        {
+            if (scenario == null || model == null) return null;
+            if (biodiversity < BiodiversityCriticalThreshold) return null;
+
+            // 1. Over-extensified below the profit optimum -> nudge inputs up.
+            if (scenario.InputIntensityFactor.Current
+                < RaiseInputsRecommendation.ProfitOptimalIntensityFactor - IntensityFloorTolerance)
+            {
+                return new RaiseInputsRecommendation(day, evtId);
+            }
+
+            // 2. Over-dense, weakly-subsidised hedges -> thin them (narrow corner).
+            if (model.HedgerowDensity > HedgeOverdenseThresholdMeters
+                && scenario.PseSubsidyRate.Current < PseLowThresholdEurosPerMeter)
+            {
+                return new IncreaseHedgeRemovalRecommendation(day, evtId);
+            }
+
             return null;
         }
 
