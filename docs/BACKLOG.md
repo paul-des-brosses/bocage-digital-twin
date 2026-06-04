@@ -262,28 +262,31 @@ lourde. Particle System Unity standard, pre-warm activé.
 
 ### #8 — Enrichir les leviers décisionnels de l'agriculteur
 
-**Pourquoi reporté** : le MVP livre 3 types de recommandations
-(replanter haies, irrigation, baisser intrants) déclenchées par
-2 événements (drought, anomalie acoustique faune) après purge
-chalara. Plus 3 actions manuelles équivalentes via journal (ADR #47).
+**Statut** : ✅ **largement livré en chantier E8-E9** (2026-06-04). Le
+système de recommandations est passé de 3 à 8 recos sur 6 leviers, avec
+dispatch state-aware et contrepoids économiques (cf CALIBRATION.md §E8-E9) :
 
-**Pistes d'extension** :
+- Nouveaux événements : **épuisement fertilité sol** (`SoilCarbonLowEvent`,
+  tour Eddy) et **rentabilité basse** (`LowProfitabilityEvent`).
+- Nouvelles recos : **couverts d'interculture**, **restitution résidus**,
+  **réduire / augmenter l'arrachage**, **remonter les intrants** (contrepoids
+  économique anti-greenwashing).
 
-- Nouveaux types d'événements : excès de pluviométrie, pression
-  ravageurs (lecture caméra), épuisement fertilité sol.
-- Nouvelles recommandations : couverts végétaux d'interculture
-  (couplable avec carbone sol ADR #48), agroforesterie inter-rangs,
-  drainage léger, fauche tardive, reconnexion mare/fossé.
-- Nouveaux leviers continus dans le panneau de droite : calendrier
-  de fauche, ratio prairies permanentes/temporaires.
+**Reste en backlog** (pistes non livrées) :
 
-**Garde-fous** :
+- Recos : **fauche tardive / bande enherbée** (recherchée E9 — Gargamel,
+  pucerons −30-50 % — mais non construite), agroforesterie inter-rangs,
+  drainage léger, reconnexion mare/fossé (cf #23).
+- Événements : excès de pluviométrie, pression ravageurs (caméra — cf #24).
+- Leviers continus : calendrier de fauche, ratio prairies permanentes /
+  temporaires (cf #28).
 
-- Toute nouvelle reco doit être déclenchée par un événement traçable
-  à un capteur (CLAUDE.md §9).
-- Chaque levier doit avoir une calibration sourcée.
+**Garde-fous** (respectés en E8-E9) :
 
-**Estimation** : 1 jour par type de reco supplémentaire.
+- Toute nouvelle reco déclenchée par une mesure (§9). ✅
+- Chaque levier calibré et sourcé (CALIBRATION.md §E8-E9). ✅
+
+**Estimation restante** : ~1 jour par type de reco supplémentaire.
 
 ---
 
@@ -668,6 +671,60 @@ multi-espèces du modèle, pas les boutons.
 
 ---
 
+### #30 — `OutcomeProjector` state-aware (dérivé du modèle)
+
+**Origine** : chantier E8-E9 (2026-06-04). Incohérence Priority-1 de l'audit
+interne du modèle.
+
+**Pourquoi backlog** : les projections d'outcome du popup décision
+(`OutcomeProjector`) sont des **coefficients figés** par type de reco, pas des
+dérivations du modèle dans l'état courant. Bon ordre de grandeur et bon signe,
+mais elles divergent de l'effet réel (la baisse d'intrants promet +0,10 de
+biodiv long terme là où `FaunaDynamicsRule` en donne ~+0,014 à un pas de
+−20 %). Suffisant pour le MVP, documenté comme limite dans CALIBRATION.md §E8-E9.
+
+**Cible** :
+
+- Calculer (Δprofit, Δbiodiv) d'une action depuis l'état courant via les règles
+  recalibrées, au lieu des coefficients figés.
+- Bénéfice 1 : corrige l'incohérence projecteur↔modèle.
+- Bénéfice 2 : **active l'escalade de surfaçage** — un compromis *écologique*
+  (profit↓ / biodiv↑) remonterait en popup si biodiv < 0.30. Aujourd'hui
+  dormante, faute de reco écolo classée « compromis » par le projecteur figé.
+
+**Pré-requis** : petit refactor de couche — les constantes économiques
+(`CropPrice`, `BasicCapPayment`, `PacHedgeBonus`) sont en Couche 04
+(`IntegratedProfitabilityIndicator`) alors que le projecteur est en Couche 03.
+Les remonter en Couche 01 (`FarmEconomics`) débloque le calcul.
+
+**Estimation** : 1-1.5 jour.
+
+---
+
+### #31 — Sourçage des constantes encore arbitraires (audit interne)
+
+**Origine** : audit interne du modèle (chantier E9, 2026-06-04). ~31 % des
+calculs étaient « arbitraires » (posés sans justification sourcée).
+
+**Pourquoi backlog** : non bloquant pour le MVP (les calculs cœur — rendement,
+coûts, profit, faune, carbone — sont sourcés), mais à durcir pour la rigueur
+scientifique avant un usage sérieux.
+
+**Cible (par priorité d'audit)** :
+
+- **Nappe** (`WaterTableDynamicsRule`) : `InfiltrationFactor = 0.0001`,
+  `EvaporationBase = 0.003`, `RechargeRate = 0.002/j` — calibrés contre un test
+  interne, pas une source hydrogéologique Perche. À documenter ou recaler.
+- **Poids du composite biodiv** (40 % habitat / 25 % eau / 35 % intrants) :
+  justification qualitative (Krefeld / MNHN) mais pas d'analyse de sensibilité
+  ni de source chiffrée des pondérations exactes.
+- **Croissance des haies 0.5 m/ha/an** (cf #19), seuil eau faune 8 %/m,
+  pénalité canicule 0,01/jour : plages partielles à resserrer.
+
+**Estimation** : 1-2 jours (recherche + tests de sensibilité).
+
+---
+
 ## 6. Liens cross-document
 
 - Items basculés MVP : voir `docs/ROADMAP.md` (chantiers E1-E7) et
@@ -684,6 +741,9 @@ multi-espèces du modèle, pas les boutons.
 - Items #24-#28 : nouveaux post-recadrage du 2026-05-28 (santé
   végétale complète, phénologie, crises manuelles, effets visuels
   saisonniers, 4ème facteur biodiv).
+- Items #29-#31 : issus de demandes / chantiers récents (biodiv
+  espèce-résolue 2026-06-03 ; OutcomeProjector state-aware + sourçage
+  constantes arbitraires, chantier E8-E9). Item #8 marqué livré (E8-E9).
 
 Tout item ajouté au backlog doit pointer vers la décision ou le
 chantier d'origine pour ne pas perdre la traçabilité.
