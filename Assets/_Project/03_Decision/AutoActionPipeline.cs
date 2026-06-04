@@ -34,6 +34,11 @@ namespace Bocage.Decision
     /// </summary>
     public static class AutoActionPipeline
     {
+        // ReduceInputs lowers the real run's input intensity toward the
+        // organic-extensive end of the slider, over a CLAUDE.md §15 transition.
+        private const double IntensityFloor = 0.5;
+        private const int IntensityTransitionDays = 10;
+
         /// <summary>
         /// Walks the journal's resolved entries and applies the
         /// mechanical effect of any Accepted / AutoAccepted rec not yet
@@ -84,13 +89,17 @@ namespace Bocage.Decision
                     model.SetWaterTableDepth(newDepth);
                     break;
                 case ReduceInputsRecommendation _:
-                    // Scale the fauna boost + input cost cut linearly
-                    // with the user-chosen magnitude relative to the
-                    // reference cut (0.2 = default).
-                    double ratio = magnitude / ReduceInputsRecommendation.IntensityCutPerStep;
-                    if (ratio < 0) ratio = 0;
-                    model.SetFaunaPopulation(model.FaunaPopulation + 0.05 * ratio);
-                    model.SetInputCost(model.InputCost - 200.0 * ratio);
+                    if (scenario == null) break;
+                    // A sustained PRACTICE change: lower the real run's input
+                    // intensity (the slider) by the chosen magnitude. The
+                    // effect - lower input cost, recovering fauna, adjusted
+                    // yield - then flows through the rules over the transition.
+                    // The shadow keeps its frozen baseline intensity, so this
+                    // is what the tech-value KPI measures. Floored at the
+                    // slider's organic-extensive end.
+                    double targetIntensity = scenario.InputIntensityFactor.Current - magnitude;
+                    if (targetIntensity < IntensityFloor) targetIntensity = IntensityFloor;
+                    scenario.InputIntensityFactor.SetTarget(targetIntensity, IntensityTransitionDays);
                     break;
             }
         }

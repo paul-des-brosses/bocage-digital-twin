@@ -111,7 +111,6 @@ namespace Bocage.Presentation.Simulation
         // unique recommendation id even though the day suffix collides.
         private int _manualPlantHedgesSeq;
         private int _manualIrrigationSeq;
-        private int _manualReduceInputsSeq;
 
         public EcosystemModel Model => _engine?.Model;
         public Bocage.SimulationCore.Scenario.ScenarioContext Scenario => _engine?.Scenario;
@@ -397,7 +396,6 @@ namespace Bocage.Presentation.Simulation
             _decisionJournal = new DecisionJournal();
             _manualPlantHedgesSeq = 0;
             _manualIrrigationSeq = 0;
-            _manualReduceInputsSeq = 0;
             // Re-instantiate so the fauna sensor noise sequence restarts
             // from day 0 in lockstep with the engine. Otherwise the
             // existing instance's internal state would have advanced and
@@ -518,25 +516,6 @@ namespace Bocage.Presentation.Simulation
             AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
             PublishIndicators();
             SimLogger.UserActionLog("manual: irrigation −" + magnitude.ToString("F2") + " m depth (day " + _currentDay + ", id=" + rec.Id + ")");
-        }
-
-        /// <summary>
-        /// Manual « Baisser intrants » pulse. ADR #47 pathway — see
-        /// <see cref="ApplyManualPlantHedges"/>. The intensity-cut
-        /// scaling (ratio-against-<see cref="ReduceInputsRecommendation.IntensityCutPerStep"/>)
-        /// happens inside <see cref="AutoActionPipeline.ApplyOne"/>;
-        /// the runner therefore passes the raw magnitude.
-        /// </summary>
-        public void ApplyManualReduceInputs(double intensityCut)
-        {
-            if (_engine == null || _engine.Model == null) return;
-            double magnitude = intensityCut < 0 ? 0 : intensityCut;
-            _manualReduceInputsSeq++;
-            var rec = ReduceInputsRecommendation.Manual(_currentDay, _manualReduceInputsSeq, magnitude);
-            _decisionJournal.Append(rec, _currentDay, magnitude);
-            AutoActionPipeline.Apply(_decisionJournal, _engine.Model, _engine.Scenario, _currentDay);
-            PublishIndicators();
-            SimLogger.UserActionLog("manual: reduce-inputs −" + magnitude.ToString("F2") + " intensity (day " + _currentDay + ", id=" + rec.Id + ")");
         }
 
         /// <summary>

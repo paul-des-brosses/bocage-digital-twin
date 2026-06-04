@@ -66,9 +66,7 @@ namespace Bocage.Tests.EditMode
         [Test]
         public void Reduce_inputs_has_zero_investment_cost()
         {
-            var manual = ReduceInputsRecommendation.Manual(day: 1, sequence: 1, magnitude: 0.2);
             var auto = new ReduceInputsRecommendation(issuedOnDay: 1, triggeredByEventId: "evt");
-            Assert.AreEqual(0.0, manual.InvestmentCostEurosPerHectare, 1e-9);
             Assert.AreEqual(0.0, auto.InvestmentCostEurosPerHectare, 1e-9);
         }
 
@@ -106,7 +104,7 @@ namespace Bocage.Tests.EditMode
                 IrrigationAdviceRecommendation.Manual(day: 2, sequence: 1, magnitude: 1.5),
                 currentDay: 2, initialMagnitude: 1.5);
             journal.Append(
-                ReduceInputsRecommendation.Manual(day: 3, sequence: 1, magnitude: 0.2),
+                new ReduceInputsRecommendation(issuedOnDay: 3, triggeredByEventId: "evt"),
                 currentDay: 3, initialMagnitude: 0.2);
             Assert.AreEqual(150.0, journal.TotalInvestmentEurosPerHectare, 1e-9);
         }

@@ -51,33 +51,27 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void ApplyOne_ReduceInputs_default_magnitude_matches_legacy_constants()
+        public void ApplyOne_ReduceInputs_lowers_the_real_input_intensity()
         {
-            // At the reference cut (0.2), fauna boost is +0.05 and cost
-            // reduction is −200 €/ha (the values hard-coded before the
-            // magnitude refactor).
-            var model = new EcosystemModel(
-                initialFaunaPopulation: 0.7,
-                initialInputCost: 1200.0);
-            var scenario = new ScenarioContext();
+            // The recommendation is a sustained practice change: it lowers the
+            // real run's input-intensity decision by the magnitude (the slider
+            // then transitions there). 1.0 - 0.2 = 0.8.
+            var model = new EcosystemModel();
+            var scenario = new ScenarioContext(initialInputIntensityFactor: 1.0);
             var rec = new ReduceInputsRecommendation(10, "evt#10");
             AutoActionPipeline.ApplyOne(rec, model, scenario, ReduceInputsRecommendation.IntensityCutPerStep);
-            Assert.AreEqual(0.75, model.FaunaPopulation, 1e-9);
-            Assert.AreEqual(1000.0, model.InputCost, 1e-9);
+            Assert.AreEqual(0.8, scenario.InputIntensityFactor.Target, 1e-9);
         }
 
         [Test]
-        public void ApplyOne_ReduceInputs_scales_linearly_with_magnitude()
+        public void ApplyOne_ReduceInputs_floors_intensity_at_the_extensive_end()
         {
-            // Half the magnitude → half the boost / cost-cut.
-            var model = new EcosystemModel(
-                initialFaunaPopulation: 0.7,
-                initialInputCost: 1200.0);
-            var scenario = new ScenarioContext();
+            // 0.6 - 0.2 = 0.4 would cross below the 0.5 organic-extensive floor.
+            var model = new EcosystemModel();
+            var scenario = new ScenarioContext(initialInputIntensityFactor: 0.6);
             var rec = new ReduceInputsRecommendation(10, "evt#10");
-            AutoActionPipeline.ApplyOne(rec, model, scenario, ReduceInputsRecommendation.IntensityCutPerStep / 2.0);
-            Assert.AreEqual(0.725, model.FaunaPopulation, 1e-9);
-            Assert.AreEqual(1100.0, model.InputCost, 1e-9);
+            AutoActionPipeline.ApplyOne(rec, model, scenario, ReduceInputsRecommendation.IntensityCutPerStep);
+            Assert.AreEqual(0.5, scenario.InputIntensityFactor.Target, 1e-9);
         }
 
         // ---------------- Apply pipeline + journal ----------------

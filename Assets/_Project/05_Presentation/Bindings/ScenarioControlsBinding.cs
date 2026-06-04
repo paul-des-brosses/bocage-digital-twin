@@ -74,11 +74,38 @@ namespace Bocage.Presentation.Bindings
             ResolveElements();
             InitializeFromScenario();
             WireCallbacks();
+            if (runner != null) runner.TickCompleted += OnTickSync;
         }
 
         private void OnDisable()
         {
             UnwireCallbacks();
+            if (runner != null) runner.TickCompleted -= OnTickSync;
+        }
+
+        /// <summary>
+        /// Once per simulated day, reflect scenario changes made OUTSIDE the UI
+        /// (e.g. a « baisser intrants » recommendation lowering input intensity)
+        /// by snapping the farmer sliders to their current TARGET — not the
+        /// in-transit Current, so a slider the user just dragged stays where
+        /// they put it. Idempotent when the user is the source of the target.
+        /// </summary>
+        private void OnTickSync()
+        {
+            if (runner == null || runner.Scenario == null) return;
+            var s = runner.Scenario;
+            SyncSliderToTarget(_hedgeRemovalSlider, _hedgeRemovalLabel, (float)s.HedgeRemovalRate.Target, FormatHedgeRemoval);
+            SyncSliderToTarget(_inputIntensitySlider, _inputIntensityLabel, (float)s.InputIntensityFactor.Target, FormatIntensity);
+            SyncSliderToTarget(_coverCropsSlider, _coverCropsLabel, (float)s.CoverCropsCoveragePercent.Target, FormatPercent);
+            SyncSliderToTarget(_residueRestitutionSlider, _residueRestitutionLabel, (float)s.ResidueRestitutionPercent.Target, FormatPercent);
+        }
+
+        private static void SyncSliderToTarget(Slider slider, Label label, float target, System.Func<float, string> format)
+        {
+            if (slider == null) return;
+            if (Mathf.Approximately(slider.value, target)) return;
+            slider.SetValueWithoutNotify(target);
+            if (label != null) label.text = format(target);
         }
 
         private void ResolveElements()

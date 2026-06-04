@@ -303,15 +303,6 @@
                             <ui:Button name="manual-irrigation-button" text="Irriguer" class="manual-action-button" tooltip="Remonte le toit de la nappe de la profondeur choisie (m). Floor à 0.5 m pour éviter l'engorgement." />
                         </ui:VisualElement>
 
-                        <ui:VisualElement class="scenario-control">
-                            <ui:VisualElement class="scenario-control-header">
-                                <ui:Label text="Baisser intrants (pulse)" class="scenario-control-label" />
-                                <ui:Label name="manual-reduce-inputs-value" text="0.20× réf." class="scenario-control-value" />
-                            </ui:VisualElement>
-                            <ui:Slider name="manual-reduce-inputs-slider" low-value="0" high-value="0.5" value="0.2" class="scenario-slider" show-input-field="true" />
-                            <ui:Button name="manual-reduce-inputs-button" text="Appliquer" class="manual-action-button" tooltip="Pulse de réduction d'intrants : boost faune ponctuel + baisse instantanée des coûts. Pour une réduction continue, utilise plutôt le slider Intensité d'intrants ci-dessus." />
-                        </ui:VisualElement>
-
                         <ui:Label text="Recommandations algorithmiques" class="scenario-section-title scenario-section-title--decision" tooltip="Les recos produites par l'algorithme apparaissent comme un popup centré qui met la simulation en pause. Le bouton ci-dessous ouvre la liste des recommandations en attente (dont celles que tu as différées via Voir plus tard)." />
                         <ui:Button name="decision-history-open-button" text="Aucune recommandation en cours" class="decision-history-open-button" tooltip="Ouvre la liste des recommandations actuellement en attente. Click sur une ligne = ré-ouvre la popup de recommandation pour l'examiner." />
 

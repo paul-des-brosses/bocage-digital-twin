@@ -3,26 +3,28 @@ using System.Globalization;
 namespace Bocage.Decision.Recommendations
 {
     /// <summary>
-    /// Suggests reducing fertiliser/pesticide intensity in response to
-    /// an acoustic fauna anomaly (auto) or a user click on « Baisser
-    /// intrants » (manual). ADR #55 pattern uniforme : Title court,
-    /// rationale d'action concrète, ligne « Effet modélisé : ... »
-    /// chiffrée. Two wordings coexist on this class : voie auto avec
-    /// ligne « Déclenché par : ... », voie manuelle sans.
+    /// Suggests lowering the farm's input intensity (fertiliser / pesticide)
+    /// in response to an acoustic fauna anomaly. ADR #55 pattern: short title,
+    /// concrete action rationale, « Déclenché par : ... » trailer pointing to
+    /// the sensor that fired the event.
     /// <para>
-    /// Sources : Hallmann et al. 2017 / MNHN 2024 / Vigie-Nature —
-    /// pesticide reduction is the fastest lever to recover farmland
-    /// insect abundance. The mechanical scaling per intensity-cut unit
-    /// (+0.05 fauna index, −200 €/ha/an input cost) is defined by
-    /// <see cref="FaunaBoostPerCutUnit"/> / <see cref="InputCostReductionPerCutUnit"/>
-    /// below and applied in <see cref="Bocage.Decision.AutoActionPipeline.ApplyOne"/>.
+    /// Unlike a one-off action, this is a sustained PRACTICE change: accepting
+    /// it lowers the real run's input-intensity decision (the slider) by the
+    /// chosen magnitude, and the effect — lower input cost, recovering fauna,
+    /// adjusted yield — then flows through the biophysical rules over the
+    /// following weeks. The shadow run keeps its frozen baseline intensity, so
+    /// the resulting gap is exactly what the tech-value KPI measures. Applied
+    /// in <see cref="Bocage.Decision.AutoActionPipeline.ApplyOne"/>.
+    /// </para>
+    /// <para>
+    /// Source: Hallmann et al. 2017 / MNHN 2024 / Vigie-Nature — pesticide
+    /// reduction is the fastest lever to recover farmland insect abundance.
     /// </para>
     /// </summary>
     public sealed class ReduceInputsRecommendation : IRecommendation
     {
+        /// <summary>Default intensity reduction proposed by the recommendation.</summary>
         public const double IntensityCutPerStep = 0.2;
-        private const double FaunaBoostPerCutUnit = 0.05;
-        private const double InputCostReductionPerCutUnit = 200.0;
         private static readonly CultureInfo FrFr = CultureInfo.GetCultureInfo("fr-FR");
 
         public string Id { get; }
@@ -31,10 +33,10 @@ namespace Bocage.Decision.Recommendations
         public int IssuedOnDay { get; }
         public string TriggeredByEventId { get; }
         public DecisionVerdict DefaultVerdict { get; }
+
         /// <summary>
-        /// ADR #50: reducing input intensity is a recurring policy
-        /// change whose savings flow through <c>InputCost</c>; no
-        /// upfront capital. Always 0.
+        /// A practice change carries no upfront capital — the savings flow
+        /// through <c>InputCost</c>. Always 0.
         /// </summary>
         public double InvestmentCostEurosPerHectare => 0.0;
 
@@ -61,48 +63,16 @@ namespace Bocage.Decision.Recommendations
         }
 
         /// <summary>
-        /// Manual-pathway factory (ADR #47). Used when the user clicks
-        /// « Baisser intrants » with a chosen intensity-cut magnitude.
-        /// </summary>
-        public static ReduceInputsRecommendation Manual(int day, int sequence, double magnitude)
-        {
-            return new ReduceInputsRecommendation(
-                id: "manual-reduce-inputs#" + day + "-" + sequence,
-                title: "Baisser l'intensité d'intrants",
-                rationale: FormatManualRationale(magnitude),
-                issuedOnDay: day,
-                triggeredByEventId: null,
-                defaultVerdict: DecisionVerdict.AutoAccepted);
-        }
-
-        /// <summary>
-        /// ADR #55 auto wording, with « Déclenché par : ... » trailer
-        /// pointing to the acoustic sensor that fired the event.
+        /// ADR #55 auto wording, with « Déclenché par : ... » trailer pointing
+        /// to the acoustic sensor that fired the event.
         /// </summary>
         public static string FormatAutoRationale(double magnitude)
         {
-            return "Réduction des intrants chimiques sur 30 jours. "
-                 + "Effet modélisé : " + FormatEffectClause(magnitude) + ". "
+            return "Baisse l'intensité d'intrants de " + magnitude.ToString("0.0", FrFr)
+                 + " (vers des pratiques plus extensives). "
+                 + "Effet : coût des intrants en baisse et faune qui se rétablit sur les "
+                 + "semaines suivantes, via le modèle. "
                  + "Déclenché par : Anomalie acoustique faune détectée par le capteur acoustique.";
-        }
-
-        /// <summary>
-        /// ADR #55 manual wording, sans « Déclenché par : ... ».
-        /// </summary>
-        public static string FormatManualRationale(double magnitude)
-        {
-            return "Réduction des intrants chimiques sur 30 jours. "
-                 + "Effet modélisé : " + FormatEffectClause(magnitude) + ".";
-        }
-
-        private static string FormatEffectClause(double magnitude)
-        {
-            double ratio = magnitude / IntensityCutPerStep;
-            if (ratio < 0) ratio = 0;
-            double faunaBoost = FaunaBoostPerCutUnit * ratio;
-            double inputCostDrop = InputCostReductionPerCutUnit * ratio;
-            return "+" + faunaBoost.ToString("F2", FrFr) + " de population faune, −"
-                 + inputCostDrop.ToString("F0", FrFr) + " €/ha de coût d'intrants";
         }
     }
 }
