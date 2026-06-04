@@ -39,6 +39,11 @@ namespace Bocage.Sensors
         public const double DroughtDepthThresholdMeters = 3.5;
         public const int DroughtConsecutiveDaysThreshold = 30;
         public const double FaunaAcousticAnomalyThreshold = 0.7;
+        // Soil carbon stock (tC/ha) below this is flagged as degrading. The
+        // default stock is 50; under low organic inputs (no cover crops, low
+        // residue restitution) it drifts well below. Source: INRAE 4 pour 1000 /
+        // BDAT reference stocks.
+        public const double SoilCarbonLowThresholdTonnesPerHectare = 45.0;
         public const int CooldownDays = 30;
 
         private int _consecutiveDryDays;
@@ -90,6 +95,20 @@ namespace Bocage.Sensors
                 log.Append(new FaunaAcousticAnomalyEvent(
                     detectedOnDay: model.CurrentDay,
                     faunaPopulation: measuredFaunaPopulation));
+                appended++;
+            }
+
+            // ---- Soil carbon low: threshold on the model's carbon stock, the
+            // quantity the eddy-flux tower monitors. Like the drought detector
+            // above, this reads model state directly; routing it through the
+            // EddyTower reader for full sensor-noise parity (as the fauna path
+            // does) is a possible refinement. ----
+            if (model.SoilCarbonStock < SoilCarbonLowThresholdTonnesPerHectare
+                && InCooldown<SoilCarbonLowEvent>(log, model.CurrentDay) == false)
+            {
+                log.Append(new SoilCarbonLowEvent(
+                    detectedOnDay: model.CurrentDay,
+                    soilCarbon: model.SoilCarbonStock));
                 appended++;
             }
 

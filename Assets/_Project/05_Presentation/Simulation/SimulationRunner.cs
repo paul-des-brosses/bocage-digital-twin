@@ -527,7 +527,7 @@ namespace Bocage.Presentation.Simulation
         /// </summary>
         private void PublishRecommendations()
         {
-            var pending = _recommendationEngine.ProduceRecommendations(_eventLog, _decisionJournal, _engine.Scenario);
+            var pending = _recommendationEngine.ProduceRecommendations(_eventLog, _decisionJournal, _engine.Scenario, _engine.Model);
             for (int i = 0; i < pending.Count; i++)
             {
                 _decisionJournal.Append(pending[i], _currentDay);

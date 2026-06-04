@@ -4,8 +4,10 @@ namespace Bocage.Decision.Recommendations
 {
     /// <summary>
     /// Suggests planting fresh hedge segments to strengthen the bocage
-    /// network. Triggered exclusively by the « Replanter haies » manual
-    /// button (no algorithmic emission since E0). ADR #55 pattern :
+    /// network. Triggered manually by the « Replanter haies » button, and
+    /// (since chantier E9) algorithmically by
+    /// <see cref="Bocage.Decision.RecommendationEngine"/> as the habitat
+    /// response to a fauna anomaly once the input lever is exhausted. ADR #55 pattern :
     /// Title court, rationale d'action concrète, ligne « Effet
     /// modélisé : ... » chiffrée. The coût d'entretien Y €/ha/an
     /// induit par la densité plantée est repris automatiquement par

@@ -24,7 +24,7 @@ namespace Bocage.Tests.EditMode
         public void DroughtEvent_produces_IrrigationAdviceRecommendation()
         {
             var ev = new DroughtProlongedEvent(detectedOnDay: 50, waterTableDepthMeters: 6.0, consecutiveDryDays: 30);
-            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext());
+            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext(), new EcosystemModel());
             Assert.IsInstanceOf<IrrigationAdviceRecommendation>(rec);
         }
 
@@ -34,21 +34,64 @@ namespace Bocage.Tests.EditMode
             // Default scenario intensity is 1.0 (conventional), well above the
             // organic-extensive floor, so there is headroom to cut.
             var ev = new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3);
-            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext(initialInputIntensityFactor: 1.0));
+            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext(initialInputIntensityFactor: 1.0), new EcosystemModel());
             Assert.IsInstanceOf<ReduceInputsRecommendation>(rec);
         }
 
         [Test]
-        public void FaunaEvent_at_floor_intensity_produces_no_recommendation()
+        public void FaunaEvent_at_floor_intensity_redirects_to_habitat()
         {
-            // §17 coherence guard: input intensity is already at the organic-
-            // extensive floor, so "reduce inputs" cannot move the model — the
-            // engine must decline rather than show an impossible action.
+            // §17 redirect (E9): inputs are already at the organic-extensive
+            // floor, so "reduce inputs" is exhausted; with no active hedge removal
+            // the engine offers the habitat lever (plant hedges) instead of nothing.
             var ev = new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3);
             var atFloor = new ScenarioContext(
                 initialInputIntensityFactor: ReduceInputsRecommendation.MinInputIntensityFactor);
-            var rec = RecommendationEngine.TryProduceFor(ev, atFloor);
+            var rec = RecommendationEngine.TryProduceFor(ev, atFloor, new EcosystemModel());
+            Assert.IsInstanceOf<PlantHedgesRecommendation>(rec);
+        }
+
+        [Test]
+        public void FaunaEvent_with_active_removal_at_floor_slows_removal_first()
+        {
+            // Inputs floored AND the farmer is grubbing hedges -> stop that first
+            // (cheapest habitat move) before recommending new planting.
+            var ev = new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3);
+            var scenario = new ScenarioContext(
+                initialInputIntensityFactor: ReduceInputsRecommendation.MinInputIntensityFactor,
+                initialHedgeRemovalRate: 8.0);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, new EcosystemModel());
+            Assert.IsInstanceOf<ReduceHedgeRemovalRecommendation>(rec);
+        }
+
+        [Test]
+        public void FaunaEvent_all_habitat_levers_exhausted_produces_no_recommendation()
+        {
+            // Inputs floored, no removal, hedges saturated -> the low fauna has
+            // another cause; the engine stays silent (no impossible action, §17).
+            var ev = new FaunaAcousticAnomalyEvent(detectedOnDay: 200, faunaPopulation: 0.3);
+            var scenario = new ScenarioContext(
+                initialInputIntensityFactor: ReduceInputsRecommendation.MinInputIntensityFactor);
+            var saturated = new EcosystemModel(initialHedgerowDensity: 200.0);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, saturated);
             Assert.IsNull(rec);
+        }
+
+        [Test]
+        public void SoilCarbonLowEvent_with_room_produces_cover_crops()
+        {
+            var ev = new SoilCarbonLowEvent(detectedOnDay: 100, soilCarbon: 40.0);
+            var rec = RecommendationEngine.TryProduceFor(ev, new ScenarioContext(), new EcosystemModel());
+            Assert.IsInstanceOf<SowCoverCropsRecommendation>(rec);
+        }
+
+        [Test]
+        public void SoilCarbonLowEvent_cover_full_falls_back_to_residue()
+        {
+            var ev = new SoilCarbonLowEvent(detectedOnDay: 100, soilCarbon: 40.0);
+            var scenario = new ScenarioContext(initialCoverCropsCoveragePercent: 100.0);
+            var rec = RecommendationEngine.TryProduceFor(ev, scenario, new EcosystemModel());
+            Assert.IsInstanceOf<RestoreResidueRecommendation>(rec);
         }
 
         // ---------------- Engine vs journal ----------------
@@ -62,7 +105,7 @@ namespace Bocage.Tests.EditMode
             log.Append(new FaunaAcousticAnomalyEvent(10, 0.3));
             log.Append(new DroughtProlongedEvent(20, 6.0, 30));
 
-            var recs = engine.ProduceRecommendations(log, journal, new ScenarioContext());
+            var recs = engine.ProduceRecommendations(log, journal, new ScenarioContext(), new EcosystemModel());
             Assert.AreEqual(2, recs.Count);
         }
 
@@ -76,12 +119,12 @@ namespace Bocage.Tests.EditMode
             log.Append(ev);
 
             // First pass: produces 1 rec, append it.
-            var firstPass = engine.ProduceRecommendations(log, journal, new ScenarioContext());
+            var firstPass = engine.ProduceRecommendations(log, journal, new ScenarioContext(), new EcosystemModel());
             Assert.AreEqual(1, firstPass.Count);
             journal.Append(firstPass[0], currentDay: 10);
 
             // Second pass: same log, journal now covers the event → 0 new.
-            var secondPass = engine.ProduceRecommendations(log, journal, new ScenarioContext());
+            var secondPass = engine.ProduceRecommendations(log, journal, new ScenarioContext(), new EcosystemModel());
             Assert.AreEqual(0, secondPass.Count,
                 "Re-running the engine should not re-issue covered recs.");
         }
