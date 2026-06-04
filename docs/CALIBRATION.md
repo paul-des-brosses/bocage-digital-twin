@@ -494,7 +494,7 @@ manuelle journalisée, cf ADR #47 + #50).
 | Paramètre | Valeur | Source |
 |---|---|---|
 | Prix au m linéaire plantation haies | 3-10 €/m | Réseau Haies de France, MAEC référentiel coûts plantation. |
-| Default planning ManualPlantHedges | 5 €/m (médian) | Approximation MVP. À paramétrer en `ScenarioContext` post-MVP (item BACKLOG #18 / #19 raffinement). |
+| Default planning ManualPlantHedges | 5 €/m (médian) | Approximation MVP. À paramétrer en `ScenarioContext` post-MVP (item BACKLOG #8 / #9 raffinement). |
 
 **Calcul `InvestmentCost`** :
 
@@ -555,7 +555,7 @@ explicitement 3 facteurs au niveau onglet :
 | Facteur | Variable | Sources |
 |---|---|---|
 | Habitat | `RC_FaunaFactorHabitat` (dérivé `HedgerowDensity`) | Constant et al. 1976 (Réseau Haies passereaux). |
-| Eau | `RC_FaunaFactorWater` (dérivé `WaterTableDepth` + `PondWaterLevelMeters` si #23 livré) | Hallmann et al. 2017 (Krefeld), MNHN 2024. |
+| Eau | `RC_FaunaFactorWater` (dérivé `WaterTableDepth` + `PondWaterLevelMeters` si #16 livré) | Hallmann et al. 2017 (Krefeld), MNHN 2024. |
 | Intrants | `RC_FaunaFactorInputs` (dérivé `InputCost` + `InputIntensityFactor`) | IPBES 2019 (rebound faune cessation pesticides), MNHN 2024. |
 
 **Pondérations recalibrées** (validées en chantier E5 le 2026-05-29

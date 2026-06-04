@@ -194,7 +194,7 @@ exposés explicitement :
 | Facteur | Signification | Source |
 |---|---|---|
 | Habitat | densité bocagère normalisée | Constant et al. 1976 |
-| Eau | qualité ressource hydrique (profondeur nappe) — la mare partagera ce facteur quand #23 sera livré | Hallmann 2017 |
+| Eau | qualité ressource hydrique (profondeur nappe) — la mare partagera ce facteur quand #16 sera livré | Hallmann 2017 |
 | Intrants | pression chimique inversée | MNHN 2024 |
 
 Effets faibles additionnels :
@@ -206,7 +206,7 @@ Effets faibles additionnels :
 
 Un 4ème facteur **Diversité paysage** (Shannon-like sur prairies
 permanentes et diversité cultures) est documenté en backlog
-(item #28) mais non livré dans le MVP.
+(item #20) mais non livré dans le MVP.
 
 La densité de faune visible (héron, chouette, busard, hirondelle)
 est pilotée par l'indice composite + les facteurs individuels : les
@@ -432,25 +432,25 @@ Cette section liste les **limites assumées** du modèle, pour
 
 - **Biodiversité = 3 facteurs**. Le 4ème facteur Diversité paysage
   (Shannon-like prairies + cultures) est documenté en backlog
-  (#28).
+  (#20).
 - **Phénologie cultures simplifiée**. Le rendement évolue via EMA
   sans semis ni récolte explicites. Phénologie complète (GDD,
-  fenêtres semis/récolte, stress reproductif) en backlog (#25).
+  fenêtres semis/récolte, stress reproductif) en backlog (#18).
 - **Santé végétale absente**. Aucun pathogène ni ravageur modélisé
   (chalara purgé pour cohérence — soit on remet tout l'écosystème
-  santé végétale d'un coup, soit rien, cf #24).
+  santé végétale d'un coup, soit rien, cf #17).
 - **Hydrologie schématique**. Modèle d'infiltration/évaporation
   empirique non validé hydrologiquement.
 - **Pas de gestion mare différenciée**. Le sprite mare est piloté
   par la nappe, mais une dynamique propre + événements
-  d'assèchement amphibiens est en backlog (#23).
+  d'assèchement amphibiens est en backlog (#16).
 - **Pas d'aléa de mortalité plantation**. 30-50 % des plants meurent
-  en réalité dans les 3 premières années. En backlog (#22).
+  en réalité dans les 3 premières années. En backlog (#15).
 - **Pas de recommandations préventives**. Les recos sont toutes
   réactives (seuil franchi → alerte). Recos anticipatives en backlog
-  (#20).
+  (#13).
 - **Mix cultures figé**. 70 % blé / 30 % colza dans
-  `CropYieldDynamicsRule`. Levier diversification en backlog (#21).
+  `CropYieldDynamicsRule`. Levier diversification en backlog (#14).
 
 ### Limites de scope assumées (jamais comblées dans ce projet)
 

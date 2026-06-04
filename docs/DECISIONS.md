@@ -951,7 +951,7 @@ un quatrième verdict système pour borner l'historique.
   soit la durée du run.
 - Les `Accepted` et `Rejected` ne sont JAMAIS touchés par la
   supersession — le trail d'arbitrage utilisateur est intact pour
-  un futur `SessionReporter` (jamais construit — BACKLOG #10).
+  un futur `SessionReporter` (jamais construit — BACKLOG #4).
 - Les manipulations de set côté `DecisionPopupBinding` sont
   in-memory, perdues à la fin de la session — pas de persistance
   PlayerPrefs (CLAUDE.md §16). Une nouvelle session repart avec une
@@ -1075,7 +1075,7 @@ directement sur le modèle réel, sans passer par le `DecisionJournal`.
 Asymétrie discutable : les recos auto traversent journal + verdict +
 supersession, les actions manuelles bypass complètement. Friction
 audit recadrage : traçabilité du run réel incomplète, le futur
-`SessionReporter` (jamais construit — BACKLOG #10) ne verrait pas les
+`SessionReporter` (jamais construit — BACKLOG #4) ne verrait pas les
 actions manuelles.
 
 **Décision** : toutes les actions manuelles passent par le

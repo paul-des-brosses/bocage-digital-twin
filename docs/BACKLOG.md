@@ -1,15 +1,13 @@
 # BACKLOG.md — Items post-MVP
 
 Évolutions envisagées au-delà du MVP. L'ordre n'est pas une priorité ;
-chaque item porte son estimation, ses dépendances et son origine. Les
-identifiants d'items sont stables — ils servent de références dans les
-autres docs.
+chaque item porte son estimation, ses dépendances et son origine.
 
 ---
 
 ## 1. Polish visuel & expérience
 
-### #4 — Particules Unity (feuilles, poussières)
+### #1 — Particules Unity (feuilles, poussières)
 
 **Pourquoi reporté** : polish visuel pour post-MVP.
 
@@ -21,7 +19,7 @@ autres docs.
 
 **Garde-fou §9** : la chute des feuilles doit dériver d'une mesure (le
 déclin de `RC_HedgerowHealth`), jamais du mois calendaire — « automne »
-est un thème visuel, pas le déclencheur. Même exigence que #27.
+est un thème visuel, pas le déclencheur. Même exigence que #6.
 
 **Contrainte** : pas de threading (WebGL), pas de simulation physique
 lourde. Particle System Unity standard, pre-warm activé.
@@ -30,7 +28,7 @@ lourde. Particle System Unity standard, pre-warm activé.
 
 ---
 
-### #6 — Effets visuels avancés mare et prairie
+### #2 — Effets visuels avancés mare et prairie
 
 **Pourquoi reporté** : la v1 fait juste un lerp de couleur. Les
 `.shader` actuels sont étendables sans bouleverser l'architecture.
@@ -46,7 +44,7 @@ lourde. Particle System Unity standard, pre-warm activé.
 
 ---
 
-### #7 — Animations UI (transitions, micro-interactions)
+### #3 — Animations UI (transitions, micro-interactions)
 
 **Pourquoi reporté** : v1 fonctionnelle, pas léchée.
 
@@ -61,7 +59,7 @@ lourde. Particle System Unity standard, pre-warm activé.
 
 ---
 
-### #10 — SessionReporter accessible depuis l'UI
+### #4 — SessionReporter accessible depuis l'UI
 
 **Pourquoi reporté** : pas critique pour la première publication
 démontrable.
@@ -75,7 +73,7 @@ manuelles via journal ADR #47), courbes Hero KPIs.
 
 ---
 
-### #11 — Popup explicative du KPI « Apport de la techno » avec mini-chart real vs shadow
+### #5 — Popup explicative du KPI « Apport de la techno » avec mini-chart real vs shadow
 
 **Pourquoi reporté** : le KPI « Apport de la techno » est un chiffre
 nu. Un visiteur qui veut visualiser la divergence n'a pas d'accès
@@ -94,7 +92,7 @@ construire dans `SimulationRunner`.
 
 ---
 
-### #27 — Effets visuels saisonniers (ciel, prairie)
+### #6 — Effets visuels saisonniers (ciel, prairie)
 
 **Pourquoi backlog** : modulation visuelle du ciel et de la prairie
 selon la T° saisonnière et les conditions météo journalières.
@@ -118,7 +116,7 @@ pas une variable mesurée — la T° et l'humidité le sont.
 
 ## 2. Calibration & cohérence scientifique
 
-### #17 — Réalisme avancé des capteurs faune
+### #7 — Réalisme avancé des capteurs faune
 
 **Pourquoi reporté** : pour le MVP, le piège photo et le capteur
 acoustique partagent un profil de bruit identique et statique
@@ -141,7 +139,7 @@ inspection capteurs où afficher l'intervalle de confiance).
 
 ---
 
-### #18 — Recalibrer `MaintenanceCost` selon le référentiel AFAC 2024
+### #8 — Recalibrer `MaintenanceCost` selon le référentiel AFAC 2024
 
 **Pourquoi reporté** : la valeur actuelle de 1 €/m/an est défendable
 comme coût out-of-pocket mais 3-5× inférieure aux références
@@ -153,13 +151,13 @@ amendement Sénat nov. 2025 : 4,5 €/ml).
 Lier au capital (ADR #50) puisque les deux touchent au modèle
 économique.
 
-**Lien** : cas concret du sourçage d'ensemble visé par #31.
+**Lien** : cas concret du sourçage d'ensemble visé par #11.
 
 **Estimation** : 0.5 jour.
 
 ---
 
-### #19 — Reformuler la croissance des haies comme proxy explicite
+### #9 — Reformuler la croissance des haies comme proxy explicite
 
 **Pourquoi reporté** : `AnnualGrowthMetersPerHectare = 0.5` est
 sémantiquement ambigu (densification fonctionnelle, pas allongement
@@ -173,13 +171,13 @@ linéaire). Fourchette AFAC régénération 0.2-0.4 m/ha/an suggère que
 - Recalibrer sur 0.2-0.4 si arbitré par agronome.
 - Documenter dans `DECISIONS.md` la distinction.
 
-**Lien** : sous-cas concret de l'audit #31 (qui le liste déjà).
+**Lien** : sous-cas concret de l'audit #11 (qui le liste déjà).
 
 **Estimation** : 0.3 jour + arbitrage agronome.
 
 ---
 
-### #30 — `OutcomeProjector` state-aware (dérivé du modèle)
+### #10 — `OutcomeProjector` state-aware (dérivé du modèle)
 
 **Origine** : chantier E8-E9 (2026-06-04). Incohérence Priority-1 de
 l'audit interne du modèle.
@@ -212,7 +210,7 @@ calcul.
 
 ---
 
-### #31 — Sourçage des constantes encore arbitraires (audit interne)
+### #11 — Sourçage des constantes encore arbitraires (audit interne)
 
 **Origine** : audit interne du modèle (chantier E9, 2026-06-04). ~31 %
 des calculs étaient « arbitraires » (posés sans justification sourcée).
@@ -231,7 +229,7 @@ durcir pour la rigueur scientifique avant un usage sérieux.
   intrants) : justification qualitative (Krefeld / MNHN) mais pas
   d'analyse de sensibilité ni de source chiffrée des pondérations
   exactes.
-- **Croissance des haies 0.5 m/ha/an** (cf #19), seuil eau faune
+- **Croissance des haies 0.5 m/ha/an** (cf #9), seuil eau faune
   8 %/m, pénalité canicule 0,01/jour : plages partielles à resserrer.
 
 **Estimation** : 1-2 jours (recherche + tests de sensibilité).
@@ -240,18 +238,18 @@ durcir pour la rigueur scientifique avant un usage sérieux.
 
 ## 3. Extensions du modèle (leviers, événements, recommandations)
 
-### #8 — Leviers décisionnels supplémentaires (pistes)
+### #12 — Leviers décisionnels supplémentaires (pistes)
 
 **Pourquoi backlog** : pistes de recommandations / leviers non encore
 construites, dans le prolongement du moteur de recommandations.
 
 - Recos : **fauche tardive / bande enherbée** (Gargamel, pucerons
   −30-50 %), agroforesterie inter-rangs, drainage léger, reconnexion
-  mare/fossé (cf #23).
+  mare/fossé (cf #16).
 - Événements : excès de pluviométrie, pression ravageurs (caméra —
-  cf #24).
+  cf #17).
 - Leviers continus : calendrier de fauche, ratio prairies permanentes /
-  temporaires (cf #28).
+  temporaires (cf #20).
 
 **Garde-fou** : toute nouvelle reco déclenchée par une mesure (§9),
 chaque levier calibré et sourcé.
@@ -260,7 +258,7 @@ chaque levier calibré et sourcé.
 
 ---
 
-### #20 — Recommandations préventives (anticipatives)
+### #13 — Recommandations préventives (anticipatives)
 
 **Pourquoi reporté** : les recommandations du MVP sont toutes
 réactives — un seuil est franchi, on alerte. Un DT de support à la
@@ -282,7 +280,7 @@ des tendances détectées avant le franchissement de seuil.
 
 ---
 
-### #21 — Levier diversification des cultures
+### #14 — Levier diversification des cultures
 
 **Pourquoi reporté** : le mix de cultures est figé à 70 % blé tendre /
 30 % colza dans `CropYieldDynamicsRule`. Pas de levier diversification,
@@ -300,14 +298,14 @@ majeur de résilience.
 - UI : slider continu « Diversification de l'assolement ».
 
 **Lien** : le slider `CropDiversityIndex` est le **même** que celui de
-#28 (qui en exploite l'effet biodiversité / diversité paysage) — à
+#20 (qui en exploite l'effet biodiversité / diversité paysage) — à
 concevoir comme un seul levier à deux effets.
 
 **Estimation** : 1 jour.
 
 ---
 
-### #22 — Événement échec de plantation
+### #15 — Événement échec de plantation
 
 **Pourquoi reporté** : 30-50 % des plants meurent les 3 premières
 années (sécheresse, broutage, défaut entretien). Reco PlantHedges sans
@@ -326,14 +324,14 @@ honnête.
 
 - E5 livré (capital + horizon — sans coût représenté, l'échec n'a pas
   de poids économique).
-- #18 (MaintenanceCost recalibré) — pour que le coût de l'entretien
+- #8 (MaintenanceCost recalibré) — pour que le coût de l'entretien
   renforcé soit visible.
 
 **Estimation** : 1-1.5 jour.
 
 ---
 
-### #23 — Gestion de la mare (double usage piézomètre + événement + reco)
+### #16 — Gestion de la mare (double usage piézomètre + événement + reco)
 
 **Pourquoi reporté** : la mare est présente visuellement et citée dans
 les sources (amphibiens, OFB / RMT Zones humides) mais aucun événement
@@ -350,7 +348,7 @@ ni reco ne lui est dédié.
 - Effet biodiversité (composante amphibiens isolée — couplable avec
   `RC_FaunaFactor*` livré en E5).
 - Effet visuel : sprite mare modulé par `PondWaterLevelMeters`
-  (extension du `S_Pond` actuel, cf #6).
+  (extension du `S_Pond` actuel, cf #2).
 
 **Pré-requis** : E2 livré (saisonnalité débloque la dynamique
 évaporation), idéalement E5 livré (pour isoler proprement la
@@ -360,7 +358,7 @@ composante amphibiens).
 
 ---
 
-### #24 — Cadre santé végétale complet
+### #17 — Cadre santé végétale complet
 
 **Pourquoi backlog** : le chalara a été purgé (ADR #46) ; réintroduire
 une seule maladie isolée n'est pas envisagé. Soit on remet un
@@ -383,7 +381,7 @@ Avec :
 - Recommandations algorithmiques associées (rotation, traitements,
   élagage sanitaire).
 
-**Pré-requis** : #25 (phénologie cultures) — sans phénologie, les
+**Pré-requis** : #18 (phénologie cultures) — sans phénologie, les
 maladies cultures n'ont pas de fenêtre temporelle réaliste.
 
 **Garde-fou** : à ne pas réintroduire item par item — soit on remet
@@ -394,7 +392,7 @@ CLAUDE.md §17).
 
 ---
 
-### #25 — Phénologie cultures (semis, dormance, récolte)
+### #18 — Phénologie cultures (semis, dormance, récolte)
 
 **Pourquoi backlog** : la saisonnalité météo est livrée en E2 (ADR
 #52), mais la phénologie cultures (semis, dormance, récolte, GDD,
@@ -419,7 +417,7 @@ fenêtre stress hydrique reproductive) reste un chantier post-MVP.
 
 ---
 
-### #26 — Crises saisonnières manuelles (canicule, inondation) — sandbox
+### #19 — Crises saisonnières manuelles (canicule, inondation) — sandbox
 
 **Pourquoi backlog** : crises déclenchables manuellement par
 l'utilisateur dans la section simulation, avec effets cascade visuels
@@ -432,18 +430,18 @@ de thèse — **basse priorité**.
   Toolkit).
 - 2 types de crises : canicule (pic T° prolongé 7-14 jours),
   inondation (pic précip + remontée nappe brutale).
-- Effets visuels associés (couleur ciel, prairie). À coupler avec #27.
+- Effets visuels associés (couleur ciel, prairie). À coupler avec #6.
 - Effets mécaniques sur les variables d'état du modèle (cohérents avec
   les règles biophysiques existantes).
 
-**Pré-requis** : E2 livré (saisonnalité), idéalement #27 livré (effets
+**Pré-requis** : E2 livré (saisonnalité), idéalement #6 livré (effets
 visuels saisonniers de base).
 
 **Estimation** : 1 jour.
 
 ---
 
-### #28 — 4ème facteur biodiv « Diversité paysage »
+### #20 — 4ème facteur biodiv « Diversité paysage »
 
 **Pourquoi backlog** : les 3 facteurs exposés (habitat, eau, intrants)
 sont livrés en E5 (ADR #51). Le 4ème facteur Diversité paysage reste
@@ -460,7 +458,7 @@ post-MVP.
   binding livré en E6).
 
 **Lien** : le slider `CropDiversityIndex` est le **même** que celui de
-#21 (effet économique) — à concevoir comme un seul levier à deux effets.
+#14 (effet économique) — à concevoir comme un seul levier à deux effets.
 
 **Bénéfice** : courbes de réponse plus fines par espèce visible
 (`FaunaPool` livré en E4).
@@ -472,7 +470,7 @@ Biodiv finalisé).
 
 ---
 
-### #29 — Gestion biodiversité espèce-résolue : régulation (chasse) + réintroduction
+### #21 — Gestion biodiversité espèce-résolue : régulation (chasse) + réintroduction
 
 **Origine** : demande utilisateur du 2026-06-03. Vérifiée cohérente
 avec la thèse et le modèle — mais sous conditions (voir garde-fous),
@@ -515,8 +513,8 @@ suppose donc d'abord de passer à un modèle **espèce / guilde résolu**
   maturité de réintroduction). Aucune logique scénique.
 
 **Pré-requis** : modèle faune espèce / guilde résolu (extension de
-`FaunaDynamicsRule`). Synergies avec #17 (réalisme capteurs faune) et
-#28 (diversité paysage).
+`FaunaDynamicsRule`). Synergies avec #7 (réalisme capteurs faune) et
+#20 (diversité paysage).
 
 **Estimation** : large (4-7 jours) — l'essentiel est l'extension
 multi-espèces du modèle, pas les boutons.
@@ -524,5 +522,4 @@ multi-espèces du modèle, pas les boutons.
 ---
 
 *Traçabilité : chaque item référence le chantier (`ROADMAP.md`) ou
-l'ADR (`DECISIONS.md`) d'origine. Les identifiants sont stables et
-utilisés comme références dans les autres docs.*
+l'ADR (`DECISIONS.md`) d'origine.*

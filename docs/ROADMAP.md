@@ -625,7 +625,7 @@ CollapsiblePanelsBinding interlude abandonné = 54 nets).
 **ADR cadrant** : #58.
 **Pré-requis** : E1-E6 mergés (toute la chaîne capteur → indicateur
 existe).
-**Référence calibration** : `CALIBRATION.md` §E8-E9 ; `BACKLOG.md` #8.
+**Référence calibration** : `CALIBRATION.md` §E8-E9 ; `BACKLOG.md` #12.
 
 ### Contexte
 
@@ -680,7 +680,7 @@ mesure du delta tech pour qu'elle soit honnête et cumulative.
 **ADR cadrant** : #59.
 **Pré-requis** : E8 mergé (l'optimum de profit ≈ 0.8 et la réponse
 concave servent de seuils aux recos éco).
-**Référence calibration** : `CALIBRATION.md` §E8-E9 ; `BACKLOG.md` #8.
+**Référence calibration** : `CALIBRATION.md` §E8-E9 ; `BACKLOG.md` #12.
 
 ### Contexte
 

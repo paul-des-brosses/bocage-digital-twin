@@ -265,7 +265,7 @@ agrégatrices ; les panneaux Niveau B sont assemblés côté Couche 05 par
 les bindings d'onglets (`OngletBiodiv/Climat/EconomieBinding`) qui lisent
 ces indicateurs. Le `ShadowSimulationRunner` n'est PAS dans cette couche
 mais dans la Couche 05 (cf ci-dessous et §6). Un reporter de session est
-un item *backlog* (#10), non implémenté.
+un item *backlog* (#4), non implémenté.
 
 **Non-responsabilités**
 
@@ -385,7 +385,7 @@ inférieure ne lit une couche supérieure.
 9. **État final** : les KPIs finaux restent affichés sur le dashboard ;
    l'apport de la techno (NET) et l'horizon de rentabilité sont lisibles
    en direct. Un rapport de session synthétique est un item *backlog*
-   (#10), non implémenté à ce stade.
+   (#4), non implémenté à ce stade.
 10. **Persistance** : `PlayerPrefs` sauvegarde uniquement la dernière
     configuration de presets et la vitesse choisie.
 
