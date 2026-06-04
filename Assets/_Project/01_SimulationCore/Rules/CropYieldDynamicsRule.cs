@@ -30,9 +30,15 @@ namespace Bocage.SimulationCore.Rules
     ///         climates.</item>
     ///   <item>Drought penalty 0.5%/% precip deficit : European
     ///         cereals sensitivity, plage 0.3-0.7% selon études INRAE.</item>
-    ///   <item>Intensity factor effect ±10% : agronomic literature
-    ///         on intensive vs extensive practices, modest effect on
-    ///         yield (most of the impact is on inputs, not yield).</item>
+    ///   <item>Intensity factor effect: CONCAVE (quadratic-plateau /
+    ///         Mitscherlich N-response). A -20% input cut (I=0.8) costs
+    ///         ~2.8% yield (Lechenet et al. 2017, Nature Plants 3:17008 :
+    ///         -42% pesticides without yield loss on 59% of FR farms);
+    ///         a -50% cut to the organic-extensive floor (I=0.5) costs
+    ///         ~17.5% (organic meta-analyses: Ponisio 2015 -19%; de Ponti
+    ///         2012 -20%, wheat -27%; Seufert 2012 -25%). Above I=1.0 the
+    ///         response plateaus (+5% at I=2.0): over-fertilising barely
+    ///         adds yield.</item>
     /// </list>
     /// </para>
     /// </summary>
@@ -60,8 +66,13 @@ namespace Bocage.SimulationCore.Rules
         private const double HeatPenaltyPerDegree = 0.06;          // 30% / 5°C, IPCC AR6
         private const double DroughtPenaltyPerPercent = 0.005;     // 30% / 60% deficit
 
-        // Intensification boost: ±10% around factor 1.0.
-        private const double IntensityBoostPerUnit = 0.10;
+        // Intensity -> yield: CONCAVE (quadratic-plateau / Mitscherlich N-response).
+        // Below reference (1.0) the penalty grows with the SQUARE of the cut
+        // depth: a -20% cut (I=0.8) loses ~2.8% yield, a -50% cut (I=0.5) ~17.5%.
+        // Above reference a small linear gain that plateaus (over-fertilising
+        // barely helps). Sources in the class docstring.
+        private const double IntensityCutCurvature = 0.70;
+        private const double IntensityOverGainPerUnit = 0.05;
 
         // Heat-stress term, additive on top of the scenario anomaly heat
         // penalty (chantier E2 / ADR #52). Captures the acute effect of
@@ -145,12 +156,28 @@ namespace Bocage.SimulationCore.Rules
             return (1.0 - heatPenalty) * (1.0 - droughtPenalty);
         }
 
-        private static double ComputeIntensityEffect(double intensityFactor)
+        /// <summary>
+        /// Concave (quadratic-plateau / Mitscherlich) yield response to the
+        /// input-intensity factor. Below reference intensity (1.0) the penalty
+        /// grows with the SQUARE of the cut depth, so the first reductions cost
+        /// little yield (the flat top of the N-response curve) and deeper cuts
+        /// cost progressively more; above reference the response plateaus.
+        /// Calibrated to -2.8% at I=0.8 and -17.5% at I=0.5. Pure, tested.
+        /// </summary>
+        public static double ComputeIntensityEffect(double intensityFactor)
         {
-            double delta = intensityFactor - 1.0;
-            double effect = 1.0 + IntensityBoostPerUnit * delta;
+            double effect;
+            if (intensityFactor <= 1.0)
+            {
+                double cut = 1.0 - intensityFactor;            // 0 at reference, 0.5 at floor
+                effect = 1.0 - IntensityCutCurvature * cut * cut;
+            }
+            else
+            {
+                effect = 1.0 + IntensityOverGainPerUnit * (intensityFactor - 1.0);
+            }
             if (effect < 0.5) effect = 0.5;
-            if (effect > 1.5) effect = 1.5;
+            if (effect > 1.1) effect = 1.1;
             return effect;
         }
     }

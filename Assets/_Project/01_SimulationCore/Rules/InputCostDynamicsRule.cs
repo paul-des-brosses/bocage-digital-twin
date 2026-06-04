@@ -15,6 +15,14 @@ namespace Bocage.SimulationCore.Rules
     ///   <item>Baseline 1200 €/ha/yr : plage CIVAM Haut-Bocage et
     ///         AFPF "grandes cultures annuelles" 1100-2000 €/ha/yr.
     ///         Médiane ≈ 1200 pour un mix bocager conventionnel.</item>
+    ///   <item>Intensity scaling: only the VARIABLE share (~30%:
+    ///         fertiliser + phytos + seeds) follows the intensity factor;
+    ///         the fixed structural share (~70%: mechanisation, land,
+    ///         labour) does not recede when extensifying. Source:
+    ///         Observatoire Arvalis-Unigrains/CerFrance via FranceAgriMer
+    ///         (440 €/ha operational ≈ 30% of total charges, 2020) +
+    ///         RICA-SSP. This is what makes deep extensification cost money
+    ///         on raw production despite the input savings.</item>
     ///   <item>MAEC réduction jusqu'à −30% à 100% de couverture :
     ///         CIVAM rapporte 76% d'économie sur fertilisants et 74%
     ///         sur phytos en système herbager extensif. Notre 30%
@@ -33,6 +41,13 @@ namespace Bocage.SimulationCore.Rules
 
         public const double BaselineEurosPerHectarePerYear = 1200.0;
         private const double TransitionRatePerDay = 0.017;
+
+        // Only the variable share (operational inputs: fertiliser + phytos +
+        // seeds, ~30% of total cost) scales with intensity; the fixed structural
+        // share (~70%: mechanisation, land, labour) does not recede when
+        // extensifying. Source: Observatoire Arvalis-Unigrains/CerFrance via
+        // FranceAgriMer (440 EUR/ha operational ~= 30% of total charges, 2020) + RICA-SSP.
+        private const double VariableCostShare = 0.30;
 
         private const double MaecReductionPerPercent = 0.003; // 0.30 / 100%
         private const double HeatSurchargePerDegree = 0.04;   // 0.20 / 5°C
@@ -67,8 +82,11 @@ namespace Bocage.SimulationCore.Rules
             double heatStressSurcharge = ComputeHeatStressSurcharge(model.RecentHeatDayCount);
             double climateSurcharge = heatSurcharge + droughtSurcharge + heatStressSurcharge;
 
+            // Only the variable cost share follows the intensity factor; the
+            // fixed structural share stays put when extensifying.
+            double intensityCostFactor = VariableCostShare * intensityFactor + (1.0 - VariableCostShare);
             double target = BaselineEurosPerHectarePerYear
-                            * intensityFactor
+                            * intensityCostFactor
                             * (1.0 - maecReduction)
                             * (1.0 + climateSurcharge);
             if (target < 0.0) target = 0.0;

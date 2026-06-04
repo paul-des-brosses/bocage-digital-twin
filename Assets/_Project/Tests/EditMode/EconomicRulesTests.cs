@@ -108,6 +108,32 @@ namespace Bocage.Tests.EditMode
 
             Assert.AreEqual(modelA.CropYield, modelB.CropYield, 1e-9);
         }
+
+        [Test]
+        public void IntensityEffect_is_concave_below_reference()
+        {
+            // Mitscherlich / quadratic-plateau: -2.8% at I=0.8, -17.5% at I=0.5,
+            // and the loss ACCELERATES as the cut deepens (concave, not linear).
+            Assert.That(CropYieldDynamicsRule.ComputeIntensityEffect(1.0), Is.EqualTo(1.0).Within(1e-9));
+            Assert.That(CropYieldDynamicsRule.ComputeIntensityEffect(0.8), Is.EqualTo(0.972).Within(1e-6));
+            Assert.That(CropYieldDynamicsRule.ComputeIntensityEffect(0.5), Is.EqualTo(0.825).Within(1e-6));
+            double lossNearReference = 1.0 - CropYieldDynamicsRule.ComputeIntensityEffect(0.8);
+            double lossNearFloor = CropYieldDynamicsRule.ComputeIntensityEffect(0.7)
+                                   - CropYieldDynamicsRule.ComputeIntensityEffect(0.5);
+            Assert.Greater(lossNearFloor, lossNearReference,
+                "Yield loss must accelerate as the input cut deepens (concavity).");
+        }
+
+        [Test]
+        public void IntensityEffect_plateaus_above_reference()
+        {
+            // Over-fertilising buys little extra yield: +5% at I=2.0, far weaker
+            // than the symmetric loss below reference (diminishing returns).
+            Assert.That(CropYieldDynamicsRule.ComputeIntensityEffect(2.0), Is.EqualTo(1.05).Within(1e-9));
+            double gainAbove = CropYieldDynamicsRule.ComputeIntensityEffect(1.5) - 1.0;
+            double lossBelow = 1.0 - CropYieldDynamicsRule.ComputeIntensityEffect(0.5);
+            Assert.Less(gainAbove, lossBelow);
+        }
     }
 
     public sealed class InputCostDynamicsRuleTests
@@ -130,8 +156,11 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void InputCost_doubles_when_intensity_doubles()
+        public void InputCost_rises_with_intensity_only_on_the_variable_share()
         {
+            // Only the ~30% variable share (operational inputs) follows the
+            // intensity factor; the ~70% fixed structure does not. At I=2.0:
+            // 1200 × (0.30×2 + 0.70) = 1200 × 1.30 = 1560 (NOT 2400).
             var rule = new InputCostDynamicsRule();
             var model = new EcosystemModel(initialInputCost: 1200.0);
             var ctx = new ScenarioContext(initialInputIntensityFactor: 2.0);
@@ -139,7 +168,23 @@ namespace Bocage.Tests.EditMode
 
             for (int i = 0; i < 600; i++) rule.Apply(model, ctx, rng);
 
-            Assert.That(model.InputCost, Is.EqualTo(2400.0).Within(3.0));
+            Assert.That(model.InputCost, Is.EqualTo(1560.0).Within(3.0));
+        }
+
+        [Test]
+        public void InputCost_fixed_share_survives_extensification()
+        {
+            // At the organic-extensive floor I=0.5: 1200 × (0.30×0.5 + 0.70)
+            // = 1200 × 0.85 = 1020. Halving intensity does NOT halve the cost —
+            // this is what keeps deep extensification from being free money.
+            var rule = new InputCostDynamicsRule();
+            var model = new EcosystemModel(initialInputCost: 1200.0);
+            var ctx = new ScenarioContext(initialInputIntensityFactor: 0.5);
+            var rng = RngFor(rule.SubStreamId);
+
+            for (int i = 0; i < 600; i++) rule.Apply(model, ctx, rng);
+
+            Assert.That(model.InputCost, Is.EqualTo(1020.0).Within(3.0));
         }
 
         [Test]

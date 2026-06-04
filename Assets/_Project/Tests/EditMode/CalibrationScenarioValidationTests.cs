@@ -65,34 +65,45 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
-        public void Scenario3_BocageBio_MAEC_PSE_high_profit_above_900()
+        public void Scenario3_BocageBio_MAEC_PSE_solidly_profitable()
         {
-            // Bio extensif + MAEC 100% + PSE max + hedges intacts.
+            // Bio extensif (I=0.5) + MAEC 100% + PSE max + hedges intacts.
+            // After the E9 recalibration the virtuous path is profitable
+            // BECAUSE of the subsidies (MAEC input-cost cut + max PSE + CAP),
+            // NOT because of free input savings: extensification now costs real
+            // yield (-17.5%) and the ~70% fixed cost share stays put. Hand
+            // estimate of the steady state ~660 €/ha/yr (yield 4.54 t/ha × 250
+            // - input 714 - maint 90 + PSE 90 + PAC 20 + CAP 220). Window kept
+            // wide pending a confirmed Unity run; tighten on the actual value.
             var scenario = new ScenarioContext(
                 initialInputIntensityFactor: 0.5,
                 initialMaecCoveragePercent: 100.0,
                 initialPseSubsidyRate: 1.0);
             double profit = RunAndComputeProfit(scenario);
-            Assert.That(profit, Is.GreaterThan(900.0),
-                "Virtuous bocage farming should deliver >900 €/ha/yr. Got " + profit);
-            Assert.That(profit, Is.LessThan(1500.0),
-                "Without speculation, profit shouldn't exceed display Max. Got " + profit);
+            Assert.That(profit, Is.GreaterThan(450.0),
+                "Virtuous bocage farming should stay solidly profitable. Got " + profit);
+            Assert.That(profit, Is.LessThan(900.0),
+                "But no longer the inflated >900 of the pre-E9 free-input bug. Got " + profit);
         }
 
         [Test]
         public void Scenario4_WorstCase_profit_strongly_negative()
         {
-            // +5°C, -60% precip, intensive inputs, no MAEC.
-            // Hedge removal at 10 m/ha/yr is also active but takes 9 years
-            // to wipe 90 m/ha, so over 10 years the bocage collapses.
+            // +5°C, -60% precip, intensive inputs, no MAEC. Hedge removal at
+            // 10 m/ha/yr wipes 90 m/ha over 9 years, so the bocage collapses.
+            // After the E9 recalibration over-intensification is LESS ruinous
+            // on the cost side (only the 30% variable share scales: input cost
+            // ~2184 instead of the old ~3360), so the catastrophe now comes
+            // mainly from the yield collapse. Threshold relaxed accordingly;
+            // confirm the actual converged value on a Unity run and tighten.
             var scenario = new ScenarioContext(
                 initialTemperatureAnomalyC: 5.0,
                 initialPrecipitationAnomalyPercent: -60.0,
                 initialHedgeRemovalRate: 10.0,
                 initialInputIntensityFactor: 2.0);
             double profit = RunAndComputeProfit(scenario);
-            Assert.That(profit, Is.LessThan(-1500.0),
-                "Worst-case scenario should be catastrophic (<-1500 €/ha/yr). Got " + profit);
+            Assert.That(profit, Is.LessThan(-800.0),
+                "Worst-case scenario should still be catastrophic (<-800 €/ha/yr). Got " + profit);
         }
 
         [Test]
