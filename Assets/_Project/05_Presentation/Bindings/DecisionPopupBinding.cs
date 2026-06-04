@@ -402,6 +402,26 @@ namespace Bocage.Presentation.Bindings
                     min = 0; max = 0.5; def = ReduceInputsRecommendation.IntensityCutPerStep;
                     label = "Baisse d'intensité d'intrants"; unit = "× réf.";
                     break;
+                case RaiseInputsRecommendation _:
+                    min = 0; max = 0.5; def = RaiseInputsRecommendation.IntensityRaisePerStep;
+                    label = "Hausse d'intensité d'intrants"; unit = "× réf.";
+                    break;
+                case SowCoverCropsRecommendation _:
+                    min = 0; max = 50; def = SowCoverCropsRecommendation.CoverageRaisePerStep;
+                    label = "Couverts d'interculture en plus"; unit = "%";
+                    break;
+                case RestoreResidueRecommendation _:
+                    min = 0; max = 50; def = RestoreResidueRecommendation.RestitutionRaisePerStep;
+                    label = "Résidus restitués en plus"; unit = "%";
+                    break;
+                case ReduceHedgeRemovalRecommendation _:
+                    min = 0; max = 15; def = ReduceHedgeRemovalRecommendation.RemovalCutPerStep;
+                    label = "Baisse du rythme d'arrachage"; unit = "m/ha/an";
+                    break;
+                case IncreaseHedgeRemovalRecommendation _:
+                    min = 0; max = 15; def = IncreaseHedgeRemovalRecommendation.RemovalRaisePerStep;
+                    label = "Hausse du rythme d'arrachage"; unit = "m/ha/an";
+                    break;
                 default:
                     min = 0; max = 1; def = 0; label = "Magnitude"; unit = "";
                     break;

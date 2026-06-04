@@ -30,10 +30,10 @@ namespace Bocage.Decision
     /// </summary>
     public static class AutoActionPipeline
     {
-        // ReduceInputs lowers the real run's input intensity toward the
-        // organic-extensive floor (ReduceInputsRecommendation.MinInputIntensityFactor),
-        // over a CLAUDE.md §15 transition.
-        private const int IntensityTransitionDays = 10;
+        // Shared transition window for every daily-practice change a reco can
+        // apply (input intensity, cover crops, residues, hedge removal rate),
+        // over a CLAUDE.md §15 transition. No abrupt mutation.
+        private const int PracticeTransitionDays = 10;
 
         /// <summary>
         /// Walks the journal's resolved entries and applies the
@@ -96,7 +96,41 @@ namespace Bocage.Decision
                     double floorIntensity = ReduceInputsRecommendation.MinInputIntensityFactor;
                     double targetIntensity = scenario.InputIntensityFactor.Current - magnitude;
                     if (targetIntensity < floorIntensity) targetIntensity = floorIntensity;
-                    scenario.InputIntensityFactor.SetTarget(targetIntensity, IntensityTransitionDays);
+                    scenario.InputIntensityFactor.SetTarget(targetIntensity, PracticeTransitionDays);
+                    break;
+                case RaiseInputsRecommendation _:
+                    if (scenario == null) break;
+                    // Economic counterpart: nudge intensity UP toward the profit
+                    // optimum, never past it (going further loses profit again).
+                    double riTarget = scenario.InputIntensityFactor.Current + magnitude;
+                    double riCeil = RaiseInputsRecommendation.ProfitOptimalIntensityFactor;
+                    if (riTarget > riCeil) riTarget = riCeil;
+                    scenario.InputIntensityFactor.SetTarget(riTarget, PracticeTransitionDays);
+                    break;
+                case SowCoverCropsRecommendation _:
+                    if (scenario == null) break;
+                    double ccTarget = scenario.CoverCropsCoveragePercent.Current + magnitude;
+                    if (ccTarget > SowCoverCropsRecommendation.MaxCoveragePercent)
+                        ccTarget = SowCoverCropsRecommendation.MaxCoveragePercent;
+                    scenario.CoverCropsCoveragePercent.SetTarget(ccTarget, PracticeTransitionDays);
+                    break;
+                case RestoreResidueRecommendation _:
+                    if (scenario == null) break;
+                    double rrTarget = scenario.ResidueRestitutionPercent.Current + magnitude;
+                    if (rrTarget > RestoreResidueRecommendation.MaxRestitutionPercent)
+                        rrTarget = RestoreResidueRecommendation.MaxRestitutionPercent;
+                    scenario.ResidueRestitutionPercent.SetTarget(rrTarget, PracticeTransitionDays);
+                    break;
+                case ReduceHedgeRemovalRecommendation _:
+                    if (scenario == null) break;
+                    double hrTarget = scenario.HedgeRemovalRate.Current - magnitude;
+                    if (hrTarget < 0.0) hrTarget = 0.0;
+                    scenario.HedgeRemovalRate.SetTarget(hrTarget, PracticeTransitionDays);
+                    break;
+                case IncreaseHedgeRemovalRecommendation _:
+                    if (scenario == null) break;
+                    double ihTarget = scenario.HedgeRemovalRate.Current + magnitude;
+                    scenario.HedgeRemovalRate.SetTarget(ihTarget, PracticeTransitionDays);
                     break;
             }
         }
