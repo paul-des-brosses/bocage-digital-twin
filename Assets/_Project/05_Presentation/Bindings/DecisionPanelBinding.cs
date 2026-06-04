@@ -175,6 +175,18 @@ namespace Bocage.Presentation.Bindings
             titleLabel.AddToClassList("decision-history-row-title");
             info.Add(titleLabel);
 
+            // E9: mark trade-off recommendations (economy-for-ecology, or any with
+            // a worsening projected dimension) so the user spots arbitrages at a
+            // glance. Minimal inline style; refine via the USS class in polish.
+            if (RecommendationSurfacing.IsTradeoff(rec))
+            {
+                var badge = new Label("compromis");
+                badge.AddToClassList("decision-history-row-badge");
+                badge.style.fontSize = 10f;
+                badge.style.color = new StyleColor(new Color(0.80f, 0.66f, 0.42f));
+                info.Add(badge);
+            }
+
             // Sub-line: causal chain (sensor + event + day). Replaces
             // the previous standalone "Détectée au jour N" line which
             // had less context. Sub-étape 10a friction #2 fix.

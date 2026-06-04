@@ -52,9 +52,10 @@ namespace Bocage.Decision
         // below this, leaving meaningful room for the reco to raise it.
         private const double CoveragePercentFullTolerance = 99.0;
 
-        // Biodiversity composite below this is "ecologically critical" — the
-        // engine will not offer to trade it away for profit.
-        private const double BiodiversityCriticalThreshold = 0.30;
+        // Biodiversity composite below this is "ecologically critical": the engine
+        // will not trade it away for profit, and the surfacing escalates a costly
+        // ecological fix to a popup. Shared with RecommendationSurfacing.
+        public const double BiodiversityCriticalThreshold = 0.30;
         // Hedge density (m/ha) clearly above the agronomic optimum (~90): beyond
         // it, extra hedges start costing yield via the bell penalty.
         private const double HedgeOverdenseThresholdMeters = 120.0;

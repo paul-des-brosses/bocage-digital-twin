@@ -3,6 +3,7 @@ using System.Globalization;
 using Bocage.Decision;
 using Bocage.Decision.Outcomes;
 using Bocage.Decision.Recommendations;
+using Bocage.Indicators.Hero;
 using Bocage.Presentation.Simulation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
@@ -172,6 +173,7 @@ namespace Bocage.Presentation.Bindings
             {
                 var rec = pending[i].Recommendation;
                 if (ShouldAutoSkip(rec)) continue;
+                if (!ShouldAutoSurface(rec)) continue; // trade-off -> waits in the list
                 ShowPopupFor(rec);
                 return;
             }
@@ -189,6 +191,20 @@ namespace Bocage.Presentation.Bindings
             string type = ExtractTypePrefix(rec.Id);
             if (type != null && _ignoredRecommendationTypes.Contains(type)) return true;
             return false;
+        }
+
+        /// <summary>
+        /// E9 surfacing: a trade-off recommendation (economic, or any with a
+        /// worsening projected dimension) does NOT auto-open a popup — it waits
+        /// passively in the decision list. An ecological trade-off escalates to a
+        /// popup only when biodiversity is critical. Win-win always pops.
+        /// </summary>
+        private bool ShouldAutoSurface(IRecommendation rec)
+        {
+            double biodiversity = runner != null && runner.Model != null
+                ? BiodiversityCompositeIndicator.Compute(runner.Model, runner.Scenario)
+                : 1.0;
+            return RecommendationSurfacing.ShouldAutoPopup(rec, biodiversity);
         }
 
         /// <summary>
@@ -316,6 +332,7 @@ namespace Bocage.Presentation.Bindings
                 {
                     var rec = pending[i].Recommendation;
                     if (ShouldAutoSkip(rec)) continue;
+                    if (!ShouldAutoSurface(rec)) continue; // trade-off -> waits in the list
                     next = rec;
                     break;
                 }
