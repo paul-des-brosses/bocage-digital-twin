@@ -4,6 +4,10 @@ Document réécrit le 2026-05-28 après session de recadrage externe.
 Remplace la roadmap historique en 10 étapes verticales (étapes 1 à 10
 livrées comme MVP technique, voir Annexe « Historique »).
 
+Mis à jour 2026-06-04 : ajout des chantiers E8 (refonte delta-tech) et
+E9 (système de recommandations) ; le polish de publication, anciennement
+E7, devient E10.
+
 ---
 
 ## 1. Cadre
@@ -27,10 +31,12 @@ cas par cas en cas de dépassement.
 
 ---
 
-## 2. Vue d'ensemble — 7 chantiers E1-E7
+## 2. Vue d'ensemble — 9 chantiers E1-E9 (+ E10 publication)
 
 Chaque étape est un chantier autonome sur sa propre branche
-`feature/E{N}-{nom}`. Estimations basses-hautes.
+`feature/E{N}-{nom}`. Estimations basses-hautes. E8 et E9 (features de
+fond) ont été livrés le 2026-06-04 par-dessus le polish de publication
+amorcé sous l'ancien E7 ; le polish de fin de course est renuméroté E10.
 
 | # | Chantier | Branche | Estimation | ADR cadrants |
 |---|---|---|---|---|
@@ -40,9 +46,12 @@ Chaque étape est un chantier autonome sur sa propre branche
 | E4 | Faune visible 4 espèces | `feature/E4-faune-visible` | 10-13 h | #49 |
 | E5 | Capital + horizon rentabilité + biodiv 3 facteurs | `feature/E5-capital-biodiv` | 12-16 h | #50, #51 |
 | E6 | Panneau inspection capteurs + 3 onglets Niveau B remplis ✅ livré 2026-06-02 | `feature/E6-panneau-onglets` | 22-33 h | #53, #54, #57 |
-| E7 | Polish + publication MVP | `feature/E7-polish-publication` | 6-10 h | — |
+| E8 | Refonte delta-tech (KPI net cumulatif EUR/ha + shadow frozen-baseline + rendement concave + split coût fixe/variable) ✅ livré 2026-06-04 | `feature/E8-refonte-delta-tech` | — | #58, #59, #60 |
+| E9 | Système de recommandations (8 recos / 6 leviers, dispatch state-aware, contrepoids économiques) ✅ livré 2026-06-04 | `feature/E9-recommandations` | — | #61 |
+| E10 | Polish + publication MVP | `feature/E10-polish-publication` | 6-10 h | — |
 
-**Total estimé : 81-116 h.** Marge confortable sur cible 150 h.
+**Total estimé : 81-116 h** (hors E8/E9, livrés en flux le 2026-06-04).
+Marge confortable sur cible 150 h.
 
 ---
 
@@ -80,8 +89,15 @@ utiliser pour ne pas refaire le travail.
   avec `DefaultVerdict = AutoAccepted` et l'ajoutent au journal via
   `DecisionJournal.Append()`.
 - `AutoActionPipeline.Apply()` reste seul à modifier le modèle.
+- **3 actions manuelles au stade E1** (planter haies, irrigation,
+  baisser intrants). En E8 la baisse d'intrants a été convertie en
+  **levier de pratique** (slider `InputIntensityFactor` piloté par une
+  reco auto, cf §E9) : il ne reste plus que **2 actions manuelles
+  journalisées** (planter haies, irrigation).
 - Convention `Id` : `manual-plant-hedges#<day>` /
-  `manual-irrigation#<day>` / `manual-reduce-inputs#<day>`.
+  `manual-irrigation#<day>`. (Le pulse manuel ponctuel
+  `manual-reduce-inputs#<day>` a été retiré en E8 au profit du
+  slider/levier de pratique — cf §E9 et CALIBRATION.md.)
 - Convention `TriggeredByEventId = null` + fallback
   `RecommendationProvenance.Format()` « Action déclenchée par
   l'utilisateur le jour X ».
@@ -90,8 +106,9 @@ utiliser pour ne pas refaire le travail.
 
 **Pattern rationale uniforme (ADR #55)** :
 
-- Réécriture des libellés des 3 actions manuelles + 2 recos auto au
-  pattern « Title court + Rationale d'action concrète + ligne
+- Réécriture des libellés des 3 actions manuelles + 2 recos auto
+  (au stade E1 ; porté à 8 recos / 6 leviers en E9) au pattern
+  « Title court + Rationale d'action concrète + ligne
   `Effet modélisé : ...` ». Wordings exacts dans ADR #55.
 - Pour les 2 recos auto : ligne supplémentaire `Déclenché par : ...`.
 
@@ -150,6 +167,11 @@ utiliser pour ne pas refaire le travail.
   météo journalière (option a) : terme dépendant de la météo réelle,
   pas seulement des anomalies scenario (canicule WeatherStation →
   effet économique direct).
+  > **Maj E8** : ces deux règles ont été recalibrées en E8 — la réponse
+  > rendement↔intrants est devenue **concave** (quadratique-plateau /
+  > Mitscherlich) et le coût des intrants a été **scindé fixe/variable**
+  > (30 % variable / 70 % fixe). Le détail vit dans la section E8 (§8 bis)
+  > et CALIBRATION.md §E8-E9.
 
 **Couche 02 — Sensors** :
 
@@ -319,7 +341,7 @@ visible).
 - 4 espèces × 3-4 frames partiellement disponibles dans
   `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`. Corrections
   finales à charge utilisateur (cf division §2 CLAUDE.md).
-- Crunch DXT5 conditionnel (cf E7).
+- Crunch DXT5 conditionnel (cf E10).
 
 ### Tests EditMode
 
@@ -596,21 +618,149 @@ CollapsiblePanelsBinding interlude abandonné = 54 nets).
 
 ---
 
-## 9. Étape E7 — Polish + publication MVP
+## 8 bis. Étape E8 — Refonte delta-tech
 
-**Branche** : `feature/E7-polish-publication`.
+**Statut** : ✅ livré 2026-06-04.
+**Branche** : `feature/E8-refonte-delta-tech`.
+**ADR cadrant** : #58.
+**Pré-requis** : E1-E6 mergés (toute la chaîne capteur → indicateur
+existe).
+**Référence calibration** : `CALIBRATION.md` §E8-E9 ; `BACKLOG.md` #8.
+
+### Contexte
+
+Le KPI « apport de la techno » était instantané et gonflé (jusqu'à
++980 €/ha) parce que la baisse d'intrants était quasi gratuite dans le
+modèle (rendement −10 % linéaire + coût 100 % variable). E8 refond la
+mesure du delta tech pour qu'elle soit honnête et cumulative.
+
+### Livrables effectifs
+
+- **KPI net cumulatif** : le delta tech devient un **cumul EUR/ha** de
+  l'écart de profit run réel ↔ run fantôme, et non plus un pourcentage
+  instantané (cf commit `54e0a1b`).
+- **Shadow à baseline figée** : `ScenarioContext.CreateFrozenShadowFrom`
+  construit le scénario fantôme « agriculteur passif » — les paramètres
+  exogènes (météo, anomalies) suivent le réel, mais les paramètres de
+  décision agriculteur sont **gelés à leur valeur de lancement**. Le
+  `ShadowSimulationRunner` mesure l'écart au réel à chaque tick.
+- **Rendement concave** : `CropYieldDynamicsRule.ComputeIntensityEffect`
+  passe à une réponse quadratique-plateau / Mitscherlich
+  (`effet = 1 − 0.70·(1−I)²` sous 1.0, plateau `+0.05·(I−1)` au-dessus).
+  −2,8 % à I=0.8, −17,5 % à I=0.5, +5 % seulement à I=2.0.
+- **Coût intrants fixe/variable** : `InputCostDynamicsRule` passe à
+  `coût = 1200 × (0.30·I + 0.70) × …` — seule la part opérationnelle
+  (~30 %) suit l'intensité, la part de structure (~70 %) ne recule pas.
+- **Optimum de profit émergent ≈ 0.8** : la combinaison concave + coût
+  fixe crée un maximum intérieur du profit (I* ≈ 0.81), réutilisé comme
+  seuil par les recos éco de E9.
+
+### Tests EditMode
+
+- `EconomicRulesTests` (réponse concave, split coût fixe/variable),
+  `CalibrationScenarioValidationTests` (4 scénarios restent dans la
+  fenêtre de plausibilité après recalibration), tests delta-tech
+  cumulatif real↔shadow. Tous verts au 2026-06-04.
+
+### Critère de validation atteint
+
+- Tests EditMode tous verts.
+- Le KPI delta tech affiche un cumul EUR/ha croissant traçable à l'écart
+  réel ↔ fantôme figé, plus un pourcentage instantané.
+- Extensification totale ≈ neutre à légèrement négative en profit brut
+  (plus d'« argent gratuit »), conforme aux projections de
+  l'`OutcomeProjector` (cf CALIBRATION.md §E8-E9).
+
+---
+
+## 8 ter. Étape E9 — Système de recommandations
+
+**Statut** : ✅ livré 2026-06-04.
+**Branche** : `feature/E9-recommandations`.
+**ADR cadrant** : #59.
+**Pré-requis** : E8 mergé (l'optimum de profit ≈ 0.8 et la réponse
+concave servent de seuils aux recos éco).
+**Référence calibration** : `CALIBRATION.md` §E8-E9 ; `BACKLOG.md` #8.
+
+### Contexte
+
+Le système passe de **3 à 8 recommandations sur 6 leviers**, chacune
+déclenchée par une mesure et munie d'un garde-fou de cohérence.
+L'objectif : pousser vers un optimum — écolo OU éco selon l'état —
+sans dogme ni greenwashing.
+
+### Livrables effectifs
+
+- **6 leviers** : `WaterTableDepth`, `InputIntensityFactor` (↑ et ↓),
+  `HedgerowDensity`, `HedgeRemovalRate` (↓ et ↑),
+  `CoverCropsCoveragePercent`, `ResidueRestitutionPercent`.
+- **8 recos** : irriguer, baisser les intrants, planter des haies,
+  réduire l'arrachage, semer des couverts, restituer les résidus,
+  **remonter les intrants** (contrepoids éco) et **éclaircir les haies**
+  (contrepoids éco).
+- **Nouveaux événements** : `SoilCarbonLowEvent` (tour Eddy → fertilité
+  sol basse) et `LowProfitabilityEvent` (rentabilité < 50 €/ha).
+- **Dispatch state-aware** : pour un signal, on choisit le levier
+  pertinent **avec de la marge** (anomalie faune → baisser intrants si
+  marge → sinon réduire l'arrachage → sinon planter → sinon silence ;
+  carbone bas → couverts → résidus ; profit bas → remonter intrants si
+  sous l'optimum + faune OK → sinon éclaircir haies → sinon silence).
+- **Contrepoids économiques anti-greenwashing** : les recos éco
+  (remonter intrants, éclaircir haies) ne se déclenchent que sous
+  l'optimum de profit / au-dessus du seuil de densité, et jamais sous
+  le seuil de biodiversité critique (0.30).
+- **Surfaçage popup-vs-liste** (`RecommendationSurfacing`, classé par le
+  signe des outcomes projetés à 365 j) : win/win → **popup** ;
+  compromis (une dimension se dégrade) → **liste passive** + marqueur ;
+  escalade d'un compromis écologique en popup si biodiv < 0.30 (dormant
+  tant que l'`OutcomeProjector` reste à coefficients figés).
+
+### Tests EditMode
+
+- `RecommendationEngineTests`, `BalancedRecommendationsTests`,
+  `RecommendationSurfacingTests`, `EventDetectorTests` (+ régression
+  `CalibrationScenarioValidationTests`). Tous verts au 2026-06-04.
+
+### Critère de validation atteint
+
+- Tests EditMode tous verts.
+- Chaque reco remonte à une mesure (primauté du capteur §9 CLAUDE.md) et
+  porte un garde-fou de cohérence.
+- Sous scénario tension profit + faune OK → reco « remonter intrants »
+  surfacée en liste (compromis) ; sous anomalie faune + marge → reco
+  « baisser intrants » en popup (win/win). Aucune reco éco déclenchée
+  sous biodiv critique.
+
+### Limite documentée
+
+Les projections de l'`OutcomeProjector` (profit/biodiv attendus à 365 j)
+restent des **coefficients figés**, pas des dérivations du modèle dans
+l'état courant : bon ordre de grandeur et bon signe, mais elles peuvent
+diverger de l'effet réel. Les rendre *state-aware* (et activer
+l'escalade) est en backlog (cf CALIBRATION.md §E8-E9).
+
+---
+
+## 9. Étape E10 — Polish + publication MVP
+
+**Branche** : `feature/E10-polish-publication`.
 **Estimation** : 6-10 h.
-**Pré-requis** : E1-E6 mergés (chantiers de fond livrés).
+**Pré-requis** : E1-E9 mergés (chantiers de fond livrés).
+
+> Le polish de publication a été amorcé sous l'ancien E7, mis en pause
+> pour livrer les features de fond E8 (refonte delta-tech) et E9
+> (système de recommandations) le 2026-06-04, puis reprend ici sous le
+> numéro E10.
 
 ### Livrables
 
-**Sub-étape E7.1 — Mesure build CI** :
+**Sub-étape E10.1 — Mesure build CI** :
 
-- Build CI vert post-merge E6.
+- Build CI vert post-merge E9.
 - Mesurer taille DL + TTI + FPS sur l'URL Pages déployée
   (`https://paul-des-brosses.github.io/bocage-digital-twin/`).
 
-**Sub-étape E7.2 — Crunch DXT5 conditionnel (ADR Crunch conditionnel)** :
+**Sub-étape E10.2 — Crunch DXT5 conditionnel (ADR Crunch conditionnel)** :
 
 - Si taille build ≤ 30 MB → skip Crunch, doc TODO conservée.
 - Si taille build > 30 MB → installer module WebGL Build Support
@@ -620,27 +770,27 @@ CollapsiblePanelsBinding interlude abandonné = 54 nets).
 - Si taille > 35 MB → investigation via Build Report Inspector,
   correction, push, remesure.
 
-**Sub-étape E7.3 — Polish UI léger** :
+**Sub-étape E10.3 — Polish UI léger** :
 
 - Alignements, marges, contrastes, hover states (rien de fancy).
 - Bandeau viewport < 1280 px → vérifier non-régression.
 - Pas d'animation UI complexe (cf BACKLOG).
 
-**Sub-étape E7.4 — README final + capture** :
+**Sub-étape E10.4 — README final + capture** :
 
 - Remplacer placeholders `[TODO: live demo link]` et
   `[TODO: hero GIF or screenshot]` du README par URL Pages réelle +
   GIF capture 10-15 s du DT en action + 2-3 screenshots.
 - README en anglais (cf ADR #31).
 
-**Sub-étape E7.5 — Tri docs public/privé** :
+**Sub-étape E10.5 — Tri docs public/privé** :
 
 - Créer dossier `docs-private/` (listé dans `.gitignore`) si nécessaire.
 - Décider quel doc va où (SIMULATION_OVERVIEW.md public ou privé ?
   BACKLOG.md ?). Approche par défaut suggérée : tout en public, sauf
   docs internes de travail.
 
-**Sub-étape E7.6 — Audit final** :
+**Sub-étape E10.6 — Audit final** :
 
 - Tests EditMode tous verts.
 - Primauté capteur respectée intégralement (cf CLAUDE.md §9 statut
@@ -648,12 +798,14 @@ CollapsiblePanelsBinding interlude abandonné = 54 nets).
 - `BACKLOG.md` exhaustif (un futur contributeur peut reprendre tout
   item en < 1 h sans reconstruire le contexte).
 - Conformité CLAUDE.md (§17 scope MVP, §18 discipline).
+- Purger les références fantômes (commentaire `SessionReporter` dans
+  `DecisionVerdict.cs:27` ; confirmer l'absence de `ISimulationRun`).
 
-**Sub-étape E7.7 — Tag GitHub v1.0 + release note** :
+**Sub-étape E10.7 — Tag GitHub v1.0 + release note** :
 
-- Tag `v1.0` sur le commit final de `main` après merge E7.
-- Release note GitHub résumant les chantiers E1-E7 et le scope MVP
-  livré.
+- Tag `v1.0` sur le commit final de `main` après merge E10.
+- Release note GitHub résumant les chantiers E1-E9 (+ E10 publication)
+  et le scope MVP livré.
 
 ### Critère de validation
 
@@ -668,6 +820,10 @@ CollapsiblePanelsBinding interlude abandonné = 54 nets).
 ---
 
 ## 10. Règle de revue à mi-parcours
+
+> **Revue passée — expirée au 2026-06-04.** E1-E9 sont livrés ; il ne
+> reste que E10 (publication). La porte ci-dessous est conservée pour
+> traçabilité mais n'a plus d'effet bloquant.
 
 À ~70 % du temps écoulé (cible ~105 h sur 150 h), faire un point
 d'avancement :
@@ -702,10 +858,13 @@ traçabilité via `git log` et les ADRs #1 à #44.
   build CI déclenché).
 
 Ce qui restait au 2026-05-28 sous l'ancienne roadmap (10c polish UI,
-10d README final, 10e audit final) est repris dans la nouvelle étape
-**E7 — Polish + publication MVP**, augmentée des sous-étapes Crunch
-conditionnel et tri docs public/privé.
+10d README final, 10e audit final) est repris dans l'étape
+**E10 — Polish + publication MVP** (anciennement E7), augmentée des
+sous-étapes Crunch conditionnel et tri docs public/privé.
 
-Les 6 chantiers E1-E6 sont des chantiers nouveaux issus de la session
+Les chantiers E1-E9 sont des chantiers nouveaux issus de la session
 de recadrage du 2026-05-28, qui transforment le MVP technique en MVP
-de complétude fonctionnelle (cf CLAUDE.md §17 et ADR #45).
+de complétude fonctionnelle (cf CLAUDE.md §17 et ADR #45). E1-E6 ont été
+livrés d'abord (jusqu'au 2026-06-02), puis **E8 (refonte delta-tech) et
+E9 (système de recommandations)** ont suivi le 2026-06-04 par-dessus le
+polish amorcé ; reste **E10 (publication)**.

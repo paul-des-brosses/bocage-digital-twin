@@ -1,5 +1,8 @@
 # Carnet de câblage de la scène Unity
 
+> **Mis à jour 2026-06-04 : réconciliation E8/E9 (voir entrées E8/E9 du
+> Journal des modifications).**
+
 Document vivant. **Tenu à jour à chaque sub-étape par Claude Code.** Tu y
 trouves, pour chaque GameObject de la scène `Main`, les components qui le
 portent et les références (drag-and-drop dans l'Inspector) qu'il faut
@@ -31,12 +34,16 @@ _Debug
 
 ## 2. `_Bootstrap`
 
-| GameObject enfant | Components | Références à brancher |
+Le GameObject `_Bootstrap` n'a **aucun enfant** : tous les composants
+ci-dessous sont posés **directement sur le GameObject `_Bootstrap`
+lui-même**. Les références internes (`Shadow Runner`, `Real Runner`)
+pointent donc d'un composant vers un autre composant du même GameObject.
+
+| Composant sur le GameObject `_Bootstrap` | Composant | Références à brancher |
 |---|---|---|
-| `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | RCs Hero : HedgerowDensity, WaterTable, IntegratedProfitability, BiodiversityComposite, TechDelta. RCs presentation channels (9α/9β) : `SoilMoisture Container` → `RC_SoilMoisture.asset`, `Hedgerow Health Container` → `RC_HedgerowHealth.asset`. `Shadow Runner` → glisser le GO ci-dessous. **`Seasonal Weather Asset` ✨ (chantier E2)** → `Assets/_Project/Data/Weather/SeasonalWeather_Mortagne.asset` (créer via `Create → Bocage → Weather → Seasonal Weather Data` ; si laissé null le runner tombe sur les defaults Mortagne-au-Perche hardcodés dans `SeasonalWeatherDataDefaults`). |
-| `ShadowSimulationRunner` ✨ (sub-étape 8b) | `ShadowSimulationRunner` | `Real Runner` → le `SimulationRunner` ci-dessus (même GO ou autre, peu importe). |
-| **`AutoActionApplier` ✨ (sub-étape 8c.3)** | `AutoActionApplier` | `Runner` → `_Bootstrap/SimulationRunner`. Subscribes à `TickCompleted` et applique les recos Accepted/AutoAccepted au real engine seul (le shadow n'est jamais touché → TechDelta bouge). |
-| `SimulationTraceRecorder` *(optionnel — diagnostic 7b)* | `SimulationTraceRecorder` | — (s'auto-abonne au TickCompleted du SimulationRunner) |
+| `BootstrapEntryPoint` | `BootstrapEntryPoint` | Point d'entrée de boot (ordonnancement du démarrage). Aucune référence drag-and-drop hors de `_Bootstrap`. |
+| `SimulationRunner` | `SimulationRunner` (Couche 5 Presentation) | RCs Hero : HedgerowDensity, WaterTable, IntegratedProfitability, BiodiversityComposite, TechDelta. RCs presentation channels (9α/9β) : `SoilMoisture Container` → `RC_SoilMoisture.asset`, `Hedgerow Health Container` → `RC_HedgerowHealth.asset`. `Shadow Runner` → le composant `ShadowSimulationRunner` ci-dessous (même GameObject). **`Seasonal Weather Asset` ✨ (chantier E2)** → `Assets/_Project/Data/Weather/SeasonalWeather_Mortagne.asset` (créer via `Create → Bocage → Weather → Seasonal Weather Data` ; si laissé null le runner tombe sur les defaults Mortagne-au-Perche hardcodés dans `SeasonalWeatherDataDefaults`). |
+| `ShadowSimulationRunner` ✨ (sub-étape 8b) | `ShadowSimulationRunner` | `Real Runner` → le composant `SimulationRunner` ci-dessus (même GameObject `_Bootstrap`). |
 
 ---
 
@@ -57,12 +64,13 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | `WaterTableDetailLabelBinding` | (vérifier — voir source) |
 | `IntegratedProfitabilityLabelBinding` | `Runner` → `_Bootstrap/SimulationRunner` |
 | **`BiodiversityLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_BiodiversityComposite.asset` |
-| **`TechDeltaLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_TechDelta.asset` |
-| **`DecisionPanelBinding` ✨ (sub-étape 8c.3, refactor history)** | `Runner` → `_Bootstrap/SimulationRunner`. `Recommendation Popup` → glisse le `DecisionPopupBinding` voisin. Gère le bouton « Recommandations en cours (X) » et la list popup historique (click ligne = ré-ouvre la popup reco). |
-| **`DecisionPopupBinding` ✨ (sub-étape 8c.3 post-livraison polish)** | `Runner` → `_Bootstrap/SimulationRunner`. Affiche un popup modal centré dès qu'une reco apparaît dans le journal. Met la sim en pause, slider magnitude + 3 boutons (Valider / Voir plus tard / Ignorer), reprend la sim quand la file (hors recos différées) est vide. |
+| **`TechDeltaLabelBinding` ✨ (sub-étape 8b)** | `Container` → asset `RC_TechDelta.asset`. **E8 :** lit `RC_TechDelta.NetEurosPerHa` = valeur **NETTE en €/ha** (avantage cumulé du run réel sur le run fantôme, MOINS l'investissement upfront cumulé des actions) ; **peut être négatif** quand la mise de capital dépasse les gains banqués. |
+| **`DecisionPanelBinding` ✨ (sub-étape 8c.3, refactor history)** | `Runner` → `_Bootstrap/SimulationRunner`. `Recommendation Popup` → glisse le `DecisionPopupBinding` voisin. Gère le bouton « Recommandations en cours (X) » et la list popup historique (click ligne = ré-ouvre la popup reco). **E9 :** chaque ligne de la liste des recos en attente classée comme compromis (via `RecommendationSurfacing.IsTradeoff(rec)`, Couche 03) affiche un badge « **compromis** » — visible sur les recommandations économie-contre-écologie. |
+| **`DecisionPopupBinding` ✨ (sub-étape 8c.3 post-livraison polish)** | `Runner` → `_Bootstrap/SimulationRunner`. Affiche un popup modal centré dès qu'une reco apparaît dans le journal. Met la sim en pause, slider magnitude + 3 boutons (Valider / Voir plus tard / Ignorer), reprend la sim quand la file (hors recos différées) est vide. **E9 : l'auto-ouverture du modal est désormais filtrée par `ShouldAutoSurface(rec)`** (wrapper interne qui délègue à `RecommendationSurfacing.ShouldAutoPopup(rec, biodiversity)`, Couche 03) — les recos de compromis (économie-contre-écologie, et écologie-contre-profit hors urgence biodiv critique) **n'ouvrent PAS le modal** : elles patientent dans la liste du `DecisionPanel`. Seuls les win-win et les urgences écologiques (biodiv sous le seuil critique) interrompent l'utilisateur. |
+| **`AutoActionApplier` ✨ (sub-étape 8c.3)** | `Runner` → `_Bootstrap/SimulationRunner`. **Composant porté par `_UI_Canvas`** (pas par `_Bootstrap`). Subscribes à `TickCompleted` et applique les recos Accepted/AutoAccepted au real engine seul (le shadow n'est jamais touché → TechDelta bouge). |
 | **`InitialConditionsBinding` ✨ (sub-étape 8c.4)** | `Runner` → `_Bootstrap/SimulationRunner`. Wire 3 sliders (`initial-hedgerow-density-slider`, `initial-water-table-depth-slider`, `initial-fauna-population-slider`) + bouton `initial-reset-button`. Sliders verrouillés quand `CurrentDay > 0`. |
 | **`MonthSelectorBinding` ✨ (chantier E2)** | `Runner` → `_Bootstrap/SimulationRunner`. Câble le `DropdownField name="starting-month-dropdown"` (combo Jan-Déc) + `Label name="starting-month-hint"` placés en tête de la section « Conditions initiales du bocage ». Écrit la sélection dans `ScenarioContext.StartingMonth` immédiatement ; la `WeatherUpdateRule` snapshote la valeur au prochain `Rebuild` (changement mid-run sans effet sur le run courant). |
-| **`ManualActionsBinding` ✨ (sub-étape 10a)** | `Runner` → `_Bootstrap/SimulationRunner`. Câble 3 sliders + 3 boutons des « Interventions ponctuelles » du décision-panel : `manual-plant-hedges-*`, `manual-irrigation-*`, `manual-reduce-inputs-*`. Chaque clic appelle `SimulationRunner.ApplyManualXxx`, applique l'effet directement au real model (pas au shadow → TechDelta capte la divergence), pas de journal. |
+| **`ManualActionsBinding` ✨ (sub-étape 10a, refondu E8)** | `Runner` → `_Bootstrap/SimulationRunner`. Câble **2 sliders + 2 boutons** des « Interventions ponctuelles » du décision-panel : `manual-plant-hedges-*`, `manual-irrigation-*`. Chaque clic appelle `SimulationRunner.ApplyManualXxx`, applique l'effet directement au real model (pas au shadow → TechDelta capte la divergence), pas de journal. **E8 :** la baisse d'intrants (« reduce-inputs ») **n'est plus une action ponctuelle** — c'est désormais une pratique **soutenue** réglée via le slider quotidien d'intensité des intrants (section « Décisions quotidiennes »), plus un bouton-impulsion. Il ne reste donc que **deux actions manuelles** (planter des haies, irriguer). |
 | `HedgerowShaderBinding` | `Density Container` → `RC_HedgerowDensity.asset`. `Health Container` → `RC_HedgerowHealth.asset` (sub-étape 9β). `Spawn Root` → racine `Composition` enfant de `_Scene_Visual`. Scanne les enfants commençant par `hedge_`. |
 | **`PondShaderBinding` ✨ (sub-étape 9α)** | `Container` → `RC_WaterTableDepth.asset`. `Spawn Root` → même racine `Composition` que HedgerowShaderBinding. Préfixe scanné par défaut : `pond`. |
 | **`MeadowShaderBinding` ✨ (sub-étape 9α)** | `Container` → `RC_SoilMoisture.asset`. `Spawn Root` → même racine `Composition`. Préfixe scanné par défaut : `grass_`. |
@@ -73,7 +81,7 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | **`SpeedControlsBinding` ✨ (sub-étape 7c.3)** | `Runner` → `_Bootstrap/SimulationRunner` <br> Les 7 noms d'éléments UXML (`speed-pause-button`, `speed-x1-button`, `speed-x5-button`, `speed-x10-button`, `speed-x20-button`, `speed-skip-end-button`, `speed-day-counter`) sont laissés à leur valeur par défaut — ils correspondent aux `name=""` posés dans `Dashboard.uxml`. |
 | **`OngletBiodivBinding` ✨ (chantier E6)** | `Biodiv Composite` → `RC_BiodiversityComposite.asset`. `Habitat` → `RC_FaunaFactorHabitat.asset`. `Water` → `RC_FaunaFactorWater.asset`. `Inputs` → `RC_FaunaFactorInputs.asset`. `Fauna Pool` → `_Scene_Visual/Fauna` (GameObject portant `FaunaPool`, pour le comptage espèces visibles). Tous les noms de labels en défaut. |
 | **`OngletClimatBinding` ✨ (chantier E6)** | `Runner` → `_Bootstrap/SimulationRunner`. `Soil Carbon` → `RC_SoilCarbonStock.asset`. Lit les historiques météo/eddy via `runner.WeatherStation` et `runner.EddyTower`. La ligne nappe phréatique reste pilotée par `WaterTableDetailLabelBinding` (rien à brancher en double). |
-| **`OngletEconomieBinding` ✨ (chantier E6)** | `Runner` → `_Bootstrap/SimulationRunner`. `Total Investment` → `RC_TotalInvestment.asset`. `Investment Horizon` → `RC_InvestmentHorizon.asset`. PSE/PAC sont recalculés depuis les constantes publiques de `IntegratedProfitabilityIndicator` pour ne jamais diverger du Hero KPI. |
+| **`OngletEconomieBinding` ✨ (chantier E6, refondu E8)** | `Runner` → `_Bootstrap/SimulationRunner`. `Total Investment` → `RC_TotalInvestment.asset`. `Investment Horizon` → `RC_InvestmentHorizon.asset`. PSE/PAC sont recalculés depuis les constantes publiques de `IntegratedProfitabilityIndicator` pour ne jamais diverger du Hero KPI. **E8 :** `RC_InvestmentHorizon` pilote une ligne « **horizon de rentabilité** » à **3 états**, conditionnée par `RC_InvestmentHorizon.IsReached` : « **X ans** » (rentabilité atteinte), « **Sans objet** » (aucun investissement réalisé), « **Non atteint** » (investissement présent mais break-even jamais franchi). |
 | **`NiveauBModalsBinding` ✨ (chantier E6)** | Aucun champ à brancher. Auto-câble les 3 boutons trigger (`biodiv-open`, `climat-open`, `economy-open`) avec leurs overlays (`biodiv-modal-overlay`, etc.) et leurs boutons X (`biodiv-modal-close`, etc.). Fermeture via X, clic en dehors de la card, ou Échap. |
 | **`SensorInspectorPanelBinding` ✨ (chantier E6 / ADR #53)** | `Runner` → `_Bootstrap/SimulationRunner`. Tous les autres champs (noms UXML overlay/close/title/chart hosts/footer) en défaut. S'abonne à `SensorClickedEventBus` ; au clic capteur (sprite scène ou ligne UI), reconfigure le panneau via une des 5 méthodes `ConfigureFor*` puis défère le show d'1 frame (évite la race avec `OnMouseDown` legacy du sprite — voir DECISIONS #53). Instancie 2 `SensorTimeSeriesChart` programmatiquement dans les hosts UXML. |
 
@@ -84,6 +92,16 @@ Presentation vivent sur ce même GameObject (elles ont toutes
 | GameObject | Components |
 |---|---|
 | `MainCamera` | `Camera`, `OrthographicCameraSetup` |
+
+---
+
+## 4 bis. `_Debug`
+
+Racine de diagnostic mandatée par `CLAUDE.md` §8.
+
+| Composant sur le GameObject `_Debug` | Composant | Références à brancher |
+|---|---|---|
+| `SimulationTraceRecorder` *(désactivé par défaut)* | `SimulationTraceRecorder` (Couche 05 diagnostics) | — (s'auto-abonne au `TickCompleted` du `SimulationRunner`). Composant **désactivé par défaut** ; à activer ponctuellement pour tracer un run. |
 
 ---
 
@@ -122,14 +140,20 @@ Localisation : `Assets/_Project/Data/RuntimeContainers/`
 | `RC_WaterTableDepth.asset` | `SimulationRunner` | `WaterTableLabelBinding`, `WaterTableDetailLabelBinding` |
 | `RC_IntegratedProfitability.asset` | `SimulationRunner` | `IntegratedProfitabilityLabelBinding` |
 | `RC_BiodiversityComposite.asset` ✨ | `SimulationRunner` | `BiodiversityLabelBinding` |
-| `RC_TechDelta.asset` ✨ | `SimulationRunner` | `TechDeltaLabelBinding` |
+| `RC_TechDelta.asset` ✨ | `SimulationRunner` via `CumulativeTechValueIndicator` (E8) | `TechDeltaLabelBinding` |
 | `RC_SoilMoisture.asset` ✨ (9α) | `SimulationRunner` | `MeadowShaderBinding` |
 | `RC_HedgerowHealth.asset` ✨ (9β) | `SimulationRunner` | `HedgerowShaderBinding` (slot Health Container) |
 | `RC_SoilCarbonStock.asset` ✨ (E3) | `SimulationRunner` | `OngletClimatBinding` (E6), `SensorInspectorPanelBinding` (E6, mode EddyTower) |
+| `RC_FaunaFactorHabitat.asset` ✨ (E5) | `SimulationRunner` | `OngletBiodivBinding`, `FaunaPoolBinding` |
+| `RC_FaunaFactorWater.asset` ✨ (E5) | `SimulationRunner` | `OngletBiodivBinding`, `FaunaPoolBinding` |
+| `RC_FaunaFactorInputs.asset` ✨ (E5) | `SimulationRunner` | `OngletBiodivBinding`, `FaunaPoolBinding` |
+| `RC_TotalInvestment.asset` ✨ (E5) | `SimulationRunner` | `OngletEconomieBinding` |
+| `RC_InvestmentHorizon.asset` ✨ (E5, refondu E8) | `SimulationRunner` via `InvestmentHorizonIndicator` | `OngletEconomieBinding` |
 
-(à compléter au fil des étapes — Biodiversity et TechDelta arrivent à
-l'étape 8, SoilMoisture et HedgerowHealth à l'étape 9, SoilCarbonStock
-à l'étape E3.)
+> `CumulativeTechValueIndicator` et `InvestmentHorizonIndicator` sont des
+> indicateurs **Couche 04 en C# pur**, instanciés par `SimulationRunner`
+> (pas de GameObject ni de composant en scène) ; ils alimentent
+> respectivement `RC_TechDelta` et `RC_InvestmentHorizon`.
 
 ---
 
@@ -147,6 +171,41 @@ Si en Play Mode un binding logge *"runner is null"* ou *"slider not found"* :
 ---
 
 ## Journal des modifications
+
+- **2026-06-04** — Chantier E9 livré (système de recommandations).
+  **Aucun nouveau GameObject ni composant scène** : tout vit en
+  Couche 02/03, sans référence en scène. Réécriture du
+  `RecommendationEngine` + nouveau `RecommendationSurfacing`
+  (`Assets/_Project/03_Decision/`), 5 nouvelles classes de
+  recommandation et 2 nouveaux events
+  (`Assets/_Project/02_Sensors/Events/`). `RecommendationSurfacing`
+  classe chaque reco (win-win / compromis économique / compromis
+  écologique / lose-lose) et expose le gate `ShouldAutoPopup(rec,
+  biodiversity)`. Côté présentation (bindings existants, pas de
+  nouveau composant) : `DecisionPopupBinding` filtre désormais
+  l'auto-ouverture via son wrapper `ShouldAutoSurface(rec)` — les
+  recos de compromis patientent dans la liste au lieu d'interrompre ;
+  `DecisionPanelBinding` ajoute un badge « **compromis** » sur les
+  lignes de la liste classées trade-off (`IsTradeoff`).
+
+- **2026-06-04** — Chantier E8 livré (refonte du delta tech).
+  **Aucun nouveau GameObject ni composant scène.** Le champ de
+  `RC_TechDelta` est renommé en `netEurosPerHa` (propriété
+  `NetEurosPerHa`, ancien `deltaPercent`/`cumulativeEurosPerHa`
+  conservés via `FormerlySerializedAs`) : valeur **NETTE €/ha** (gain
+  cumulé réel vs fantôme moins l'investissement upfront cumulé), qui
+  **peut devenir négative**. `RC_TechDelta` est désormais alimenté par
+  l'indicateur Couche 04 pur `CumulativeTechValueIndicator`, et
+  `RC_InvestmentHorizon` par `InvestmentHorizonIndicator` (tous deux
+  instanciés par `SimulationRunner`, sans GameObject). Réécritures de
+  libellés/bindings : `TechDeltaLabelBinding` (lit la valeur nette,
+  peut être négative) et `OngletEconomieBinding` (ligne « horizon de
+  rentabilité » à 3 états gated sur `RC_InvestmentHorizon.IsReached` :
+  « X ans » / « Sans objet » / « Non atteint »). Le bouton
+  « reduce-inputs » est **retiré** de `ManualActionsBinding` : la
+  baisse d'intrants devient une pratique soutenue sur le slider
+  quotidien d'intensité (il ne reste que 2 actions ponctuelles :
+  planter des haies, irriguer).
 
 - **2026-06-02** — Chantier E6 livré (panneau inspection capteurs +
   onglets Niveau B + force-online). Cf `ROADMAP.md` §8 pour le
@@ -322,19 +381,22 @@ de ces méthodes qui a été refactorée pour journaliser via
 `DecisionJournal` au lieu d'appliquer directement (ADR #47).
 Aucun champ Inspector nouveau.
 
-### Chantier E2 — Saisonnalité + WeatherStation
+### Chantier E2 — Saisonnalité + WeatherStation (livré — voir sections 2 et 3)
 
-**Nouveau GameObject** :
+> Les noms exacts livrés font foi dans les sections 2 et 3 ci-dessus. Le
+> tableau ci-dessous est conservé pour mémoire, avec les noms corrigés.
 
-| GameObject enfant | Components | Références à brancher |
+**Extension `_Bootstrap/SimulationRunner`** :
+
+| Composant | Champ sérialisé | Référence à brancher |
 |---|---|---|
-| `_Bootstrap/SimulationRunner` (extension) | + champ `SeasonalWeatherDataAsset` | → asset `SeasonalWeatherData_Mortagne.asset` (Couche 01, dossier `Assets/_Project/Data/Weather/`). |
+| `SimulationRunner` (extension) | champ `seasonalWeatherAsset` (slot Inspector « Seasonal Weather Asset ») | → asset `SeasonalWeather_Mortagne.asset` (dossier `Assets/_Project/Data/Weather/`). |
 
-**Nouveau composant sur `_UI_Canvas`** :
+**Composant sur `_UI_Canvas`** :
 
 | Component | Champs sérialisés à brancher |
 |---|---|
-| `MonthSelectorBinding` (E2) | `Runner` → `_Bootstrap/SimulationRunner`. Combo UXML par défaut `initial-month-combo` dans section « Conditions initiales » du scenario panel. |
+| `MonthSelectorBinding` (E2) | `Runner` → `_Bootstrap/SimulationRunner`. `DropdownField` UXML par défaut `starting-month-dropdown` (+ `Label` `starting-month-hint`) dans la section « Conditions initiales » du scenario panel. |
 
 **Nouveau RC** :
 
@@ -502,3 +564,8 @@ sont calculées dans le footer du layout WeatherStation, via le
 helper statique pur `MonthlyExpectedPrecipitationMm`). Aucune
 restructuration de la hiérarchie scène (les 7 racines préfixées `_`
 restent inchangées, conformes `CLAUDE.md` §8).
+
+E8/E9 n'ont ajouté **aucun nouveau composant `_UI_Canvas`** mais ont
+modifié `TechDeltaLabelBinding`, `OngletEconomieBinding`,
+`DecisionPanelBinding`, `DecisionPopupBinding` et `ManualActionsBinding`
+(voir Journal des modifications, entrées E8/E9).

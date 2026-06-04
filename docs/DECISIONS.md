@@ -153,6 +153,11 @@ actions), reproductibilité, alignement avec la thèse du projet.
 **Alternative écartée** : comparaison avec valeurs codées en dur — non
 crédible.
 
+**Précisé par ADR #58 (chantier E8, 2026-06-04)** : le cadrage « mêmes
+inputs » est affiné en contrefactuel à baseline gelée — les paramètres
+exogènes (climat, MAEC, PSE) sont partagés, mais les quatre leviers de
+décision agriculteur sont gelés à leur valeur de lancement.
+
 ---
 
 ### 10. Hiérarchie KPIs en 3 niveaux
@@ -391,6 +396,11 @@ les actions tech.
 
 **Alternative écartée** : duplication de logique — fragile, source de
 bugs.
+
+**Remplacé par ADR #58 (chantier E8, 2026-06-04)** : `ISimulationRun` /
+`applyTechActions` n'ont jamais été construits ; le shadow utilise un
+second `SimulationEngine` concret + un `ScenarioContext` frozen-baseline
+(`TickWithoutAdvancingScenario`).
 
 ---
 
@@ -697,7 +707,9 @@ ne reposent sur rien.
 - `IntegratedProfitability` → arrive à l'Étape 7 (économie : ajout
   de `CropYield`, `InputCost`, `MaintenanceCost`).
 - `TechDelta` → arrive à l'Étape 8 (shadow run câblée, l'agrégat
-  est calculable sur (real − shadow)).
+  est calculable sur (real − shadow)). **Précisé par ADR #59
+  (chantier E8)** : le KPI est une valeur NET cumulée en €/ha, pas
+  instantanée.
 
 **Alternatives écartées** :
 - *Stubs câblés mais signalés visuellement* : compromis tentant
@@ -791,6 +803,12 @@ besoin actuel, alourdit le modèle.
 ---
 
 ### 43. AutoAction `ReduceInputs` applique son effet directement sur le modèle réel, pas via le scénario partagé
+
+**Remplacé par ADR #58 (chantier E8, 2026-06-04)** : la prémisse du
+scénario partagé ne tient plus (shadow frozen-baseline) ; `ReduceInputs`
+abaisse désormais `ScenarioContext.InputIntensityFactor` (changement de
+pratique, transition §15). Les nudges +0.05 `FaunaPopulation` / −200
+`InputCost` et le canal `RealRunTechAdjustment` proposé sont abandonnés.
 
 **Contexte** : à la sub-étape 8c.3, l'auto-action `ReduceInputs`
 (consommée par la recommandation du même nom + le bouton manuel
@@ -933,7 +951,7 @@ un quatrième verdict système pour borner l'historique.
   soit la durée du run.
 - Les `Accepted` et `Rejected` ne sont JAMAIS touchés par la
   supersession — le trail d'arbitrage utilisateur est intact pour
-  un futur `SessionReporter`.
+  un futur `SessionReporter` (jamais construit — BACKLOG #10).
 - Les manipulations de set côté `DecisionPopupBinding` sont
   in-memory, perdues à la fin de la session — pas de persistance
   PlayerPrefs (CLAUDE.md §16). Une nouvelle session repart avec une
@@ -1057,7 +1075,8 @@ directement sur le modèle réel, sans passer par le `DecisionJournal`.
 Asymétrie discutable : les recos auto traversent journal + verdict +
 supersession, les actions manuelles bypass complètement. Friction
 audit recadrage : traçabilité du run réel incomplète, le futur
-`SessionReporter` ne verrait pas les actions manuelles.
+`SessionReporter` (jamais construit — BACKLOG #10) ne verrait pas les
+actions manuelles.
 
 **Décision** : toutes les actions manuelles passent par le
 `DecisionJournal` sous forme de `IRecommendation` « manual »
@@ -1590,3 +1609,208 @@ qui justifierait pédagogiquement la distinction visuelle.
 maintenir le distinguo. Diagnostic coûteux (déjà brûlé ~30 min sans
 identifier la cause racine), zéro gain narratif tant que le concept
 reste théorique.
+
+---
+
+### 58. Shadow run = contrefactuel à baseline gelée (frozen-baseline)
+
+**Contexte** : à l'ouverture du chantier E8 (refonte du delta tech), la
+chaîne shadow telle que documentée par les ADRs #9, #24 et #43 reposait
+sur deux idées qui ne tenaient plus à l'implémentation. (1) #9 et #24
+décrivaient un shadow run « mêmes seeds, mêmes inputs » porté par une
+interface `ISimulationRun` à deux instances et un flag `applyTechActions`.
+(2) #43 supposait que le `ScenarioContext` était partagé par référence
+entre run réel et shadow, ce qui interdisait à `ReduceInputs` de toucher
+`InputIntensityFactor` (la shadow aurait subi la même baisse, annulant
+le KPI). Aucune de ces deux constructions n'a survécu : `ISimulationRun`
+et `applyTechActions` n'ont jamais été écrits, et le partage total du
+scénario rendait impossible un changement de pratique mesurable.
+
+**Décision** : le shadow run est un contrefactuel à baseline gelée. Il
+partage avec le run réel les paramètres exogènes (climat, MAEC, PSE)
+**par référence**, mais **gèle à leur valeur de lancement** les quatre
+leviers de décision agriculteur (`HedgeRemovalRate`,
+`InputIntensityFactor`, `CoverCropsCoveragePercent`,
+`ResidueRestitutionPercent`) via `ScenarioContext.CreateFrozenShadowFrom`.
+Le shadow possède son propre `EcosystemModel` et avance par
+`TickWithoutAdvancingScenario` (il ne fait pas progresser le scénario,
+qui reste piloté par le run réel). Le KPI de valeur tech mesure
+exactement l'écart réel-vs-agriculteur-gelé : tout ce que l'utilisateur
+change après le lancement diverge du jumeau figé.
+
+**Raison** :
+- Un shadow « mêmes inputs » partagé par référence ne peut pas servir de
+  contrefactuel dès qu'une décision modifie le scénario : il bouge avec
+  le run réel et le delta s'annule. Geler les seuls leviers agriculteur,
+  tout en partageant le climat et les cadres de paiement, isole
+  proprement la contribution des décisions de gestion — c'est la
+  sémantique « jumeau sans décisions tech » que la thèse du DT prétend
+  mesurer (cf #43, tension désormais résolue).
+- Partager les exogènes par référence garantit qu'aucune divergence ne
+  provient du climat ou des barèmes : la non-divergence due au scénario
+  exogène est structurelle, pas à recalibrer.
+- Débloque le changement de pratique : `ReduceInputs` peut redevenir un
+  vrai curseur sur `InputIntensityFactor` (transition §15) sans casser
+  le KPI, puisque la baseline gelée ne suit pas.
+
+**Conséquence opérationnelle** : remplace le cadrage « mêmes inputs » des
+ADRs #9 et #24 et renverse la prémisse du scénario partagé de l'ADR #43.
+`ISimulationRun` / `applyTechActions` sont actés comme jamais construits
+(fantômes). Preuves dans le code : `ScenarioContext.CreateFrozenShadowFrom`,
+`ShadowSimulationRunner` (second `SimulationEngine` concret +
+`TickWithoutAdvancingScenario`).
+
+**Alternative écartée** : cloner intégralement le `ScenarioContext` pour
+donner au shadow un scénario indépendant — perd le partage des exogènes
+(le climat divergerait), réintroduit l'invariant d'unicité du scénario
+discuté en #43, et brouille la sémantique du delta.
+
+---
+
+### 59. « Apport de la techno » = valeur NET cumulée (gain brut intégré moins investissement des actions), payback = jour où le NET franchit 0
+
+**Contexte** : à la refonte E8, le Hero KPI « delta tech » devait
+quantifier honnêtement l'apport de l'instrumentation et des décisions.
+Le cadrage implicite hérité de l'ADR #40 (« agrégat calculable sur
+(real − shadow) ») laissait penser à un écart instantané de rentabilité.
+Or l'effet d'une action ponctuelle sur l'écart instantané fait un pic au
+moment de l'action puis décroît vers 0 quand le système se rééquilibre :
+un KPI instantané afficherait alors un apport qui « s'évapore », ce qui
+est faux du point de vue de la valeur réellement créée.
+
+**Décision** : le KPI intègre depuis le jour 0 l'écart journalier de
+rentabilité intégrée entre le run réel et le shadow frozen-baseline
+(grandeur **brute**, cumulée), puis **soustrait le capital upfront
+cumulé des actions** (coûts des capteurs exclus) pour afficher la valeur
+**NET** en €/ha. L'horizon de rentabilité (« payback ») latche le
+**premier jour où le NET atteint l'équilibre** (NET ≥ 0).
+
+**Raison** :
+- Intégrer capitalise la valeur réellement créée : un pic transitoire qui
+  retombe à 0 a quand même produit de la valeur sur sa durée, et
+  l'intégrale la conserve. On juge une stratégie sur son horizon vrai,
+  pas sur un instantané trompeur.
+- Soustraire l'investissement des actions donne un NET honnête : un gain
+  brut élevé obtenu au prix d'un capital lourd n'est pas le même résultat
+  qu'un gain brut modeste gratuit. Le payback (jour où le NET franchit 0)
+  est l'argument décisif côté agriculteur.
+- Exclure les coûts capteurs : l'instrumentation est l'hypothèse du DT
+  (le poste « observer »), pas une action de gestion comptabilisée dans
+  l'arbitrage ; on mesure l'apport des décisions, capteurs supposés en
+  place.
+- Supersède le cadrage instantané suggéré par l'ADR #40.
+
+**Conséquence opérationnelle** : preuves dans le code —
+`CumulativeTechValueIndicator` (gain brut intégré),
+`InvestmentHorizonIndicator` (latch du payback NET), `SimulationRunner`
+(`net = gross − totalInvestment`).
+
+**Alternative écartée** : afficher l'écart instantané de rentabilité —
+spike puis décroissance vers 0, sous-estime massivement la valeur d'une
+stratégie dont l'effet est transitoire mais réel, et rend le KPI
+illisible dans le temps.
+
+---
+
+### 60. Réponse rendement concave (Mitscherlich) + coût intrants fixe/variable (70/30) ⇒ optimum de profit émergent I\* ≈ 0,81
+
+**Contexte** : la réponse du rendement à l'intensité d'intrants était
+linéaire, et le coût des intrants était traité comme entièrement
+variable. Conséquence : le profit était monotone en intensité (plus
+d'intrants = toujours plus ou toujours moins de profit selon les pentes),
+sans optimum intérieur. Or les recommandations économiques de E9
+(notamment « remonter les intrants vers l'optimum ») n'ont de sens que
+s'il existe un point de profit maximal vers lequel orienter l'agriculteur.
+
+**Décision** : remplacer la réponse linéaire rendement-vs-intensité par
+une courbe concave à plateau (type Mitscherlich, **courbure 0,70**,
+plateau au-delà de I = 1), et scinder le coût des intrants en **70 % fixe
+structurel + 30 % variable** (`VariableCostShare = 0.30`). La combinaison
+« rendement à rendements décroissants + part variable du coût » fait
+émerger un **maximum de profit intérieur près de I ≈ 0,8** (optimum
+calculé I\* ≈ 0,81), cible vers laquelle les recommandations économiques
+orientent.
+
+**Raison** :
+- Une réponse concave est la forme agronomique correcte (loi des
+  rendements décroissants : chaque unité d'intrant supplémentaire rapporte
+  moins). Le plateau borne le gain au-delà de la dose de référence.
+- Une part de coût fixe (structure, mécanisation, foncier) qui ne décroît
+  pas avec l'intensité est ce qui crée l'optimum intérieur : sans elle, le
+  profit resterait monotone. Le couple courbure/part variable est ce qui
+  produit I\* ≈ 0,81.
+- Donne un point d'ancrage chiffré et défendable aux contre-recommandations
+  économiques de l'ADR #61 (« remonter vers I\* »).
+
+**Conséquence opérationnelle** : sources et dérivation de la courbure
+0,70, de `VariableCostShare = 0.30` et du calcul de I\* dans
+`CALIBRATION.md` section E8-E9. La cible I\* est consommée par le moteur
+de recommandations (ADR #61).
+
+**Alternative écartée** : conserver la réponse linéaire + coût tout
+variable — pas d'optimum intérieur, donc les recommandations économiques
+« remonter/baisser les intrants vers la cible » n'auraient aucun point
+de convergence à viser.
+
+---
+
+### 61. Système de recommandations E9 : 8 recos / 6 leviers, dispatch état-conscient, contre-recommandations économiques, surfaçage popup-vs-liste par classification d'outcome
+
+**Contexte** : le moteur de recommandations comptait 3 recos (irrigation,
+réduction d'intrants, plantation manuelle) sur un faible nombre de
+leviers, toutes orientées « plus d'écologie ». Trois manques pour le
+chantier E9 : (1) aucune recommandation économique de redressement quand
+la rentabilité décroche, (2) aucun déclencheur sur le carbone sol bas
+malgré le modèle 1-pool (ADR #48), (3) un surfaçage indifférencié — toute
+reco interrompait par popup, sans distinguer un gain franc d'un
+compromis chargé de valeurs.
+
+**Décision** : passer de 3 à 8 recommandations sur 6 leviers (nouveaux :
+`RaiseInputs`, `SowCoverCrops`, `RestoreResidue`, `ReduceHedgeRemoval`,
+`IncreaseHedgeRemoval`). Le moteur opère un **dispatch état-conscient** :
+il sélectionne le levier qui a une marge de manœuvre réelle dans l'état
+courant (et reste silencieux si aucun, conforme §17), et émet des
+**contre-recommandations économiques** (remonter les intrants vers
+I\* — cf ADR #60 ; éclaircir des haies surdenses non subventionnées) sur
+un nouvel **`LowProfitabilityEvent`** (seuil 50 €/ha — événement de seuil
+d'indicateur, **pas** une lecture capteur), aux côtés d'un nouveau
+**`SoilCarbonLowEvent`** (seuil 45 tC/ha). Les contre-recommandations
+économiques sont **conditionnées à une biodiversité ≥ 0,30** (on ne
+pousse pas à intensifier quand l'écosystème est déjà critique). Chaque
+reco est classée par le signe de ses deltas projetés long terme
+(profit / biodiversité) dans `RecommendationSurfacing.Kind` ∈ {`WinWin`,
+`EconomicTradeoff`, `EcologicalTradeoff`, `LoseLose`}. Surfaçage :
+- `WinWin` → **toujours** en popup.
+- `EcologicalTradeoff` → popup **uniquement** si biodiversité critique
+  (< 0,30).
+- `EconomicTradeoff` → reste dans la **liste passive**, avec un badge
+  « compromis » ; n'interrompt pas.
+- `LoseLose` → non poussé.
+
+**Raison** :
+- Un moteur qui ne sait que recommander « plus d'écologie » n'est pas un
+  outil d'aide à la décision honnête : un agriculteur dont la rentabilité
+  décroche a besoin de leviers économiques. Les contre-recommandations,
+  gatées sur biodiv ≥ 0,30, équilibrent la thèse sans trahir l'écologie.
+- Le dispatch état-conscient (levier avec marge) évite de recommander une
+  action sans effet (ex. réduire des intrants déjà bas) et justifie le
+  silence quand aucun levier n'a de marge (§17).
+- Classer par le signe des deltas projetés rend le surfaçage **dérivé du
+  modèle**, pas d'un script : seul un gain franc (win-win) ou un arbitrage
+  écologique en situation critique mérite d'interrompre ; tout compromis
+  chargé de valeurs (économique) reste passif et signalé « compromis »,
+  laissant l'arbitrage à l'utilisateur.
+- `LowProfitabilityEvent` est explicitement un événement de **seuil
+  d'indicateur** (rentabilité < 50 €/ha), pas une mesure capteur :
+  cohérent avec le principe primauté du capteur (§9), il dérive d'un
+  calcul du modèle tracé jusqu'à `IntegratedProfitability`.
+
+**Conséquence opérationnelle** : preuves dans le code —
+`RecommendationEngine`, `RecommendationSurfacing`, les 5 nouvelles recos,
+`SoilCarbonLowEvent` / `LowProfitabilityEvent`. Table de surfaçage
+(Kind × condition → popup/liste) dans `CALIBRATION.md`.
+
+**Alternative écartée** : conserver 3 recos toutes écologiques et un
+surfaçage popup uniforme — moteur déséquilibré (aucun redressement
+économique), et popups intrusifs sur des compromis que l'utilisateur
+devrait arbitrer lui-même dans la liste.

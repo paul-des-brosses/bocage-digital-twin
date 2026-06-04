@@ -5,7 +5,10 @@ développeur (agroécologue, jury M1, recruteur curieux du fond
 scientifique). Lecture cible : 15-20 minutes.
 
 Créé le 2026-05-28 — version alignée sur le scope MVP verrouillé
-(cf `CLAUDE.md` §17 et `ROADMAP.md` chantiers E1-E7).
+(cf `CLAUDE.md` §17 et `ROADMAP.md` chantiers E1-E9).
+
+Mis à jour 2026-06-04 : aligné sur E1-E9 (réconciliation E8 refonte
+delta tech + E9 système de recommandation).
 
 ---
 
@@ -20,7 +23,10 @@ une simulation temps réel d'agroécosystème, avec une architecture
 logicielle propre (5 couches strictement découplées), une calibration
 sourcée publiquement (INRAE, Solagro, Météo-France, AFAC,
 Légifrance), et une chaîne pédagogique complète capteur → événement
-→ recommandation → arbitrage → effet économique-écologique.
+→ recommandation → arbitrage → effet économique-écologique. Depuis
+E9, ce moteur va jusqu'aux **contre-recommandations économiques**
+(anti-greenwashing) et distingue les recos « gagnant-gagnant »
+(popup proactif) des arbitrages de compromis (liste passive).
 
 **Ce qu'il n'est pas** : un modèle scientifique validé pour décision
 opérationnelle. Les ordres de grandeur sont défendables, mais aucun
@@ -40,16 +46,19 @@ L'utilisateur, mis dans la peau d'un agriculteur du Perche, peut :
 - Régler le contexte exogène (anomalies climatiques RCP4.5,
   politiques publiques MAEC + PSE, intensité d'arrachage de haies,
   intensité d'intrants).
-- Agir manuellement (planter des haies, irriguer ponctuellement,
-  baisser l'intensité d'intrants).
+- Agir manuellement (planter des haies, irriguer ponctuellement).
+  La baisse d'intensité d'intrants n'est plus une action ponctuelle :
+  c'est désormais un changement de pratique soutenu via le slider
+  d'intensité d'intrants (recommandation automatique `ReduceInputs`).
 - Accepter ou refuser des recommandations algorithmiques déclenchées
   par les événements détectés par les capteurs.
 
 À tout moment, le DT compare la trajectoire **réelle** (avec les
-actions tech appliquées) à la trajectoire **fantôme** (mêmes seeds,
-mêmes inputs, sans actions tech). L'écart — le « KPI Delta tech » —
-mesure l'apport effectif de l'instrumentation et de l'arbitrage
-algorithmique, jamais postulé : il peut être positif, neutre ou
+décisions de l'agriculteur appliquées) à la trajectoire **fantôme**
+du « paysan passif » : mêmes seeds, mêmes conditions exogènes
+(climat, MAEC, PSE), mais décisions de l'agriculteur figées à leur
+valeur de lancement. L'écart mesure l'apport des décisions et de
+l'instrumentation, jamais postulé : il peut être positif, neutre ou
 négatif selon le scénario.
 
 ---
@@ -106,13 +115,33 @@ simulé) via une règle dédiée :
   (cf §5 saisonnalité).
 - `CropYieldDynamicsRule` : cible EMA (constante de temps 100 jours)
   combinant effet bell-curve densité haies, effet hydrique, effet
-  climatique, effet intensité.
+  climatique, et réponse **concave** à l'intensité d'intrants
+  (quadratique-plateau / Mitscherlich : −2,8 % à I=0.8, −17,5 % à
+  I=0.5, plafond +5 % à I=2.0).
 - `InputCostDynamicsRule` : cible EMA (60 jours) combinant
-  intensification, MAEC, climat.
+  intensification (part variable 30 % / part fixe 70 % : seuls les
+  intrants opérationnels suivent l'intensité), MAEC, climat.
 - `FaunaDynamicsRule` : 3 facteurs explicites (habitat, eau, intrants)
   avec effets faibles canicule et carbone sol (cf §6 biodiv).
 - `SoilCarbonDynamicsRule` : modèle 1-pool `dC/dt = inputs − k·C`,
   `k = 1/40 an⁻¹` (cf §7 carbone sol).
+
+### 4.3 Optimum de profit émergent
+
+La réponse **concave** du rendement à l'intensité d'intrants (§4.2)
+combinée à la **séparation 30/70 du coût** (seuls 30 % du coût
+suivent l'intensité) fait émerger un **maximum de profit intérieur** :
+l'optimum se situe autour de I* ≈ 0,8, et non aux extrêmes. Au-delà,
+le rendement plafonne pendant que le coût continue de grimper ; en
+deçà, la perte de rendement n'est pas compensée par l'économie
+d'intrants (dont 70 % sont fixes).
+
+Conséquence pédagogique honnête : l'**extensification profonde**
+(I très bas) est ~neutre, voire légèrement négative, sur le profit
+brut de production. Sa valeur ne vient pas du rendement mais des
+**services écosystémiques** (biodiversité accrue) et des **aides**
+(MAEC, PSE, écorégime) — c'est précisément ce que le DT met en
+lumière.
 
 ---
 
@@ -165,7 +194,7 @@ exposés explicitement :
 | Facteur | Signification | Source |
 |---|---|---|
 | Habitat | densité bocagère normalisée | Constant et al. 1976 |
-| Eau | qualité ressource hydrique (nappe + mare) | Hallmann 2017 |
+| Eau | qualité ressource hydrique (profondeur nappe) — la mare partagera ce facteur quand #23 sera livré | Hallmann 2017 |
 | Intrants | pression chimique inversée | MNHN 2024 |
 
 Effets faibles additionnels :
@@ -245,15 +274,35 @@ trompeuses.
 
 ---
 
-## 9. Moteur de décision (chantier E1 + cumulatif)
+## 9. Moteur de décision (chantiers E1 → E9 cumulatifs)
 
 ### 9.1 Recommandations algorithmiques
 
 Le `RecommendationEngine` (Couche 03) consomme les événements
-détectés et produit des recommandations :
+détectés et produit des recommandations. Après E9, le système couvre
+**8 recommandations sur 6 leviers**, avec un **dispatch sensible à
+l'état** (le moteur choisit le levier qui dispose encore de marge de
+manœuvre) :
 
-- `DroughtProlonged` → `IrrigationAdviceRecommendation`.
-- `FaunaAcousticAnomaly` → `ReduceInputsRecommendation`.
+| Événement déclencheur | Recommandation(s) | Levier |
+|---|---|---|
+| `DroughtProlonged` | Irrigation | irrigation ponctuelle |
+| `FaunaAcousticAnomaly` | `ReduceInputs` **ou** `ReduceHedgeRemoval` **ou** `PlantHedges` | levier avec marge disponible |
+| `SoilCarbonLowEvent` (nouveau, seuil 45 tC/ha) | `SowCoverCrops` **ou** `RestoreResidue` | couverts / résidus |
+| `LowProfitabilityEvent` (nouveau, seuil 50 €/ha) | `RaiseInputs` **ou** `IncreaseHedgeRemoval` | intensification / arrachage |
+
+E9 introduit **2 nouveaux événements** : `SoilCarbonLowEvent`
+(stock carbone sol sous 45 tC/ha) et `LowProfitabilityEvent`
+(rentabilité intégrée sous 50 €/ha, assorti d'un **garde-fou
+biodiversité ≥ 0.30** : on ne recommande de ré-intensifier ou
+d'arracher que si la biodiversité n'est pas déjà fragile).
+
+Ces dernières recommandations sont des **contre-recommandations
+économiques** assumées (anti-greenwashing) : le moteur ne pousse pas
+seulement vers l'extensification ; quand la rentabilité décroche, il
+propose honnêtement de ré-intensifier ou d'arracher, dans la limite
+du garde-fou biodiversité. Le DT ne postule pas que « plus vert =
+toujours mieux ».
 
 Chaque recommandation porte :
 
@@ -264,14 +313,24 @@ Chaque recommandation porte :
   effectivement touchées + ligne `Déclenché par : ...` indiquant
   l'événement source.
 
+Côté présentation, E9 distingue deux modes de remontée : les recos
+**gagnant-gagnant** s'affichent en **popup proactif** (on attire
+l'œil de l'utilisateur), tandis que les arbitrages de **compromis**
+(notamment les contre-recommandations économiques) restent dans une
+**liste passive** que l'utilisateur consulte s'il le souhaite.
+
 ### 9.2 Actions manuelles via journal
 
 L'utilisateur peut aussi déclencher des actions manuelles via
-3 boutons :
+2 boutons :
 
 - Planter des linéaires de haies (avec slider densité).
 - Irrigation ponctuelle (avec slider intensité).
-- Baisser l'intensité d'intrants (avec slider intensité).
+
+La baisse d'intensité d'intrants n'est plus un bouton ponctuel : elle
+est désormais portée par le **slider d'intensité d'intrants** (un
+changement de pratique soutenu, plancher 0.5, transition lissée sur
+10 jours), proposé via la recommandation automatique `ReduceInputs`.
 
 Chaque action manuelle est **journalisée comme
 `IRecommendation` auto-acceptée** (cf ADR #47). Elle traverse le même
@@ -285,8 +344,10 @@ Les actions « Planter des haies » portent un **coût upfront**
 France).
 
 Le `DecisionJournal` cumule l'investissement total. L'indicateur
-`InvestmentHorizonIndicator` calcule l'**horizon de rentabilité** en
-années, basé sur la divergence cumulée rentabilité réel vs shadow.
+`InvestmentHorizonIndicator` **latche le premier jour où la valeur
+NETTE de la techno** (gain cumulé réel − fantôme, moins
+l'investissement upfront) **franchit 0** — le jour d'amortissement.
+Tant qu'aucun investissement n'existe, l'horizon reste « Sans objet ».
 
 C'est l'argument décisif d'un agriculteur réel : pas « est-ce que
 c'est bénéfique à long terme ? », mais « **en combien d'années est-ce
@@ -297,22 +358,28 @@ référentiel MAEC).
 
 ## 10. Simulation fantôme (shadow run)
 
-Une seconde instance du `SimulationEngine` tourne **en parallèle**
+Une seconde trajectoire — le **fantôme** — tourne **en parallèle**
 avec :
 
 - Le **même seed maître** (mêmes tirages stochastiques).
-- Le **même ScenarioContext** (mêmes inputs utilisateur).
-- `applyTechActions = false` (aucune reco ou action manuelle n'est
-  appliquée).
+- Un **modèle neuf + un scénario « baseline figée »**
+  (`ScenarioContext.CreateFrozenShadowFrom`) : les conditions
+  exogènes (climat, MAEC, PSE) restent partagées, mais les décisions
+  de l'agriculteur sont **figées à leur valeur de lancement**.
+- À chaque pas, le fantôme **rejoue les règles** contre l'état
+  exogène partagé **sans ré-avancer le scénario**
+  (`TickWithoutAdvancingScenario`).
 
-Toute divergence d'état entre réel et fantôme est donc **uniquement**
-attribuable aux actions tech.
+Toute divergence d'état entre réel et fantôme provient donc
+**uniquement** des décisions de l'utilisateur qui s'écartent de la
+baseline figée.
 
-Le KPI **Delta tech** = (rentabilité réelle − rentabilité fantôme)
-en % relatif à fantôme. Il peut être positif (les actions tech ont
-amélioré la rentabilité), neutre (les actions ne servent à rien dans
-ce scénario) ou négatif (les actions ont coûté plus qu'elles n'ont
-rapporté).
+Le KPI **« Apport de la techno »** = **valeur NETTE cumulée en
+€/ha** : intégrale jour-après-jour de l'écart de rentabilité
+(réel − fantôme) depuis le jour 0, **moins l'investissement upfront
+des actions** (les coûts capteurs ne sont pas comptés). Positif si la
+stratégie tech rapporte plus qu'elle ne coûte, négatif sinon. Le jour
+où la valeur nette franchit 0 = l'**horizon de rentabilité**.
 
 Cette simulation fantôme est la **garantie d'honnêteté** du DT : le
 résultat n'est pas postulé, il émerge des choix de l'utilisateur
