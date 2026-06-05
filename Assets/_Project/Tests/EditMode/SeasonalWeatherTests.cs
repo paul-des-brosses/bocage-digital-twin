@@ -53,9 +53,9 @@ namespace Bocage.Tests.EditMode
         public void DefaultMortagneAuPercheCalibrationIsInternallyConsistent()
         {
             // Annual mean T° from the encoded 12 monthly values should land
-            // close to the Mortagne-au-Perche reference (≈ 10.8 °C). Annual
+            // close to the Mortagne-Parc reference (≈ 11.5 °C). Annual
             // expected precipitation from p_wet × E[log-normal] × days_in_month
-            // should land close to the reference (≈ 720 mm).
+            // should land close to the reference (≈ 802 mm).
             var data = SeasonalWeatherDataDefaults.MortagneAuPerche();
 
             double annualTempSum = 0.0;
@@ -71,10 +71,10 @@ namespace Bocage.Tests.EditMode
                                         * expectedDailyIntensity;
             }
             double annualMeanTemp = annualTempSum / 12.0;
-            Assert.That(annualMeanTemp, Is.EqualTo(10.77).Within(0.2),
-                "Annual mean of encoded monthly T° should match the planificateur reference. Got " + annualMeanTemp);
-            Assert.That(annualPrecipExpected, Is.EqualTo(720.4).Within(40.0),
-                "Annual expected precipitation reconstructed from Markov params should match the 720 mm reference. Got " + annualPrecipExpected);
+            Assert.That(annualMeanTemp, Is.EqualTo(11.53).Within(0.2),
+                "Annual mean of encoded monthly T° should match the Mortagne-Parc Météo-France reference. Got " + annualMeanTemp);
+            Assert.That(annualPrecipExpected, Is.EqualTo(802.0).Within(40.0),
+                "Annual expected precipitation reconstructed from Markov params should match the 802 mm reference. Got " + annualPrecipExpected);
         }
     }
 

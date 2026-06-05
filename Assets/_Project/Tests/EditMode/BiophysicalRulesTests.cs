@@ -8,12 +8,12 @@ namespace Bocage.Tests.EditMode
 {
     public sealed class WeatherUpdateRuleTests
     {
-        // Mortagne-au-Perche annual mean from SeasonalWeatherDataDefaults
-        // (10.77 °C). The σ = 2 noise per day plus the seasonal cycle average
+        // Mortagne-Parc (MF61293003) annual mean from SeasonalWeatherDataDefaults
+        // (11.53 °C). The σ = 2 noise per day plus the seasonal cycle average
         // out over a few simulated years, so the empirical mean over n ticks
         // should converge to this value (± a small noise floor).
-        private const double ExpectedAnnualMeanCelsius = 10.77;
-        private const double ExpectedAnnualMeanPrecipitationMm = 720.4 / 365.0; // 1.974 mm/day
+        private const double ExpectedAnnualMeanCelsius = 11.53;
+        private const double ExpectedAnnualMeanPrecipitationMm = 802.0 / 365.0; // 2.197 mm/day
 
         [Test]
         public void AnnualMeanTemperatureMatchesSeasonalAverageAtNeutralClimate()

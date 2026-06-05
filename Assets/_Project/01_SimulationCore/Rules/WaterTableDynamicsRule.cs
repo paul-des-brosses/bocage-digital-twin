@@ -5,59 +5,81 @@ using Bocage.SimulationCore.Scenario;
 namespace Bocage.SimulationCore.Rules
 {
     /// <summary>
-    /// Updates the water table depth from today's weather plus a slow
-    /// recharge term that pulls the table toward its long-term mean.
+    /// Water-table depth from a GARDÉNIA-inspired reservoir balance, the
+    /// lumped rainfall→aquifer-level model the BRGM uses for exactly this
+    /// problem. The depth below surface IS the aquifer reservoir level.
     /// <list type="bullet">
-    ///   <item><b>Rain</b> raises the water level (depth decreases).</item>
-    ///   <item><b>Evapotranspiration</b> lowers the water level (depth
-    ///         increases).</item>
-    ///   <item><b>Recharge</b> represents underground inflow + aquifer
-    ///         geometry: when the table is below its long-term mean,
-    ///         underground recharge slowly brings it back up; when above,
-    ///         excess drains away. Without this term the table would
-    ///         run away under sustained climate stress (no physical
-    ///         equilibrium), which is non-realistic for a real Perche
-    ///         aquifer constrained by geology and regional water budget.</item>
+    ///   <item><b>Effective rain</b> = precipitation minus a
+    ///         temperature-driven potential evapotranspiration
+    ///         (<c>P − ETP</c>). Only the surplus can reach the aquifer.</item>
+    ///   <item><b>Recharge</b> = a fixed fraction of the effective rain
+    ///         infiltrates and raises the table (depth decreases). A
+    ///         millimetre of recharge raises the table by <c>1&#160;mm / S</c>
+    ///         where <c>S</c> is the storage coefficient (specific yield).</item>
+    ///   <item><b>Recession</b> = the aquifer drains laterally toward streams
+    ///         (Maillet exponential recession), pulling the table back down
+    ///         toward a deep dry-season baseline. Keeps the table bounded and
+    ///         produces the seasonal swing (shallow wet winter, deep dry
+    ///         summer).</item>
     /// </list>
     /// <para>
-    /// The recharge equilibrium <c>RechargeTargetDepth</c> = 2.0 m matches
-    /// the historical Perche bocage mean. Combined with sustained climate
-    /// stress, the equilibrium depth shifts: at RCP4.5 horizon 2050
-    /// (+2 °C / −20 % precip) the new equilibrium ≈ 4 m, plausible.
-    /// At neutral, the table stays bounded around 2 m with seasonal noise.
+    /// <b>Sourced parameters</b> (BRGM / SIGES Seine-Normandie — aquifère de
+    /// la craie ; Eau Seine-et-Marne — bilan pluie efficace) : storage
+    /// coefficient of the chalk 5-10 % (midpoint 0.075) ; infiltration ≈ 21 %
+    /// of total P, i.e. ≈ 58 % of the ≈ 36 % effective rain. <b>Calibrated
+    /// parameters</b> (documented assumption, tuned on the headless model
+    /// harness to a Perche valley/plain nappe : mean ≈ 2 m, seasonal battement
+    /// ≈ 1 m, deeper equilibrium under warming) : the temperature-ET
+    /// coefficient, the recession rate and the deep baseline. See
+    /// docs/CALIBRATION.md §Nappe.
+    /// </para>
+    /// <para>
+    /// Hedge transpiration on the table was evaluated and dropped: at the
+    /// field scale it shifts the table by &lt; 0.2 m even at double the
+    /// reference density (negligible on yield/biodiversity), and the real cost
+    /// of dense hedges is already carried by the maintenance cost and the
+    /// crop-yield bell curve. Adding it would have been a redundant mechanic.
     /// </para>
     /// </summary>
     public sealed class WaterTableDynamicsRule : IRule
     {
         public string SubStreamId => "water-table";
 
-        private const double InfiltrationFactor = 0.0001;
-        private const double EvaporationBase = 0.003;
-        public const double RechargeTargetDepth = 2.0;
-        // Calibrated 2026-05-21 against CalibrationScenarioValidationTests:
-        // 0.0005/day was too slow → neutral equilibrium at ~4 m (waterEffect
-        // collapse), failing scenarios 1 (neutral) and 3 (virtuous). At
-        // 0.002/day the recharge timescale is ~500 days, aligning with a
-        // realistic Perche bocage aquifer response, and neutral equilibrium
-        // sits at ~2.5 m (waterEffect ≈ 0.97).
-        public const double RechargeRatePerDay = 0.002;
+        // --- Sourced (BRGM / SIGES Seine-Normandie ; Eau Seine-et-Marne) ---
+        /// <summary>Storage coefficient (specific yield) of the chalk
+        /// aquifer, 5-10 % per SIGES Seine-Normandie ; midpoint retained.</summary>
+        public const double StorageCoefficient = 0.075;
+        /// <summary>Fraction of the effective rain that infiltrates to the
+        /// aquifer (≈ 21 % of P over ≈ 36 % effective rain, Eau Seine-et-Marne).</summary>
+        public const double InfiltrationFraction = 0.58;
+
+        // --- Calibrated on the headless harness (documented assumption) ---
+        /// <summary>Temperature-based potential ET, mm per day per °C.</summary>
+        public const double EtCoefficientMmPerDegreeDay = 0.14;
+        /// <summary>Maillet recession rate per day toward the deep baseline.</summary>
+        public const double RecessionRatePerDay = 0.012;
+        /// <summary>Dry-season baseline depth the recession pulls toward (m).</summary>
+        public const double DeepEquilibriumDepthMeters = 3.0;
 
         public void Apply(EcosystemModel model, ScenarioContext scenario, SeededRandom rng)
         {
-            double rainTerm = -model.CurrentWeather.PrecipitationMillimeters * InfiltrationFactor;
-            double tempNormalized = Math.Max(0.0, model.CurrentWeather.TemperatureCelsius / 30.0);
-            double evapTerm = tempNormalized * EvaporationBase;
+            double temperature = model.CurrentWeather.TemperatureCelsius;
+            double precipitationMm = model.CurrentWeather.PrecipitationMillimeters;
 
-            // Recharge pulls depth toward the long-term mean. Sign convention:
-            // delta_depth = (target - currentDepth) × rate
-            // If currentDepth > target (table too deep), the term is negative
-            // (depth decreases, water rises). If currentDepth < target, the
-            // term is positive (depth increases, drains away).
-            double rechargeTerm = (RechargeTargetDepth - model.WaterTableDepth) * RechargeRatePerDay;
+            // Effective rain = precipitation minus temperature-driven ETP.
+            double potentialEtMm = EtCoefficientMmPerDegreeDay * Math.Max(0.0, temperature);
+            double effectiveRainMm = Math.Max(0.0, precipitationMm - potentialEtMm);
 
-            double change = rainTerm + evapTerm + rechargeTerm;
+            // Recharge raises the table: a mm of recharge lifts it by mm / S.
+            double rechargeMeters = InfiltrationFraction * effectiveRainMm / 1000.0;
+            double rechargeTerm = -rechargeMeters / StorageCoefficient;
 
-            model.SetWaterTableDepth(model.WaterTableDepth + change);
+            // Recession drains the aquifer toward the deep dry baseline.
+            // depth < baseline (table high) → positive term (depth grows, falls).
+            double recessionTerm =
+                RecessionRatePerDay * (DeepEquilibriumDepthMeters - model.WaterTableDepth);
+
+            model.SetWaterTableDepth(model.WaterTableDepth + rechargeTerm + recessionTerm);
         }
     }
 }
