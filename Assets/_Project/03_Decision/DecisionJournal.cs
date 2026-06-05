@@ -63,6 +63,21 @@ namespace Bocage.Decision
         }
 
         /// <summary>
+        /// Marks an event instance as CONSIDERED by the engine without producing
+        /// a recommendation (no feasible or worthwhile lever). This makes
+        /// <see cref="IsEventCovered"/> true for it, so a declined event is not
+        /// re-evaluated — and, crucially with the model-derived engine, not
+        /// re-projected — on every later tick. A subsequent re-emission of the
+        /// same condition is a NEW instance (different detection day → different
+        /// id) and is considered fresh, so changed conditions are still picked
+        /// up. O(1).
+        /// </summary>
+        public void MarkEventConsidered(string eventInstanceId)
+        {
+            if (!string.IsNullOrEmpty(eventInstanceId)) _coveredEventIds.Add(eventInstanceId);
+        }
+
+        /// <summary>
         /// Appends a brand-new recommendation to the journal at its
         /// default verdict. Returns false if a recommendation already
         /// exists for the same triggering event (idempotent on event

@@ -177,8 +177,10 @@ namespace Bocage.Presentation.Bindings
 
             // E9: mark trade-off recommendations (economy-for-ecology, or any with
             // a worsening projected dimension) so the user spots arbitrages at a
-            // glance. Minimal inline style; refine via the USS class in polish.
-            if (RecommendationSurfacing.IsTradeoff(rec))
+            // glance. The classification reads the model-derived projection memoised
+            // by the popup binding (no second forward simulation here). Minimal
+            // inline style; refine via the USS class in polish.
+            if (recommendationPopup != null && recommendationPopup.IsTradeoff(rec))
             {
                 var badge = new Label("compromis");
                 badge.AddToClassList("decision-history-row-badge");

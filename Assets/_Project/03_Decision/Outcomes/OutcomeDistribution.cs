@@ -3,10 +3,10 @@ namespace Bocage.Decision.Outcomes
     /// <summary>
     /// Three-point projection of the expected impact of accepting a
     /// recommendation at a given horizon. Worst-case / expected / best-case
-    /// values bracket the uncertainty without claiming a true probability
-    /// distribution — they're calibrated coefficients, not Monte-Carlo
-    /// samples. The honesty note is in
-    /// <see cref="OutcomeProjector"/>.
+    /// values bracket the uncertainty: they are the spread of the model-derived
+    /// forward projection across favourable / median / unfavourable weather
+    /// realisations (not arbitrary multipliers). Computed by
+    /// <see cref="ModelOutcomeProjector"/>.
     /// <para>
     /// Two dimensions are projected:
     /// <list type="bullet">

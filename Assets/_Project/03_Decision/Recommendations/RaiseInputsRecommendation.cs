@@ -6,14 +6,16 @@ namespace Bocage.Decision.Recommendations
     /// Economic (balance) recommendation: raise input intensity back toward the
     /// profit optimum when the farm has over-extensified and margin suffers.
     /// <para>
-    /// The E9 recalibration creates an interior profit optimum near
-    /// <see cref="ProfitOptimalIntensityFactor"/> (concave yield response):
-    /// below it, the marginal yield gain of more inputs outweighs their marginal
-    /// cost, so nudging intensity up recovers profit. This TRADES some
-    /// biodiversity for margin (more inputs press on fauna) — a value-laden
-    /// arbitrage, so the dispatch surfaces it passively (decision list, never an
-    /// interrupting popup) and only when profitability is abnormally low. The
-    /// system does not push ecology-for-money unless the farm needs it.
+    /// The recalibration creates an interior profit optimum (concave yield
+    /// response): below it, the marginal yield gain of more inputs outweighs
+    /// their marginal cost, so nudging intensity up recovers profit. The engine
+    /// no longer hardcodes that optimum — it PROJECTS the raise forward and only
+    /// recommends it when profit actually gains, so the optimum emerges from the
+    /// model. This still TRADES some biodiversity for margin (more inputs press
+    /// on fauna) — a value-laden arbitrage, so the dispatch surfaces it passively
+    /// (decision list, never an interrupting popup) and only when profitability
+    /// is abnormally low. The system does not push ecology-for-money unless the
+    /// farm needs it.
     /// </para>
     /// <para>Source: Lechenet et al. 2017 (Nature Plants 3:17008) and the concave
     /// N-response (CALIBRATION.md). Counterpart of
@@ -25,13 +27,16 @@ namespace Bocage.Decision.Recommendations
         public const double IntensityRaisePerStep = 0.2;
 
         /// <summary>
-        /// Profit-optimal input intensity emerging from the E9 recalibration
-        /// (concave yield + fixed/variable cost): d(profit)/dI = 0 near I = 0.8.
-        /// The recommendation steers up TO this point, never past it (going
-        /// further loses profit again on the far side of the optimum).
-        /// Derivation in CALIBRATION.md.
+        /// Intensive cap of the input-intensity factor (the « intensive » end of
+        /// the ScenarioContext range, mirror of
+        /// <see cref="ReduceInputsRecommendation.MinInputIntensityFactor"/>). The
+        /// auto-action clamp will not raise intensity past it. The profit optimum
+        /// itself is NO LONGER hardcoded — it emerges from the forward projection
+        /// in <see cref="Bocage.Decision.RecommendationEngine"/> (above the optimum,
+        /// raising inputs projects a loss and is gated out), so this is only a
+        /// physical bound, not the decision threshold.
         /// </summary>
-        public const double ProfitOptimalIntensityFactor = 0.8;
+        public const double MaxInputIntensityFactor = 2.0;
 
         private static readonly CultureInfo FrFr = CultureInfo.GetCultureInfo("fr-FR");
 

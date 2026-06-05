@@ -529,7 +529,16 @@ namespace Bocage.Presentation.Simulation
         /// </summary>
         private void PublishRecommendations()
         {
-            var pending = _recommendationEngine.ProduceRecommendations(_eventLog, _decisionJournal, _engine.Scenario, _engine.Model);
+            // The model-derived engine projects candidate levers forward, so it
+            // needs the run's seed + seasonal weather and the Couche 04 KPI
+            // evaluators (profit, biodiversity). Projection only runs for NEW
+            // events (covered + considered events are skipped), so this stays
+            // off the per-tick hot path.
+            var pending = _recommendationEngine.ProduceRecommendations(
+                _eventLog, _decisionJournal, _engine.Scenario, _engine.Model,
+                masterSeed, _seasonalWeather,
+                IntegratedProfitabilityIndicator.Compute,
+                BiodiversityCompositeIndicator.Compute);
             for (int i = 0; i < pending.Count; i++)
             {
                 _decisionJournal.Append(pending[i], _currentDay);

@@ -100,10 +100,12 @@ namespace Bocage.Decision
                     break;
                 case RaiseInputsRecommendation _:
                     if (scenario == null) break;
-                    // Economic counterpart: nudge intensity UP toward the profit
-                    // optimum, never past it (going further loses profit again).
+                    // Economic counterpart: nudge intensity UP. The engine only
+                    // issued this reco because the forward projection showed the
+                    // raise pays (it gates out raises past the profit optimum), so
+                    // here we just apply it, clamped at the physical intensive cap.
                     double riTarget = scenario.InputIntensityFactor.Current + magnitude;
-                    double riCeil = RaiseInputsRecommendation.ProfitOptimalIntensityFactor;
+                    double riCeil = RaiseInputsRecommendation.MaxInputIntensityFactor;
                     if (riTarget > riCeil) riTarget = riCeil;
                     scenario.InputIntensityFactor.SetTarget(riTarget, PracticeTransitionDays);
                     break;

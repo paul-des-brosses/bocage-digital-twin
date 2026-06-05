@@ -80,6 +80,12 @@ namespace Bocage.Presentation.Bindings
         // ×20 speed, breaking the UX.
         private readonly HashSet<string> _ignoredRecommendationTypes = new HashSet<string>();
 
+        // Memoised model-derived outcome projections per rec.Id. Each projection
+        // is a forward simulation (thousands of ticks), so it must NEVER run on a
+        // per-frame path: compute once on first need and reuse. Cleared on Enable
+        // and on Rebuild (the model resets, old projections become meaningless).
+        private readonly Dictionary<string, OutcomeDistribution[]> _projectionCache = new Dictionary<string, OutcomeDistribution[]>();
+
         // Currently-displayed recommendation (null = popup hidden).
         private IRecommendation _currentRecommendation;
         // Was the runner ticking before the popup opened ?
@@ -100,13 +106,29 @@ namespace Bocage.Presentation.Bindings
             ResolveElements();
             WireCallbacks();
             HideOverlay();
-            if (runner != null) runner.TickCompleted += OnTickCompleted;
+            _projectionCache.Clear();
+            if (runner != null)
+            {
+                runner.TickCompleted += OnTickCompleted;
+                runner.Rebuilt += OnRebuilt;
+            }
         }
 
         private void OnDisable()
         {
             UnwireCallbacks();
-            if (runner != null) runner.TickCompleted -= OnTickCompleted;
+            if (runner != null)
+            {
+                runner.TickCompleted -= OnTickCompleted;
+                runner.Rebuilt -= OnRebuilt;
+            }
+        }
+
+        private void OnRebuilt()
+        {
+            // The engine + journal were wiped and the model reset to day 0; every
+            // cached projection is now stale. Drop them so new recos project fresh.
+            _projectionCache.Clear();
         }
 
         private void Update()
@@ -201,10 +223,42 @@ namespace Bocage.Presentation.Bindings
         /// </summary>
         private bool ShouldAutoSurface(IRecommendation rec)
         {
+            var outcomes = GetProjection(rec);
+            if (outcomes == null || outcomes.Length == 0) return true; // no projection yet → don't suppress
             double biodiversity = runner != null && runner.Model != null
                 ? BiodiversityCompositeIndicator.Compute(runner.Model, runner.Scenario)
                 : 1.0;
-            return RecommendationSurfacing.ShouldAutoPopup(rec, biodiversity);
+            return RecommendationSurfacing.ShouldAutoPopup(outcomes[outcomes.Length - 1], biodiversity);
+        }
+
+        /// <summary>
+        /// Model-derived outcome projection for a recommendation, memoised by id.
+        /// Returns null while the runner state isn't available. The projection is
+        /// a forward simulation, so this MUST stay behind the cache on any path
+        /// that runs every frame (e.g. <see cref="ShouldAutoSurface"/>).
+        /// </summary>
+        private OutcomeDistribution[] GetProjection(IRecommendation rec)
+        {
+            if (rec == null || runner == null || runner.Model == null || runner.Scenario == null) return null;
+            if (_projectionCache.TryGetValue(rec.Id, out var cached)) return cached;
+            var outcomes = ModelOutcomeProjector.Project(
+                rec, runner.Model, runner.Scenario, runner.MasterSeed, runner.SeasonalWeather,
+                IntegratedProfitabilityIndicator.Compute, BiodiversityCompositeIndicator.Compute);
+            _projectionCache[rec.Id] = outcomes;
+            return outcomes;
+        }
+
+        /// <summary>
+        /// Whether the recommendation is a trade-off (not a clean win-win), from
+        /// its model-derived projection. Exposed so the decision-list panel can
+        /// badge « compromis » WITHOUT running its own forward simulation — it
+        /// reuses this binding's memoised projection.
+        /// </summary>
+        public bool IsTradeoff(IRecommendation rec)
+        {
+            var outcomes = GetProjection(rec);
+            if (outcomes == null || outcomes.Length == 0) return false;
+            return RecommendationSurfacing.IsTradeoff(outcomes[outcomes.Length - 1]);
         }
 
         /// <summary>
@@ -256,7 +310,7 @@ namespace Bocage.Presentation.Bindings
             }
             if (_rationale != null) _rationale.text = rec.Rationale;
 
-            BuildOutcomesInto(_outcomesContainer, rec, runner != null ? runner.Model : null);
+            BuildOutcomesInto(_outcomesContainer, rec);
             ConfigureMagnitudeSlider(rec);
 
             _overlay.RemoveFromClassList(HiddenClass);
@@ -447,13 +501,15 @@ namespace Bocage.Presentation.Bindings
 
         // ---------- Outcome block builder (shared structure) ----------
 
-        private static void BuildOutcomesInto(VisualElement container, IRecommendation rec, Bocage.SimulationCore.Model.EcosystemModel modelOrNull)
+        private void BuildOutcomesInto(VisualElement container, IRecommendation rec)
         {
             if (container == null) return;
             container.Clear();
-            if (rec == null || modelOrNull == null) return;
 
-            var outcomes = OutcomeProjector.Project(rec);
+            // The simulation is paused while the popup is open (ShowPopupFor stops
+            // ticking first), so the memoised projection reflects the current state.
+            var outcomes = GetProjection(rec);
+            if (outcomes == null) return;
             for (int i = 0; i < outcomes.Length; i++)
             {
                 container.Add(BuildOutcomeBlock(outcomes[i]));

@@ -4,7 +4,7 @@ namespace Bocage.Decision.Recommendations
     /// A single actionable suggestion produced by the
     /// <see cref="RecommendationEngine"/> in response to an event from
     /// the Couche 2 sensor layer. Pure data: outcomes (with uncertainty
-    /// at 2 horizons) are computed by <see cref="Outcomes.OutcomeProjector"/>
+    /// at 2 horizons) are computed by <see cref="Outcomes.ModelOutcomeProjector"/>
     /// against the current model state, and the verdict is recorded in
     /// the <see cref="DecisionJournal"/> after user arbitration (or
     /// applied straight away if <see cref="DefaultVerdict"/> is
