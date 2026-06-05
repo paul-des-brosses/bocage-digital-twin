@@ -703,7 +703,7 @@ avec un **garde-fou de cohérence** (§17). Direction « écolo » (↑ biodiv) 
 | Seuil | Valeur | Justification |
 |---|---|---|
 | Plancher intensité | 0.5 (× réf.) | « bio extensif » −50 %. En deçà : hors plage calibrée. `ReduceInputsRecommendation.MinInputIntensityFactor` (partagé slider/clamp/garde-fou). |
-| Optimum de profit | 0.8 (× réf.) | I* ≈ 0.81 dérivé (cf 1c). `RaiseInputsRecommendation.ProfitOptimalIntensityFactor`. |
+| Optimum de profit | **émergent** | Plus de constante en dur : l'optimum sort de la projection forward (« remonter intrants » n'est recommandé que si le Δprofit projeté > 0, cf ADR #62). Plafond physique `RaiseInputsRecommendation.MaxInputIntensityFactor` = 2.0. |
 | Carbone sol bas | 45 tC/ha | Sous le default 50 (dérive sous intrants organiques faibles). INRAE 4p1000 / BDAT. `EventDetector.SoilCarbonLowThresholdTonnesPerHectare`. |
 | Rentabilité anormalement basse | 50 €/ha/an | Marges réelles Perche 100-400 ; neutre simulé ~325. Sous 50 = près de l'équilibre, ferme en réelle tension. `EventDetector.ProfitLowThresholdEurosPerHectare`. |
 | Biodiversité critique | 0.30 (composite) | Sous le seuil d'apparition du 1er oiseau (E4). En deçà, le système refuse de troquer l'écologie pour du profit. `RecommendationEngine.BiodiversityCriticalThreshold`. |
@@ -711,12 +711,28 @@ avec un **garde-fou de cohérence** (§17). Direction « écolo » (↑ biodiv) 
 | PSE faible | 1.0 €/m/an | En deçà, une haie surdense peut coûter (entretien + rendement) plus qu'elle ne rapporte. `PseLowThresholdEurosPerMeter`. |
 | Saturation habitat haies | 180 m/ha | Plafond du facteur habitat faune ; au-delà, planter plus n'aide plus. |
 
-**Dispatch state-aware** (le « score ») : pour un signal, on choisit le levier
-pertinent **avec de la marge**. Anomalie faune → baisser intrants (si marge,
-levier le plus rapide — Hallmann 2017) → sinon réduire l'arrachage (si actif)
-→ sinon planter → sinon silence (§17). Carbone bas → couverts → résidus.
-Profit bas → remonter intrants (si sous l'optimum + faune OK) → sinon éclaircir
-haies (si surdenses + PSE faible) → sinon silence.
+**Sélection par objectif d'agriculteur** (modèle vivant, ADR #62) : pour un
+signal, le moteur construit les leviers **faisables** (garde-fous de marge,
+§17), **projette chacun en avant** sur une copie de l'état
+(`ModelOutcomeProjector`) et garde celui qui maximise l'objectif
+`U = w_eco · (Δprofit / 150) + w_bio · Δbiodiv` avec **w_eco = 0,80** et
+**w_bio = 0,20** (`FarmerObjective`). Poids d'**agriculteur** : économie
+dominante, biodiversité directe faible mais qui entre fortement par l'économie
+(le Δprofit projeté embarque déjà brise-vent, fertilité du sol, aides PSE/MAEC
+et résilience du rendement). Échelle 150 €/ha ≈ un demi-revenu net neutre → met
+le profit sur le même pied [-1, +1] que l'indice biodiv. Poids internes (pas de
+curseur, §17), sourcés (Edwards-Jones 2006 ; Reimer et al. 2012).
+- Anomalie faune → meilleur ΔU parmi {baisser intrants, réduire l'arrachage,
+  planter} ; silence si aucun faisable (§17).
+- Carbone bas → couverts ou résidus, selon ΔU.
+- Profit bas → remonter intrants **seulement si la projection montre un gain**
+  (au-delà de l'optimum, remonter projette une perte → écarté ; c'est ce qui
+  remplace l'optimum chiffré), sinon éclaircir haies surdenses, sinon silence.
+  Jamais quand biodiv < 0,30.
+
+Un événement décliné (aucun levier ne paie) est **marqué considéré**
+(`DecisionJournal.MarkEventConsidered`) pour ne jamais être re-projeté tick
+après tick.
 
 **Surfaçage** (`RecommendationSurfacing`, classé par le signe des outcomes
 projetés à 365 j) :
@@ -724,29 +740,26 @@ projetés à 365 j) :
 - **compromis** (une dimension se dégrade) → **liste passive** + marqueur
   « compromis ». Les recos éco (profit↑ biodiv↓) y atterrissent.
 - **escalade** : un compromis *écologique* (biodiv↑ profit↓) remonte en popup
-  si biodiv < 0.30. *Dormant* tant que l'`OutcomeProjector` est à coefficients
-  figés (aucune reco écolo n'y est aujourd'hui classée « compromis »).
+  si biodiv < 0,30. Désormais **actif** : les signes viennent de la projection
+  réelle, plus de coefficients figés.
 
-**Projections `OutcomeProjector`** (profit / biodiv attendus à 365 j) :
-
-| Reco | Profit | Biodiv | Source |
-|---|---|---|---|
-| Couverts | +25 €/ha | +0.03 | INRAE 4p1000 (~0,31 tC/ha/an), Arvalis (30-100 kg N/ha) |
-| Résidus | +18 | +0.02 | Solagro Afterres2050, INRAE |
-| Réduire arrachage | +10 | +0.06 | INRAE/OFB (haie = corridor + PSE/PAC) |
-| Remonter intrants | +60 | −0.06 | Lechenet 2017 + réponse concave |
-| Éclaircir haies | +50 | −0.06 | cloche rendement + structure de coûts |
-
-> **Limite documentée (incohérence Priority-1 de l'audit interne)** : ces
-> projections restent des **coefficients figés**, pas des dérivations du modèle
-> dans l'état courant. Bon ordre de grandeur et bon signe, mais elles peuvent
-> diverger de l'effet réel (la baisse d'intrants promet +0,10 de biodiv long
-> terme là où le modèle en donne ~+0,014 à un pas de −20 %). Les rendre
-> *state-aware* (corriger l'incohérence + activer l'escalade) est en backlog.
+**Projections (`ModelOutcomeProjector`, dérivées du modèle)** : pour chaque
+levier, un run « avec » contre une baseline « sans » (même graine, même météo),
+ΔKPI réel à 30 j et 365 j ; la bande pire/attendu/meilleur est le spread sur
+**3 réalisations météo** (favorable / médiane / défavorable), pas un facteur
+arbitraire. Les signes affichés dépendent donc de l'état courant — la projection
+ne ment plus. L'incohérence Priority-1 de l'audit interne (« +0,10 promis vs
+~+0,014 réel à −20 % d'intrants ») est **résolue** : on affiche le ΔKPI que le
+modèle produit vraiment, et l'escalade écologique est active. Les directions
+restent cohérentes avec la littérature (INRAE 4p1000, Lechenet 2017, INRAE/OFB)
+documentée au Volet 1 et dans les règles. Projection mémoïsée côté binding
+(forward sim = milliers de ticks, jamais par frame).
 
 **Vérification** : tests EditMode (`EconomicRulesTests`,
 `CalibrationScenarioValidationTests`, `RecommendationEngineTests`,
 `BalancedRecommendationsTests`, `RecommendationSurfacingTests`,
-`EventDetectorTests`) — tous verts au 2026-06-04.
+`ModelOutcomeProjectorTests`, `EventDetectorTests`) — 261 verts au 2026-06-05
+(runner dotnet headless, Couches 01-04).
 
-**Dernière révision** : 2026-06-04 (livraison E8-E9).
+**Dernière révision** : 2026-06-05 (chantier modèle vivant — décision dérivée
+du modèle, ADR #62 ; optimum émergent, projections forward).

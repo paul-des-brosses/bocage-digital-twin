@@ -177,7 +177,15 @@ linéaire). Fourchette AFAC régénération 0.2-0.4 m/ha/an suggère que
 
 ---
 
-### #10 — `OutcomeProjector` state-aware (dérivé du modèle)
+### #10 — `OutcomeProjector` state-aware (dérivé du modèle) — ✅ traité (2026-06-05)
+
+**Statut** : **résolu** par le chantier modèle vivant (ADR #62). L'ancien
+`OutcomeProjector` à coefficients figés est remplacé par
+`ModelOutcomeProjector`, qui simule chaque levier en avant sur une copie de
+l'état (vrai moteur, 3 réalisations météo) et prend le ΔKPI réel. L'escalade
+de surfaçage écologique est active, et l'optimum de profit n'est plus chiffré
+en dur (il émerge de la projection). Les deux bénéfices ciblés ci-dessous sont
+livrés.
 
 **Origine** : chantier E8-E9 (2026-06-04). Incohérence Priority-1 de
 l'audit interne du modèle.

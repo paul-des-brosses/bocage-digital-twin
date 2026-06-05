@@ -1814,3 +1814,85 @@ reco est classée par le signe de ses deltas projetés long terme
 surfaçage popup uniforme — moteur déséquilibré (aucun redressement
 économique), et popups intrusifs sur des compromis que l'utilisateur
 devrait arbitrer lui-même dans la liste.
+
+---
+
+### 62. Décision dérivée du modèle : projection forward, objectif d'agriculteur, optimum émergent
+
+**Contexte** : les outcomes affichés sous chaque recommandation (les
+fourchettes profit / biodiversité pire-attendu-meilleur) étaient des
+**coefficients figés** (ancien `OutcomeProjector`), indépendants de l'état
+courant. Trois conséquences : (1) la projection pouvait mentir sur l'état
+(sous stress climatique RCP4.5, une reco affichait un gain que le modèle
+contredit), (2) l'optimum de profit était **chiffré en dur** (`I* ≈ 0,8`,
+cf ADR #60), (3) la sélection du levier suivait une **priorité fixe** (cf
+ADR #61). Pour un digital twin, les recommandations ET leurs outcomes
+doivent être **dérivés du modèle couplé**, pas affirmés.
+
+**Décision** : refondre la chaîne de décision pour qu'elle se calcule sur
+le modèle.
+- **`ModelOutcomeProjector`** (Couche 03) : pour un levier, simule en avant
+  (vrai `SimulationEngine`, sur une copie indépendante de l'état) le run
+  « avec levier » contre une baseline « sans », même graine et même météo,
+  et prend le ΔKPI réel (profit, biodiversité). La bande pire/attendu/meilleur
+  est le **spread sur 3 réalisations météo** (favorable / médiane /
+  défavorable), pas un ×0,5 / ×1,25 arbitraire. Les indicateurs Couche 04
+  sont injectés en délégués : la Couche 03 ne dépend pas de la 04.
+- **`FarmerObjective`** : une fonction-objectif interne
+  `U = w_eco · profit̂ + w_bio · Δbiodiv`, à **poids d'agriculteur**
+  (économie dominante `w_eco = 0,80` ; biodiversité directe faible
+  `w_bio = 0,20`, mais qui entre fortement par l'économie — le profit
+  projeté embarque déjà l'effet brise-vent des haies, la fertilité du sol,
+  les aides PSE/MAEC et la résilience du rendement). Poids internes (pas de
+  nouveau curseur, §17), sourcés sur la littérature de décision agricole
+  (Edwards-Jones 2006 ; Reimer et al. 2012).
+- **Sélection par ΔU** : pour chaque événement, le moteur construit les
+  leviers **faisables** (garde-fous de marge conservés, §17), projette
+  chacun, et garde celui qui améliore le mieux `U`.
+- **Optimum émergent** : le `0,8` en dur disparaît
+  (`RaiseInputsRecommendation.ProfitOptimalIntensityFactor` supprimé). Une
+  contre-recommandation économique ne se déclenche **que si la projection
+  montre un gain de profit réel** — au-delà de l'optimum, remonter les
+  intrants projette une perte et est écarté. L'optimum se recalcule donc
+  tout seul si la calibration bouge.
+- **Surfaçage dérivé du vrai** : `RecommendationSurfacing` classe à partir
+  de l'`OutcomeDistribution` réelle (logique signe → Kind inchangée). Les
+  bindings popup/liste **mémoïsent** la projection (forward sim = milliers
+  de ticks, jamais sur un chemin par frame). Un événement décliné est
+  **marqué considéré** (`DecisionJournal.MarkEventConsidered`) pour ne
+  jamais être re-projeté.
+
+**Raison** :
+- C'est ce qui rend la thèse honnête ET rigoureuse : avec des poids
+  d'agriculteur (économie d'abord), l'écologie n'est recommandée que là où
+  l'instrumentation révèle qu'elle paie — la réponse **émerge du modèle
+  couplé**, elle n'est imposée ni par les poids ni par des coefficients.
+- L'optimum dérivé supprime une valeur magique (« précis et inattaquable,
+  toute approximation assumée »). La calibration concave + coût 70/30 de
+  l'ADR #60 (qui FAIT exister l'optimum) reste ; seule sa valeur n'est plus
+  écrite en dur.
+- Chaque projection sert une décision réelle (sélection, gating, surfaçage)
+  — pas de mécanique décorative (§17).
+
+**Conséquence opérationnelle** : preuves dans le code —
+`ModelOutcomeProjector`, `FarmerObjective`, `RecommendationEngine`
+(sélection par ΔU + gating économique), `RecommendationSurfacing`,
+`DecisionJournal.MarkEventConsidered`, bindings `DecisionPopupBinding` /
+`DecisionPanelBinding`. Poids `w_eco` / `w_bio` + échelle de normalisation
+profit (150 €/ha) documentés dans `CALIBRATION.md`. 261 tests EditMode verts
+(runner dotnet headless, Couches 01-04).
+
+**Supersession** : remplace le projecteur à coefficients figés et le
+dispatch à priorité fixe de l'ADR #61 (la table de surfaçage Kind × condition
+→ popup/liste reste valable, mais les signes viennent désormais de la
+projection réelle). L'ADR #60 reste valable pour la forme rendement/coût qui
+crée l'optimum ; seul l'ancrage chiffré `I* ≈ 0,8` n'est plus consommé en
+dur — l'optimum émerge.
+
+**Alternative écartée** :
+- Garder les coefficients figés (moins cher en calcul) — mais la projection
+  ment sur l'état (cas RCP4.5), exactement le défaut qu'un digital twin doit
+  éviter.
+- Optimisation continue de la magnitude (chercher la dose optimale du levier)
+  — sur-ingénierie : l'utilisateur choisit la magnitude au curseur, la
+  projection à magnitude par défaut suffit à classer (§17).
