@@ -65,14 +65,19 @@ plausibilité, dernière révision.
 
 ### `HedgerowGrowthRule`
 
-- **Croissance annuelle** : 0.5 m/ha/an au water-multiplier optimum
+- **Croissance annuelle** : 0.5 m/ha/an au potentiel (facteurs eau et
+  fertilité à 1)
 - **Source / justification** : ordre de grandeur d'une régénération
-  naturelle modeste en l'absence de pression d'arrachage. Plage
-  observée dans la littérature : 0.2-2 m/ha/an selon conditions. La
-  valeur faible reflète une régénération lente sans plantation active.
-- **Modulation par nappe** : optimum à 2 m, multiplier ∈ [0, 1.5]
-  selon écart, sensibilité 0.2/m
-- **Dernière révision** : Étape 3 (non modifié)
+  naturelle modeste en l'absence de pression d'arrachage. Plage observée
+  dans la littérature : 0.2-2 m/ha/an. La *forme* de la modulation (la
+  productivité d'une haie dépend de l'eau et de la fertilité du sol) est
+  sourcée INRAE / AFAC-Agroforesteries.
+- **Modulation par nappe (eau)** : optimum à 2 m, multiplier ∈ [0, 1.5],
+  sensibilité 0.2/m.
+- **Modulation par fertilité** : `SoilCarbonStock / 50` (référence = stock
+  initial du site), borné [0.3, 1.3]. Couple la gestion du sol (couverts,
+  résidus → carbone) à la croissance des haies. *Seuils = calibration assumée.*
+- **Dernière révision** : 2026-06-05 (ajout du facteur fertilité).
 
 ### `AgriculturalPressureImpactRule`
 
@@ -87,16 +92,27 @@ plausibilité, dernière révision.
 
 ### `WaterTableDynamicsRule`
 
-- **InfiltrationFactor** : 0.0001 m/mm de pluie
-- **EvaporationBase** : 0.003 m/jour par (T/30°C) de degré-jour
-- **Source / justification** : valeurs d'ordres de grandeur calibrées
-  pour produire une variation saisonnière réaliste (±0.3 m/an autour
-  de la moyenne). **Non validée hydrologiquement** — coefficients
-  empiriques. Le faible impact de la pluie (10 mm → 1 mm de remontée)
-  reflète la majorité du ruissellement et de l'évapotranspiration de
-  surface qui ne touchent pas la nappe profonde.
-- **Dernière révision** : 2026-05-21 (suppression du multiplier climat
-  redondant, déjà capturé via la température météo)
+Modèle de bilan à réservoirs inspiré de GARDÉNIA (BRGM) : pluie efficace
+`P − ETP`, recharge par infiltration, tarissement de Maillet vers une base
+profonde. La profondeur de nappe EST le niveau du réservoir aquifère.
+
+- **StorageCoefficient** : 0,075 (emmagasinement de la craie 5-10 %,
+  BRGM/SIGES Seine-Normandie, point médian) — *sourcé*.
+- **InfiltrationFraction** : 0,58 (≈ 21 % de P infiltrés sur ≈ 36 % de
+  pluie efficace, Eau Seine-et-Marne) — *sourcé*.
+- **EtCoefficientMmPerDegreeDay** : 0,14 mm/j/°C — *calibration assumée*.
+- **RecessionRatePerDay** : 0,012 /j — *calibration assumée*.
+- **DeepEquilibriumDepthMeters** : 3,0 m — *calibration assumée*.
+- **Calibration** : la *forme* (recharge sur pluie efficace, emmagasinement,
+  tarissement) est sourcée ; les trois derniers paramètres sont calés sur
+  un harnais headless du modèle pour une nappe de vallée/plaine du Perche :
+  moyenne ≈ 2 m, battement saisonnier ≈ 1 m (SIGES : 1-2 m en vallée),
+  nappe plus profonde sous réchauffement. Remplace les anciens coefficients
+  empiriques « non validés hydrologiquement ».
+- **Transpiration des haies** : évaluée puis écartée (< 0,2 m de décalage
+  même à densité double, négligeable ; le coût réel des haies denses est
+  déjà porté par l'entretien et la cloche de rendement).
+- **Dernière révision** : 2026-06-05 (refonte GARDÉNIA).
 
 ### `WeatherUpdateRule`
 
@@ -109,9 +125,9 @@ plausibilité, dernière révision.
   mensuelle. Sous-flux RNG `"weather-noise"`.
 - **Bruit pluie** : porté par le tirage log-normale (pas de bruit
   gaussien additif). Sous-flux RNG `"markov-rain"`.
-- **Source** : modélée 30 km (NEMS reanalysis) via
-  planificateur.a-contresens.net, valeurs annuelles 10,77 °C / 720 mm
-  cohérentes avec normales Météo-France couramment citées pour la zone.
+- **Source** : normales Météo-France 1991-2020 de la station **Mortagne-Parc**
+  (MF61293003), via infoclimat. Valeurs annuelles 11,53 °C / 802 mm. Détails :
+  §Saisonnalité ci-dessous.
 - **Dernière révision** : 2026-05-29 (refonte saisonnière, chantier E2).
 - **Historique** : avant E2, modèle à constantes annuelles
   (`BaseTemperatureC = 12 °C`, `BasePrecipitationMm = 2 mm/jour`),
@@ -363,41 +379,41 @@ fenêtre de plausibilité. Lancer ces tests via Test Runner > EditMode
 Cette section regroupe les paramètres ajoutés au modèle par les
 chantiers E1-E7 de la nouvelle `ROADMAP.md`.
 
-### Saisonnalité — données mensuelles modèlées Mortagne-au-Perche (chantier E2)
+### Saisonnalité — normales mensuelles Mortagne-Parc (chantier E2, recalibré 2026-06-05)
 
-**Station** : Mortagne-au-Perche (Orne, 61).
+**Station** : **Mortagne-Parc** (MF61293003), Mortagne-au-Perche (Orne, 61),
+station officielle Météo-France à ~5 km, archives depuis 1993.
 
-**Source effectivement utilisée à l'encodage (2026-05-29)** :
-`planificateur.a-contresens.net/europe/france/normandie/mortagne_au_perche/2991704.html` —
-moyennes mensuelles dérivées du modèle global NEMS (résolution
-30 km, reanalysis). Annual T° = 10,77 °C, annual cumul précip = 720,4 mm.
-Cohérent avec les valeurs annuelles couramment citées par Météo-France
-pour la zone (10,8 °C / 720 mm).
+**Source** : normales Météo-France 1991-2020 de cette station, récupérées via
+infoclimat. Annual T° = 11,53 °C, annual cumul précip = 802,0 mm. Les 12
+moyennes mensuelles de température et les 12 cumuls mensuels de précipitation
+sont les vraies normales de la station. Remplace l'ancien proxy de réanalyse
+NEMS (10,77 °C / 720 mm), utilisé faute d'accès au portail Météo-France à
+l'époque.
 
-**Source officielle visée mais inaccessible** : le portail Météo-France
-(meteofrance.com/climat/normales/61293001) renvoie un HTTP 404 au
-2026-05-29. **TODO** post-MVP : récupérer les normales officielles
-1991-2020 via le portail data.gouv.fr ou un export Météo-France
-quand l'accès est restauré, comparer aux valeurs encodées et ajuster
-si écart significatif (> 10 % sur précip mensuelles, > 0,5 °C sur
-T° mensuelles).
+**Pipeline de données (valeur portfolio)** : un script
+`tools/extract_weather_normals.py` dérivera les normales à partir du CSV
+quotidien Météo-France données publiques (Licence Ouverte). En attendant, la
+fréquence de jours pluvieux `p_wet` est provisoire (reprise de l'encodage
+précédent) ; les `mu` ont été recalculés pour que le cumul mensuel colle aux
+vraies normales.
 
 **Valeurs encodées dans `SeasonalWeatherDataDefaults.MortagneAuPerche()`** :
 
 | Mois | T° moyenne (°C) | Précipitations cumul (mm) | Jours pluie | p_wet | mu | sigma |
 |---|---|---|---|---|---|---|
-| Jan | 4,1 | 72,0 | 15 | 0,484 | 1,25 | 0,80 |
-| Fév | 4,5 | 53,9 | 12 | 0,429 | 1,18 | 0,80 |
-| Mar | 7,1 | 58,6 | 14 | 0,452 | 1,11 | 0,80 |
-| Avr | 9,4 | 46,7 | 12 | 0,400 | 1,04 | 0,80 |
-| Mai | 13,0 | 65,6 | 13 | 0,419 | 1,30 | 0,80 |
-| Juin | 16,2 | 49,7 | 11 | 0,367 | 1,19 | 0,80 |
-| Juil | 18,3 | 50,7 | 11 | 0,355 | 1,21 | 0,80 |
-| Août | 18,2 | 42,7 | 10 | 0,323 | 1,13 | 0,80 |
-| Sept | 15,1 | 53,3 | 11 | 0,367 | 1,26 | 0,80 |
-| Oct | 11,4 | 75,1 | 14 | 0,452 | 1,36 | 0,80 |
-| Nov | 7,1 | 66,8 | 14 | 0,467 | 1,24 | 0,80 |
-| Déc | 4,8 | 85,3 | 15 | 0,484 | 1,42 | 0,80 |
+| Jan | 4,6 | 79,2 | 15 | 0,484 | 1,344 | 0,80 |
+| Fév | 5,6 | 63,7 | 12 | 0,429 | 1,348 | 0,80 |
+| Mar | 8,0 | 61,3 | 14 | 0,452 | 1,156 | 0,80 |
+| Avr | 10,4 | 53,0 | 12 | 0,400 | 1,165 | 0,80 |
+| Mai | 14,1 | 66,8 | 13 | 0,419 | 1,318 | 0,80 |
+| Juin | 17,1 | 56,3 | 11 | 0,367 | 1,312 | 0,80 |
+| Juil | 19,1 | 57,0 | 11 | 0,355 | 1,325 | 0,80 |
+| Août | 19,1 | 52,7 | 10 | 0,323 | 1,341 | 0,80 |
+| Sept | 15,7 | 56,3 | 11 | 0,367 | 1,312 | 0,80 |
+| Oct | 12,3 | 78,1 | 14 | 0,452 | 1,398 | 0,80 |
+| Nov | 7,7 | 81,4 | 14 | 0,467 | 1,440 | 0,80 |
+| Déc | 4,7 | 96,2 | 15 | 0,484 | 1,538 | 0,80 |
 
 **Méthode de dérivation des paramètres Markov** : pour chaque mois,
 `p_wet = jours_pluie / jours_dans_le_mois` (Bernoulli direct) ;
@@ -422,13 +438,11 @@ mensuelle. Sous-flux RNG `"weather-noise"`.
 4. Ajouter anomalies scenario : additif sur T°, multiplicatif sur
    précipitations.
 
-**Cohérence avec ancienne calibration** : l'ancienne
-`WeatherUpdateRule` (constantes 12 °C / 2 mm/jour ≈ 730 mm/an)
-reproduit en première approximation les moyennes annuelles du nouvel
-encodage (10,77 °C / 720 mm) — 1,2 °C plus chaude, 10 mm/an plus
-humide, l'effet sur les fenêtres de tolérance des
-`CalibrationScenarioValidationTests` (±60 €/ha sur le profit) est
-contenu.
+**Historique de calibration** : l'encodage E2 initial reposait sur un proxy
+de réanalyse NEMS (10,77 °C / 720 mm) ; il est remplacé depuis 2026-06-05 par
+les vraies normales Mortagne-Parc (11,53 °C / 802 mm). Le climat un peu plus
+chaud et plus humide reste dans les fenêtres de tolérance des
+`CalibrationScenarioValidationTests`.
 
 **Extension CropYield / InputCost à la météo journalière (ADR #52
 option a)** :

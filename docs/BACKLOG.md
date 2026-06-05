@@ -221,16 +221,16 @@ durcir pour la rigueur scientifique avant un usage sérieux.
 
 **Cible (par priorité d'audit)** :
 
-- **Nappe** (`WaterTableDynamicsRule`) : `InfiltrationFactor = 0.0001`,
-  `EvaporationBase = 0.003`, `RechargeRate = 0.002/j` — calibrés contre
-  un test interne, pas une source hydrogéologique Perche. À documenter
-  ou recaler.
+- **Nappe** (`WaterTableDynamicsRule`) : ✅ traité (2026-06-05) — refonte en
+  bilan à réservoirs type GARDÉNIA, sourcée BRGM/SIGES Seine-Normandie +
+  Eau Seine-et-Marne. Fin du « non validé hydrologiquement ».
 - **Poids du composite biodiv** (40 % habitat / 25 % eau / 35 %
   intrants) : justification qualitative (Krefeld / MNHN) mais pas
   d'analyse de sensibilité ni de source chiffrée des pondérations
   exactes.
-- **Croissance des haies 0.5 m/ha/an** (cf #9), seuil eau faune
-  8 %/m, pénalité canicule 0,01/jour : plages partielles à resserrer.
+- **Croissance des haies** : forme désormais sourcée (f(eau, fertilité),
+  INRAE/AFAC) ; restent à resserrer les seuils du facteur fertilité, le
+  seuil eau faune 8 %/m et la pénalité canicule 0,01/jour.
 
 **Estimation** : 1-2 jours (recherche + tests de sensibilité).
 
