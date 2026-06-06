@@ -190,5 +190,30 @@ namespace Bocage.Tests.EditMode
                 Assert.AreEqual(a, b);
             }
         }
+
+        [Test]
+        public void EstimatedStockTracksTrueStockViaIntegratedFlux()
+        {
+            // V4 / B3: the tower integrates its measured fluxes back into a stock
+            // estimate. The first read calibrates it to the known baseline; after a
+            // sustained decline the integrated estimate tracks the true stock
+            // closely (only the small accumulated flux noise separates them — the
+            // honest, documented drift of an integrated flux sensor). The carbon-low
+            // alert thresholds THIS estimate (primauté du capteur, §9).
+            var reader = new EddyTowerSensorReader(new SeededRandom(11UL));
+            double stock = 50.0;
+            reader.ReadAndRecord(stock); // baseline → estimate calibrated to 50
+            Assert.That(reader.EstimatedSoilCarbonStock, Is.EqualTo(50.0).Within(1e-9),
+                "First read calibrates the estimate to the known stock.");
+
+            for (int i = 0; i < 300; i++)
+            {
+                stock -= 0.02; // true stock falls to 44 over 300 days
+                reader.ReadAndRecord(stock);
+            }
+            Assert.That(reader.EstimatedSoilCarbonStock, Is.EqualTo(stock).Within(0.1),
+                "Integrated estimate should track the true stock within the small noise drift. Est="
+                + reader.EstimatedSoilCarbonStock + " true=" + stock);
+        }
     }
 }

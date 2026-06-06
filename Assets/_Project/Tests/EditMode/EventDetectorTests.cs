@@ -189,5 +189,59 @@ namespace Bocage.Tests.EditMode
             detector.Detect(model, log, 1.0);
             Assert.IsNull(log.LatestOfType<LowProfitabilityEvent>());
         }
+
+        // ---------------- Sensor-routed detection (B2 / B3, §9) ----------------
+
+        [Test]
+        public void Detect_drought_thresholds_the_measured_depth_not_truth()
+        {
+            // Truth says the water table is shallow (no drought), but the
+            // piezometer measures it deep → the alert follows the MEASUREMENT.
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var model = new EcosystemModel(initialWaterTableDepth: 2.0); // truth: no drought
+            for (int i = 0; i < 30; i++)
+                detector.Detect(model, log, measuredFaunaPopulation: 1.0,
+                    measuredWaterTableDepthMeters: 6.0, estimatedSoilCarbonStock: 50.0,
+                    currentProfitEurosPerHa: double.MaxValue, currentBiodiversity01: 1.0);
+
+            var drought = log.LatestOfType<DroughtProlongedEvent>();
+            Assert.IsNotNull(drought, "Drought should fire on the measured depth even when truth is shallow.");
+            Assert.AreEqual(6.0, drought.WaterTableDepthAtDetection, 1e-9,
+                "The event must record the MEASURED depth, not the truth.");
+        }
+
+        [Test]
+        public void Detect_drought_silent_when_measured_depth_shallow_despite_deep_truth()
+        {
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var model = new EcosystemModel(initialWaterTableDepth: 8.0); // truth: very dry
+            for (int i = 0; i < 30; i++)
+                detector.Detect(model, log, measuredFaunaPopulation: 1.0,
+                    measuredWaterTableDepthMeters: 2.0, estimatedSoilCarbonStock: 50.0,
+                    currentProfitEurosPerHa: double.MaxValue, currentBiodiversity01: 1.0);
+
+            Assert.IsNull(log.LatestOfType<DroughtProlongedEvent>(),
+                "No drought when the measured depth stays above the threshold, whatever the truth.");
+        }
+
+        [Test]
+        public void Detect_soil_carbon_thresholds_the_estimated_stock_not_truth()
+        {
+            // Truth says carbon is healthy (50), but the tower's integrated estimate
+            // reads below the alert (40) → the alert follows the ESTIMATE.
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var model = new EcosystemModel(initialSoilCarbonStock: 50.0); // truth: OK
+            detector.Detect(model, log, measuredFaunaPopulation: 1.0,
+                measuredWaterTableDepthMeters: 2.0, estimatedSoilCarbonStock: 40.0,
+                currentProfitEurosPerHa: double.MaxValue, currentBiodiversity01: 1.0);
+
+            var carbon = log.LatestOfType<SoilCarbonLowEvent>();
+            Assert.IsNotNull(carbon, "Carbon-low should fire on the estimated stock even when truth is healthy.");
+            Assert.AreEqual(40.0, carbon.SoilCarbonAtDetection, 1e-9,
+                "The event must record the ESTIMATED stock, not the truth.");
+        }
     }
 }

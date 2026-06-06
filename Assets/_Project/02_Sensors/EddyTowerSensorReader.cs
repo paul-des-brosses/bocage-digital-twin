@@ -50,6 +50,10 @@ namespace Bocage.Sensors
             new RollingSensorHistory<double>(HistoryWindowDays);
         private double _previousSoilCarbonStock;
         private bool _hasBaseline;
+        // Integrated estimate of the stock: baseline + running integral of the
+        // MEASURED (noisy) fluxes. Drifts slowly from truth — the honest behaviour
+        // of an integrated flux sensor. The carbon-low alert thresholds THIS.
+        private double _estimatedSoilCarbonStock;
 
         public EddyTowerSensorReader(SeededRandom masterRng)
         {
@@ -65,6 +69,18 @@ namespace Bocage.Sensors
 
         /// <summary>Gets the most recent net-flux reading, or <c>false</c> if none recorded yet.</summary>
         public bool TryGetLatest(out double value) => _history.TryGetLatest(out value);
+
+        /// <summary>
+        /// The tower's INTEGRATED estimate of the current soil carbon stock
+        /// (tC/ha): the known baseline stock plus the running integral of the
+        /// measured (noisy) daily fluxes. Because the flux carries noise, this
+        /// estimate drifts slowly from the model's true stock — the honest
+        /// behaviour of an integrated flux sensor (the tower « measures the stock
+        /// AND the flux »). The carbon-low alert thresholds THIS estimate, not the
+        /// model truth (primauté du capteur, §9). Reads 0 until the first
+        /// <see cref="ReadAndRecord"/> captures the baseline.
+        /// </summary>
+        public double EstimatedSoilCarbonStock => _estimatedSoilCarbonStock;
 
         /// <summary>
         /// Returns a noisy daily net CO2 flux in kgCO2/ha/day without
@@ -90,8 +106,23 @@ namespace Bocage.Sensors
         /// </summary>
         public double ReadAndRecord(double currentSoilCarbonStock)
         {
+            bool hadBaseline = _hasBaseline;
             double observed = Read(currentSoilCarbonStock);
             _history.Record(observed);
+            if (!hadBaseline)
+            {
+                // First call: calibrate the integrated estimate to the known stock.
+                _estimatedSoilCarbonStock = currentSoilCarbonStock;
+            }
+            else
+            {
+                // Integrate the MEASURED flux back into the stock estimate. Sign:
+                // flux = -ΔC·(44/12)·1000 kgCO2, so ΔC_measured = -flux/((44/12)·1000);
+                // a positive flux (emission) lowers the estimate. The noise makes it
+                // drift slowly from truth — documented behaviour of an integrated
+                // flux sensor.
+                _estimatedSoilCarbonStock -= observed / (CarbonToCO2MassRatio * TonnesToKilograms);
+            }
             _previousSoilCarbonStock = currentSoilCarbonStock;
             _hasBaseline = true;
             return observed;

@@ -335,15 +335,27 @@ namespace Bocage.Presentation.Simulation
         {
             _engine.Tick();
             _currentDay++;
+
+            // Read every sensor ONCE for today (each owns an independent RNG
+            // sub-stream, so the order between sensors is deterministically
+            // irrelevant), then feed the NOISY measurements to the detector: the
+            // drought alert thresholds the piezometer depth and the carbon alert
+            // thresholds the EddyTower's integrated stock estimate — not the model
+            // truth (primauté du capteur, §9), exactly as the fauna path already did.
+            double measuredFauna = _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation);
+            double measuredDepth = _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
+            _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
+            double estimatedCarbon = _eddyTowerSensorReader.EstimatedSoilCarbonStock;
+            _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
+
             _eventDetector.Detect(
                 _engine.Model,
                 _eventLog,
-                _faunaSensorReader.ReadAndRecord(_engine.Model.FaunaPopulation),
+                measuredFauna,
+                measuredDepth,
+                estimatedCarbon,
                 IntegratedProfitabilityIndicator.Compute(_engine.Model, _engine.Scenario),
                 BiodiversityCompositeIndicator.Compute(_engine.Model, _engine.Scenario));
-            _weatherStationReader.ReadAndRecord(_engine.Model.CurrentWeather);
-            _eddyTowerSensorReader.ReadAndRecord(_engine.Model.SoilCarbonStock);
-            _piezometerReader.ReadAndRecord(_engine.Model.WaterTableDepth);
             PublishRecommendations();
             // TickCompleted fires BEFORE the caller's PublishIndicators so the
             // shadow runner (subscriber) advances its own engine FIRST, and any

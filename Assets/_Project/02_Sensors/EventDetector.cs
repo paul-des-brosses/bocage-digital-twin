@@ -71,19 +71,35 @@ namespace Bocage.Sensors
             => Detect(model, log, measuredFaunaPopulation, double.MaxValue, 1.0);
 
         /// <summary>
-        /// Full detection pass, adding the economic
-        /// <see cref="Bocage.Sensors.Events.LowProfitabilityEvent"/> driven by the
-        /// caller-supplied profitability + biodiversity indicators. Couche 04
-        /// computes those; the detector only thresholds them, exactly as the fauna
-        /// path thresholds the sensor-measured fauna index.
+        /// Convenience pass that thresholds the model's GROUND TRUTH for drought
+        /// and soil carbon (test / back-compat path). The real run uses the
+        /// sensor-routed overload below.
         /// </summary>
         public int Detect(EcosystemModel model, EventLog log, double measuredFaunaPopulation,
+            double currentProfitEurosPerHa, double currentBiodiversity01)
+            => Detect(model, log, measuredFaunaPopulation, model.WaterTableDepth, model.SoilCarbonStock,
+                currentProfitEurosPerHa, currentBiodiversity01);
+
+        /// <summary>
+        /// Full, sensor-routed detection pass (primauté du capteur, §9). Drought
+        /// thresholds the PIEZOMETER's measured depth
+        /// (<paramref name="measuredWaterTableDepthMeters"/>) and the carbon alert
+        /// thresholds the EddyTower's INTEGRATED stock estimate
+        /// (<paramref name="estimatedSoilCarbonStock"/>) — not the model's hidden
+        /// truth — exactly as the fauna path thresholds the sensor-measured fauna
+        /// index. The economic <see cref="Bocage.Sensors.Events.LowProfitabilityEvent"/>
+        /// thresholds the Couche 04 profitability + biodiversity indicators the
+        /// caller supplies.
+        /// </summary>
+        public int Detect(EcosystemModel model, EventLog log,
+            double measuredFaunaPopulation, double measuredWaterTableDepthMeters, double estimatedSoilCarbonStock,
             double currentProfitEurosPerHa, double currentBiodiversity01)
         {
             int appended = 0;
 
-            // ---- Prolonged drought: requires consecutive-day accounting ----
-            if (model.WaterTableDepth > DroughtDepthThresholdMeters)
+            // ---- Prolonged drought: thresholds the PIEZOMETER-measured depth
+            // (not model truth), with consecutive-day accounting. ----
+            if (measuredWaterTableDepthMeters > DroughtDepthThresholdMeters)
             {
                 _consecutiveDryDays++;
             }
@@ -97,7 +113,7 @@ namespace Bocage.Sensors
             {
                 log.Append(new DroughtProlongedEvent(
                     detectedOnDay: model.CurrentDay,
-                    waterTableDepthMeters: model.WaterTableDepth,
+                    waterTableDepthMeters: measuredWaterTableDepthMeters,
                     consecutiveDryDays: _consecutiveDryDays));
                 appended++;
             }
@@ -113,17 +129,16 @@ namespace Bocage.Sensors
                 appended++;
             }
 
-            // ---- Soil carbon low: threshold on the model's carbon stock, the
-            // quantity the eddy-flux tower monitors. Like the drought detector
-            // above, this reads model state directly; routing it through the
-            // EddyTower reader for full sensor-noise parity (as the fauna path
-            // does) is a possible refinement. ----
-            if (model.SoilCarbonStock < SoilCarbonLowThresholdTonnesPerHectare
+            // ---- Soil carbon low: thresholds the EddyTower's INTEGRATED stock
+            // estimate (baseline + integral of the measured noisy fluxes), not the
+            // model's hidden truth — same sensor-routing as the fauna and drought
+            // paths above (primauté du capteur, §9). ----
+            if (estimatedSoilCarbonStock < SoilCarbonLowThresholdTonnesPerHectare
                 && InCooldown<SoilCarbonLowEvent>(log, model.CurrentDay) == false)
             {
                 log.Append(new SoilCarbonLowEvent(
                     detectedOnDay: model.CurrentDay,
-                    soilCarbon: model.SoilCarbonStock));
+                    soilCarbon: estimatedSoilCarbonStock));
                 appended++;
             }
 
