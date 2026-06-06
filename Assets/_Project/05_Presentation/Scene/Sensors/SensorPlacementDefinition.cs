@@ -50,7 +50,7 @@ namespace Bocage.Presentation.Scene.Sensors
     {
         Piezometer,      // observes WaterTableDepth
         WeatherStation,  // observes CurrentWeather
-        EddyTower,       // observes CO2/CH4 flux — not yet in model
+        EddyTower,       // observes net CO2 flux derived from SoilCarbonStock
         AcousticSensor,  // observes FaunaPopulation — Étape 8
         CameraTrap       // observes FaunaPopulation — Étape 8
     }

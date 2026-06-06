@@ -119,7 +119,7 @@ namespace Bocage.SimulationCore.Model
         /// reference for cultivated bocage soils in the Perche.
         /// <para>
         /// Read by the EddyTower sensor (Couche 02) to derive the daily
-        /// net CO2/CH4 flux from ΔSoilCarbonStock, and by
+        /// net CO2 flux from ΔSoilCarbonStock, and by
         /// <see cref="Bocage.Indicators.Hero.SoilCarbonIndicator"/>
         /// (Couche 04) for the Climat &amp; Ressources panel.
         /// </para>
