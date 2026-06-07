@@ -135,14 +135,19 @@ fauna. No visual element is driven by the calendar: every variation traces
 back to a sensor measurement or a model variable (the *sensor primacy*
 rule, see [CLAUDE.md](CLAUDE.md) §9).
 
-Delivered across seven worksites (E1-E7, see [docs/ROADMAP.md](docs/ROADMAP.md)):
+Delivered across the roadmap's worksites (E1-E11, see [docs/ROADMAP.md](docs/ROADMAP.md)):
 the five-layer architecture and core simulation, seasonal weather (Markov
 rain on Mortagne-au-Perche normals), a one-pool soil-carbon model, four
 biodiversity-driven fauna species, an investment / profitability horizon,
 clickable per-sensor inspection panels with time-series charts, and the
 three Level-B thematic panels (biodiversity, climate & resources, economy).
-A **280-test EditMode suite** covers the simulation core, the indicators,
-the recommendation journal and the sensor noise models.
+The latest worksite makes the decision layer fully **model-derived**: each
+recommendation and its outcome projection come from simulating the lever
+forward on a copy of the state (no fixed coefficients), and the drought and
+soil-carbon alerts now threshold the sensors' own noisy readings rather than
+the model's ground truth. A comprehensive **EditMode test suite** covers the
+simulation core, the indicators, the recommendation journal and the sensor
+noise models.
 
 A scientific overview of what is simulated, with its sources, lives in
 [docs/SIMULATION_OVERVIEW.md](docs/SIMULATION_OVERVIEW.md). Items
@@ -169,7 +174,7 @@ green on a fresh clone.
   layer contracts, conventions).
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — 5-layer
   architecture detail, asmdef graph, data flow.
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 44 ADRs covering every
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 62 ADRs covering every
   significant design choice with rationale and sources.
 - [`docs/CALIBRATION.md`](docs/CALIBRATION.md) — calibration of every
   numerical parameter (Solagro, INRAE, PNR Perche, Légifrance…).
