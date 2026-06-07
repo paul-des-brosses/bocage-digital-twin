@@ -1142,7 +1142,7 @@ Implications mécaniques :
   `ResidueRestitutionPercent` (0-100 %), avec sliders dans scenario
   panel.
 - Nouveau `EddyTowerSensorReader` (Couche 02) : mesure flux net
-  journalier CO2/CH4 avec bruit gaussien. Sous-flux RNG
+  journalier CO2 avec bruit gaussien. Sous-flux RNG
   `"eddy-tower"`.
 - Nouveau `SoilCarbonIndicator` (Couche 04) + `RC_SoilCarbonStock`
   (Data/RuntimeContainers).
@@ -1379,7 +1379,7 @@ Contenu par capteur :
 | WeatherStation | 2 graphes superposés : T° journalière vs normale mensuelle, précip journalière vs normale mensuelle. Affichage normales mois courant et suivant. |
 | AcousticSensor | Graphe abondance mesurée (bruitée) vs vraie abondance (modèle). Visualise l'incertitude — pédagogie acoustique fragile à faible densité. |
 | CameraTrap | Idem AcousticSensor. Permet de comprendre la fusion via `FaunaSensorReader`. |
-| EddyTower | Graphe flux journalier CO2/CH4 + stock C cumulé (cf ADR #48). |
+| EddyTower | Graphe flux journalier CO2 + stock C cumulé (cf ADR #48). |
 
 Implications mécaniques :
 
@@ -1440,7 +1440,7 @@ Contenu détaillé par onglet :
 | T° moyenne 365 j glissants | `CurrentWeather` history (nouveau via ADR #52) |
 | Précipitations cumulées 365 j glissants | `CurrentWeather` history (nouveau via ADR #52) |
 | Stock carbone sol | `SoilCarbonStock` (nouveau via ADR #48) |
-| Flux net CO2/CH4 | `EddyTowerSensorReader` history (nouveau via ADR #48) |
+| Flux net CO2 | `EddyTowerSensorReader` history (nouveau via ADR #48) |
 
 **Économie** :
 

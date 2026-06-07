@@ -240,27 +240,34 @@ des sols bien gérés (Solagro Afterres 2050).
 ### 7.2 Capteur EddyTower
 
 La **tour de covariance** présente dans la scène mesure le **flux
-net journalier CO2/CH4** avec bruit gaussien. Le panneau d'inspection
-au clic affiche le flux journalier + le stock cumulé.
+net journalier CO2** avec bruit gaussien, et en **intègre un stock
+carbone estimé** (baseline + intégrale des flux mesurés, qui dérive
+lentement de la vérité — comportement honnête d'un capteur de flux
+intégré). Le panneau d'inspection au clic affiche le flux journalier
++ le stock estimé.
 
-C'est la chaîne capteur → indicateur affiché, sans événement ni reco
-— conforme au principe « capteur bout-en-bout » qui peut s'arrêter
-à un indicateur affiché (cf `CLAUDE.md` §17 principe directeur).
+Depuis E11 (B3), c'est l'alerte **carbone sol bas** qui seuille ce
+**stock estimé** (la mesure), plus la vérité interne du modèle : la
+chaîne va donc capteur → événement → recommandation carbone (couverts
+/ résidus), conforme à la primauté du capteur (`CLAUDE.md` §9).
 
 ---
 
 ## 8. Capteurs et incertitude (chantiers E2, E3, E6 livrés)
 
 Le DT comporte **5 capteurs**, chacun bout-en-bout (mesure →
-indicateur OU événement → recommandation) :
+indicateur OU événement → recommandation). Depuis E11 (B2/B3), les
+alertes sécheresse et carbone seuillent la **mesure bruitée** du
+capteur (profondeur piézomètre, stock estimé de la tour), plus la
+vérité interne du modèle — comme la faune le faisait déjà :
 
 | Capteur | Mesure | Chaîne aval |
 |---|---|---|
-| Piezometer | `WaterTableDepth` + bruit | événement `DroughtProlonged` → reco `IrrigationAdvice` |
-| AcousticSensor | abondance faune bruitée (σ ∝ 1/√fauna) | fusionné avec CameraTrap → événement `FaunaAcousticAnomaly` → reco `ReduceInputs` |
+| Piezometer | `WaterTableDepth` + bruit | **profondeur mesurée** → événement `DroughtProlonged` → reco `IrrigationAdvice` (B2) |
+| AcousticSensor | abondance faune bruitée (σ ∝ 1/√fauna) | fusionné avec CameraTrap → événement `FaunaAcousticAnomaly` → reco habitat/intrants |
 | CameraTrap | abondance faune bruitée | idem AcousticSensor (fusion `FaunaSensorReader`) |
 | WeatherStation | T° + précip + bruit gaussien | lecture pure → indicateur affiché (T° glissante, précip glissantes) |
-| EddyTower | flux CO2/CH4 + bruit | lecture pure → indicateur affiché (stock C cumulé) |
+| EddyTower | flux CO2 + bruit, **stock estimé intégré** | **stock estimé** → événement `SoilCarbonLowEvent` → recos carbone (B3) |
 
 Chaque capteur est **cliquable** dans la scène. Un clic ouvre un
 panneau d'inspection qui affiche les graphes des 365 derniers jours
@@ -279,10 +286,12 @@ trompeuses.
 ### 9.1 Recommandations algorithmiques
 
 Le `RecommendationEngine` (Couche 03) consomme les événements
-détectés et produit des recommandations. Après E9, le système couvre
-**8 recommandations sur 6 leviers**, avec un **dispatch sensible à
-l'état** (le moteur choisit le levier qui dispose encore de marge de
-manœuvre) :
+détectés et produit des recommandations. Le système couvre **8
+recommandations sur 6 leviers**. Depuis E11, la sélection est
+**dérivée du modèle** : pour un événement, le moteur construit les
+leviers faisables (garde-fous de marge conservés, §17), **projette
+chacun en avant** sur une copie de l'état, et garde celui qui sert le
+mieux un **objectif d'agriculteur** (économie dominante ; cf ADR #62) :
 
 | Événement déclencheur | Recommandation(s) | Levier |
 |---|---|---|
@@ -306,8 +315,10 @@ toujours mieux ».
 
 Chaque recommandation porte :
 
-- Un `OutcomeProjector` qui projette 2 horizons (30 j et 365 j) sous
-  forme de 3 points (worst / expected / best).
+- Une projection `ModelOutcomeProjector` **dérivée du modèle** : chaque
+  levier est simulé en avant (vrai moteur, sur une copie de l'état) à
+  2 horizons (30 j et 365 j) ; la fourchette worst / expected / best est
+  le spread sur 3 réalisations météo, plus des coefficients figés (ADR #62).
 - Un texte Rationale au pattern uniforme : phrase d'action concrète
   + ligne `Effet modélisé : ...` chiffrée sur les variables
   effectivement touchées + ligne `Déclenché par : ...` indiquant

@@ -146,8 +146,11 @@ feat(simulation): add deterministic seeded random with sub-seed derivation
 
 - Agrégation en Hero KPIs (5 indicateurs principaux).
 - Panneaux Niveau B (Biodiversité, Climat & ressources, Économie).
-- Simulation fantôme (shadow run) sans actions tech, mêmes seeds.
-- Reporter de session.
+- Simulation fantôme (shadow run) à baseline gelée, mêmes seeds (le moteur
+  parallèle est orchestré en Couche 05 par `ShadowSimulationRunner` ; la
+  Couche 04 porte la comparaison real-vs-shadow via
+  `CumulativeTechValueIndicator`).
+- Reporter de session (prévu, non encore construit — backlog).
 - Référence Couches 1, 2, 3.
 
 ### 5.5 Couche 05_Presentation
@@ -281,6 +284,18 @@ dérivée de l'indice biodiversité mesuré.
   rare du héron est le seul effet purement esthétique, et il ne pilote
   aucune variable — il décore une présence déjà justifiée par la mesure.
 
+**Statut au 2026-06-05** : E11 « modèle vivant » a complété la primauté du
+capteur de bout en bout. Les alertes sécheresse et carbone seuillent désormais
+la **mesure** (profondeur piézomètre, stock estimé intégré de la tour Eddy),
+plus la vérité interne du modèle (B2/B3) — comme la faune le faisait déjà. Et
+les recommandations ET leurs projections d'outcome sont **dérivées du modèle**
+(projection forward par levier, objectif d'agriculteur, optimum émergent), plus
+de coefficients figés (cf ADR #62).
+
+---
+
+## 10. Audio (aucun)
+
 **Aucun audio dans ce projet.** Aucune musique, aucun bruitage, aucun son
 d'ambiance, aucun son de feedback UI. Le projet est silencieux. La racine
 `_Audio` dans la hiérarchie est conservée vide pour cohérence
@@ -354,8 +369,10 @@ Tests unitaires en **EditMode** sur la Couche 1, **obligatoires**.
   bouton « skip to end » au-delà.
 - **Seed** : seed maître au démarrage, sous-seeds dérivés par hash pour
   chaque sous-système (météo, faune, capteurs, événements).
-- **Simulation fantôme** : run parallèle, mêmes seeds et inputs, sans
-  application des actions tech (`applyTechActions = false`).
+- **Simulation fantôme** : run parallèle, mêmes seeds et inputs, à **baseline
+  gelée** (les décisions de l'agriculteur sont figées à leur valeur de départ
+  via `ScenarioContext.CreateFrozenShadowFrom`, cf ADR #58) — il n'y a pas de
+  drapeau `applyTechActions`.
 - **Transitions de paramètres** : interpolation sur 7-14 jours simulés
   via `TransitioningParameter<T>`. Aucune mutation abrupte.
 

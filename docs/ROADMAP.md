@@ -227,7 +227,7 @@ température saisonnière pour la minéralisation).
 
 **Couche 02 — Sensors** :
 
-- `EddyTowerSensorReader.cs` : mesure flux net journalier CO2/CH4
+- `EddyTowerSensorReader.cs` : mesure flux net journalier CO2
   avec bruit gaussien. Sous-flux RNG `"eddy-tower"`.
 - Stockage sliding window 365 j (mutualisé avec E6).
 
