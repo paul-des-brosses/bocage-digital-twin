@@ -72,12 +72,19 @@ namespace Bocage.Presentation.Bindings
 
         private void Update()
         {
-            // Per-frame refresh: cheap text update when the pending
-            // count changes between ticks (user resolving recos in
-            // the popup, or new ones arriving). Also keeps the history
-            // list in sync if currently open.
+            // Cheap text update when the pending count changes between ticks.
+            int pending = (runner != null && runner.DecisionJournal != null)
+                ? runner.DecisionJournal.PendingEntries.Count
+                : _lastPendingCount;
+            bool countChanged = pending != _lastPendingCount;
             RefreshButtonLabel(force: false);
-            if (_historyOverlay != null && !_historyOverlay.ClassListContains(HiddenClass))
+
+            // Rebuild the OPEN list ONLY when its content actually changed.
+            // Rebuilding every frame (the previous behaviour) re-created every row
+            // each frame, so the « Examiner » button was destroyed between the
+            // pointer-down and pointer-up of a click and never fired — that was the
+            // C2 « bouton Examiner invalide » bug.
+            if (countChanged && _historyOverlay != null && !_historyOverlay.ClassListContains(HiddenClass))
             {
                 RebuildHistoryList();
             }
