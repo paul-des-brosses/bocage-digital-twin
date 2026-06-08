@@ -30,13 +30,17 @@ namespace Bocage.Sensors
         // path unobservable in the canonical "Trajectoire RCP4.5"
         // preset which is the most likely user demo path.
         //
-        // Drought depth at 3.5 m = root-zone alarm level (Chambre
-        // Normandie agronomic alert). Below this, deep-rooted crops
-        // and most hedge species lose access to capillary water.
-        // Fauna at 0.7 = −30 % from baseline, aligned with the
-        // Vigie-Nature farmland bird decline observed over 1989-2017
-        // in intensified zones.
-        public const double DroughtDepthThresholdMeters = 3.5;
+        // Drought depth at 2.6 m = the deep extreme of the GARDENIA water-table
+        // normal range (neutral seasonal battement tops out ~2.6 m; the dry-season
+        // deep equilibrium is ~3.0 m). Sustained beyond it for the consecutive-day
+        // window means the table is sitting at its dry-season floor for a prolonged
+        // spell — where deep-rooted crops and hedge species lose capillary access.
+        // Recalibrated from 3.5 m (the old root-zone alarm), which the GARDENIA
+        // reservoir nappe never reaches, when the water-table rule moved to the
+        // BRGM model — otherwise the drought→irrigation chain would never fire.
+        // Fauna at 0.7 = −30 % from baseline, aligned with the Vigie-Nature
+        // farmland bird decline observed over 1989-2017 in intensified zones.
+        public const double DroughtDepthThresholdMeters = 2.6;
         public const int DroughtConsecutiveDaysThreshold = 30;
         public const double FaunaAcousticAnomalyThreshold = 0.7;
         // Soil carbon stock (tC/ha) below this is flagged as degrading. The

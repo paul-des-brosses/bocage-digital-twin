@@ -1,5 +1,6 @@
 using Bocage.Sensors;
 using Bocage.Sensors.Events;
+using Bocage.SimulationCore;
 using Bocage.SimulationCore.Model;
 using NUnit.Framework;
 
@@ -224,6 +225,35 @@ namespace Bocage.Tests.EditMode
 
             Assert.IsNull(log.LatestOfType<DroughtProlongedEvent>(),
                 "No drought when the measured depth stays above the threshold, whatever the truth.");
+        }
+
+        [Test]
+        public void Drought_fires_under_sustained_drought_with_GardeniaNappe()
+        {
+            // Regression guard: the GARDENIA recalibration once left the drought
+            // threshold (3.5 m) above the nappe's reachable depth (deep equilibrium
+            // ~3.0 m), so the drought→irrigation chain could never fire. Under a
+            // sustained heavy drought the measured water table must cross the
+            // threshold and the event must fire.
+            var weather = SeasonalWeatherDataDefaults.MortagneAuPerche();
+            var engine = DefaultSimulation.Build(1UL, seasonalWeather: weather);
+            engine.Scenario.PrecipitationAnomalyPercent.SetTarget(-50.0, 1);
+            engine.Scenario.TemperatureAnomalyC.SetTarget(3.0, 1);
+            var detector = new EventDetector();
+            var log = new EventLog();
+            var piezo = new PiezometerReader(new SeededRandom(1UL));
+
+            for (int day = 0; day < 730; day++)
+            {
+                engine.Tick();
+                double measuredDepth = piezo.ReadAndRecord(engine.Model.WaterTableDepth);
+                detector.Detect(engine.Model, log, measuredFaunaPopulation: 1.0,
+                    measuredWaterTableDepthMeters: measuredDepth, estimatedSoilCarbonStock: 50.0,
+                    currentProfitEurosPerHa: double.MaxValue, currentBiodiversity01: 1.0);
+            }
+
+            Assert.IsNotNull(log.LatestOfType<DroughtProlongedEvent>(),
+                "Sustained heavy drought must trigger a DroughtProlonged event — the sensor chain must not be dead.");
         }
 
         [Test]
