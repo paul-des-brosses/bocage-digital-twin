@@ -1,4 +1,5 @@
 using Bocage.Data.RuntimeContainers;
+using Bocage.Presentation.Simulation;
 using Bocage.SimulationCore;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
@@ -103,7 +104,10 @@ namespace Bocage.Presentation.Scene.Fauna
                 // 2) Currently traversing → skip.
                 if (p.TraversalMotion.IsActive) continue;
 
-                // 3) Inactive slot → probabilistic spawn roll.
+                // 3) Inactive slot → probabilistic spawn roll. Suppressed while the
+                //    simulated clock is paused, so no new birds appear (and queue
+                //    up off-screen) during a pause.
+                if (!SimulationRunner.IsTicking) continue;
                 float lambdaEff = ComputeEffectiveSpawnRate(p.Species, _currentBiodiv);
                 if (lambdaEff <= 0f) continue;
 

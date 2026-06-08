@@ -248,6 +248,7 @@ namespace Bocage.Presentation.Simulation
 
         private void Awake()
         {
+            IsTicking = false; // default to paused until StartTicking (robust to editor static persistence)
             _seasonalWeather = seasonalWeatherAsset != null
                 ? seasonalWeatherAsset.ToSeasonalWeatherData()
                 : Bocage.SimulationCore.Model.SeasonalWeatherDataDefaults.MortagneAuPerche();
@@ -293,10 +294,19 @@ namespace Bocage.Presentation.Simulation
             StopTicking();
         }
 
+        /// <summary>
+        /// Whether the REAL run's clock is currently ticking (false while paused,
+        /// disabled, or fast-forwarding). Static because there is a single real
+        /// run; read by cosmetic scene animations (fauna traversal) so they freeze
+        /// on pause instead of drifting on real time. Mirrors <see cref="IsRunning"/>.
+        /// </summary>
+        public static bool IsTicking { get; private set; }
+
         public void StartTicking()
         {
             if (_tickRoutine != null) return;
             _tickRoutine = StartCoroutine(TickLoop());
+            IsTicking = true;
             TickingStateChanged?.Invoke();
         }
 
@@ -305,6 +315,7 @@ namespace Bocage.Presentation.Simulation
             if (_tickRoutine == null) return;
             StopCoroutine(_tickRoutine);
             _tickRoutine = null;
+            IsTicking = false;
             TickingStateChanged?.Invoke();
         }
 

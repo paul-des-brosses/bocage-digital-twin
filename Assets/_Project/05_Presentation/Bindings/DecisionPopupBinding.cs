@@ -126,9 +126,14 @@ namespace Bocage.Presentation.Bindings
 
         private void OnRebuilt()
         {
-            // The engine + journal were wiped and the model reset to day 0; every
-            // cached projection is now stale. Drop them so new recos project fresh.
+            // The engine + journal were wiped and the model reset to day 0: a fresh
+            // run is a fresh decision slate. Drop the stale projections AND the
+            // session's « ignored type » / « deferred » suppressions — otherwise a
+            // reco the user dismissed in a previous run stays silently suppressed in
+            // the new one (e.g. after switching from a neutral preset to RCP4.5).
             _projectionCache.Clear();
+            _ignoredRecommendationTypes.Clear();
+            _skippedRecommendationIds.Clear();
         }
 
         private void Update()
@@ -241,9 +246,21 @@ namespace Bocage.Presentation.Bindings
         {
             if (rec == null || runner == null || runner.Model == null || runner.Scenario == null) return null;
             if (_projectionCache.TryGetValue(rec.Id, out var cached)) return cached;
-            var outcomes = ModelOutcomeProjector.Project(
-                rec, runner.Model, runner.Scenario, runner.MasterSeed, runner.SeasonalWeather,
-                IntegratedProfitabilityIndicator.Compute, BiodiversityCompositeIndicator.Compute);
+            OutcomeDistribution[] outcomes;
+            try
+            {
+                outcomes = ModelOutcomeProjector.Project(
+                    rec, runner.Model, runner.Scenario, runner.MasterSeed, runner.SeasonalWeather,
+                    IntegratedProfitabilityIndicator.Compute, BiodiversityCompositeIndicator.Compute);
+            }
+            catch (System.Exception e)
+            {
+                // Defensive: a projection failure must never break the per-frame
+                // surfacing loop (which would silently kill ALL popups). Log and
+                // fall back to « no projection » (reco still surfaces, sans chiffres).
+                SimLogger.DebugLog("[DecisionPopupBinding] projection failed for " + rec.Id + ": " + e.Message);
+                return null;
+            }
             _projectionCache[rec.Id] = outcomes;
             return outcomes;
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Bocage.Presentation.Simulation;
 using UnityEngine;
 
 namespace Bocage.Presentation.Scene.Fauna
@@ -136,7 +137,10 @@ namespace Bocage.Presentation.Scene.Fauna
 
         private void Update()
         {
-            if (!_isActive) return;
+            // Freeze on pause: the traversal is real-time cosmetic, but it must
+            // not drift while the simulated clock is stopped (else birds keep
+            // flying on pause). Mirrors the runner's ticking state.
+            if (!_isActive || !SimulationRunner.IsTicking) return;
             _elapsed += Time.deltaTime;
             ApplyTransformAt(_elapsed);
             ApplyFrameAt(_elapsed);
