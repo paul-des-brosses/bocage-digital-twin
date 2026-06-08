@@ -208,7 +208,7 @@ Un 4ème facteur **Diversité paysage** (Shannon-like sur prairies
 permanentes et diversité cultures) est documenté en backlog
 (item #20) mais non livré dans le MVP.
 
-La densité de faune visible (héron, chouette, busard, hirondelle)
+La densité de faune visible (héron, chouette, buse, hirondelle)
 est pilotée par l'indice composite + les facteurs individuels : les
 espèces apparaissent et disparaissent à l'écran selon leur seuil
 de tolérance.

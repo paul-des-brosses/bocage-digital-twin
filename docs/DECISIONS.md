@@ -1177,7 +1177,7 @@ disponibles dans `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`
 (4 espèces × 3-4 frames partiellement présents).
 
 **Décision** : implémenter le pool de 4 espèces visibles (héron,
-chouette, busard, hirondelle) avec animations frame-swap, courbes de
+chouette, buse, hirondelle) avec animations frame-swap, courbes de
 réponse sur la biodiv.
 
 Implications mécaniques :
