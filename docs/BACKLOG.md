@@ -480,9 +480,13 @@ Biodiv finalisé).
 
 ### #21 — Gestion biodiversité espèce-résolue : régulation (chasse) + réintroduction
 
-**Origine** : demande utilisateur du 2026-06-03. Vérifiée cohérente
-avec la thèse et le modèle — mais sous conditions (voir garde-fous),
-et de taille V2.
+**Origine** : demande utilisateur du 2026-06-03, étendue le 2026-06-07
+pour absorber le couplage **faune → végétation** (capacité de charge /
+herbivorie) écarté du chantier E11 (A2) : dans le modèle actuel l'indice
+faune composite est borné et ne surpopule jamais, donc un seuil de
+capacité de charge ne se déclencherait pas — il faut d'abord le modèle
+espèce/guilde résolu ci-dessous. Vérifiée cohérente avec la thèse et le
+modèle, sous conditions (voir garde-fous), de taille V2.
 
 **Pourquoi backlog** : la faune est aujourd'hui un **indice composite**
 unique (`FaunaPopulation` / `FaunaDynamicsRule`) ; les 4 espèces
@@ -503,6 +507,13 @@ suppose donc d'abord de passer à un modèle **espèce / guilde résolu**
   les soutenir). Fit thèse *plus faible* : action de conservation, peu
   liée à la rentabilité et peu pilotée par un capteur — **à confirmer
   ou à écarter**.
+- **Faune → végétation** (couplage écologique, ex-A2 #4) : une fois les
+  populations résolues, une **pression d'herbivorie / capacité de charge**
+  freine la croissance végétale au-delà d'un seuil K (dégâts sanglier sur
+  la régénération 40-90 % en surdensité — CNPF/ONF ; herbivorie d'insectes
+  ~−13 % — Visakorpi et al. 2024) — la **boucle auto-stabilisante
+  faune ↔ végétation** que l'annexe A2 du registre décrivait. Inactif tant
+  que la faune est un indice borné ; nécessite le modèle espèce/guilde.
 
 **Garde-fous (conditions de cohérence — non négociables)** :
 
