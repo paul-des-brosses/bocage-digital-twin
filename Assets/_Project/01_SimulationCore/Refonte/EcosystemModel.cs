@@ -72,6 +72,9 @@ namespace Bocage.SimulationCore.Refonte
         /// <summary>Lessivage azoté du jour (kgN/ha) — transitoire (pénalité aquatique / événement lessivage).</summary>
         public double LastNitrogenLeachingKgPerHa { get; private set; }
 
+        /// <summary>Marge annualisée du jour (€/ha) — transitoire (Hero KPI rentabilité). Peut être négative.</summary>
+        public double LastAnnualMarginEurosPerHa { get; private set; }
+
         // --- Fenêtres glissantes de chaleur (même mécanique que le modèle actuel) ---
         public int RecentHeatDayCount { get; private set; }
         public int RecentCanicularDayCount { get; private set; }
@@ -135,6 +138,7 @@ namespace Bocage.SimulationCore.Refonte
         public void SetLastCarbonRespirationTPerHa(double tPerHa) => LastCarbonRespirationTPerHa = ClampNonNegative(tPerHa);
         public void SetLastNitrogenUptakeKgPerHa(double kg) => LastNitrogenUptakeKgPerHa = ClampNonNegative(kg);
         public void SetLastNitrogenLeachingKgPerHa(double kg) => LastNitrogenLeachingKgPerHa = ClampNonNegative(kg);
+        public void SetLastAnnualMarginEurosPerHa(double euros) => LastAnnualMarginEurosPerHa = euros;
 
         /// <summary>
         /// Fenêtre glissante O(1) : enregistre la T° moyenne du jour et maintient
