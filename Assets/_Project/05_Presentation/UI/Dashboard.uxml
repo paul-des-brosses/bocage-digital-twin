@@ -228,6 +228,7 @@
                                 <ui:Label name="pesticide-value" text="IFT 1.0" class="scenario-control-value" />
                             </ui:VisualElement>
                             <ui:Slider name="pesticide-slider" low-value="0" high-value="2" value="1" class="scenario-slider" show-input-field="true" tooltip="Intensité de traitement (IFT relatif). 0 = zéro phyto, 1 = conventionnel. IFT ≤ 0.7 déclenche le paiement MAEC." />
+                            <ui:Label text="1 = dose conventionnelle, 0 = sans phyto ; ≤ 0,7 ouvre le paiement MAEC." class="scenario-control-hint" />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
@@ -236,6 +237,7 @@
                                 <ui:Label name="tillage-value" text="labour" class="scenario-control-value" />
                             </ui:VisualElement>
                             <ui:Slider name="tillage-slider" low-value="0" high-value="1" value="1" class="scenario-slider" show-input-field="true" tooltip="1 = labour conventionnel, 0 = semis direct. Réduire le travail favorise le carbone et la vie du sol." />
+                            <ui:Label text="1 = labour conventionnel, 0 = semis direct (aucun travail du sol)." class="scenario-control-hint" />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
@@ -244,6 +246,7 @@
                                 <ui:Label name="cover-crops-value" text="0 %" class="scenario-control-value" />
                             </ui:VisualElement>
                             <ui:Slider name="cover-crops-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de la sole semée en couverts entre cultures. 0 = sol nu, 100 = couverts intégraux (Solagro Afterres 2050)." />
+                            <ui:Label text="Part de la sole semée en couverts entre deux cultures (vs sol nu)." class="scenario-control-hint" />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
@@ -252,6 +255,7 @@
                                 <ui:Label name="hedge-management-value" text="0.0 m/ha/an" class="scenario-control-value" />
                             </ui:VisualElement>
                             <ui:Slider name="hedge-management-slider" low-value="-10" high-value="10" value="0" class="scenario-slider" show-input-field="true" tooltip="Solde net annuel : positif = plantation, négatif = arrachage (remembrement Perche ≈ -5). Pilote la densité de haie (santé de la flore + habitat)." />
+                            <ui:Label text="Mètres de haie par hectare et par an : positif = planter, négatif = arracher (0 = maintien)." class="scenario-control-hint" />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
@@ -260,6 +264,7 @@
                                 <ui:Label name="grassland-value" text="0 %" class="scenario-control-value" />
                             </ui:VisualElement>
                             <ui:Slider name="grassland-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de l'assolement en prairie permanente. Revenu fourrager stable (élevage) + bonus carbone/biodiversité, au prix d'un coût d'opportunité vs culture." />
+                            <ui:Label text="Part de l'assolement convertie en prairie permanente (vs culture annuelle)." class="scenario-control-hint" />
                         </ui:VisualElement>
 
                         <!--
