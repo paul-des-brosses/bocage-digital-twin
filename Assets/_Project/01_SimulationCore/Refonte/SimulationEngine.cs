@@ -19,6 +19,7 @@ namespace Bocage.SimulationCore.Refonte
         private static readonly int[] MonthEndDay = { 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 
         private readonly WeatherGenerator _weather;
+        private readonly int _startDayOffset;
         private readonly WaterBalanceRule _water = new WaterBalanceRule();
         private readonly NappeRule _nappe = new NappeRule();
         private readonly WeedPressureRule _weed = new WeedPressureRule();
@@ -37,6 +38,9 @@ namespace Bocage.SimulationCore.Refonte
             Model = model ?? throw new ArgumentNullException(nameof(model));
             Scenario = scenario ?? throw new ArgumentNullException(nameof(scenario));
             _weather = weather ?? throw new ArgumentNullException(nameof(weather));
+            // Snapshot du mois de démarrage : un changement mid-run ne décale pas
+            // le run courant (cohérent avec la sémantique de Rebuild).
+            _startDayOffset = StartDayOffsetForMonth(scenario.StartingMonth);
         }
 
         /// <summary>Mois calendaire (1-12) du jour de l'année (1-365).</summary>
@@ -49,9 +53,23 @@ namespace Bocage.SimulationCore.Refonte
             return 12;
         }
 
+        /// <summary>
+        /// Décalage en jours pour démarrer au mois <paramref name="startingMonth"/>
+        /// (1-12) : nombre de jours calendaires avant le 1ᵉʳ de ce mois.
+        /// </summary>
+        public static int StartDayOffsetForMonth(int startingMonth)
+        {
+            if (startingMonth < 1) startingMonth = 1;
+            else if (startingMonth > 12) startingMonth = 12;
+            return startingMonth == 1 ? 0 : MonthEndDay[startingMonth - 2];
+        }
+
+        /// <summary>Jour calendaire courant (1-365), décalé par le mois de démarrage.</summary>
+        public int CalendarDayOfYear => ((Model.CurrentDay + _startDayOffset) % 365) + 1;
+
         public void Tick()
         {
-            int dayOfYear = (Model.CurrentDay % 365) + 1;
+            int dayOfYear = CalendarDayOfYear;
             int month = MonthOfYear(dayOfYear);
 
             // Météo générée, perturbée par le scénario climat (ΔT additif, ×pluie).

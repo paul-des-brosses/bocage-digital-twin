@@ -40,6 +40,15 @@ namespace Bocage.SimulationCore.Refonte
         /// <summary>Facteur multiplicatif sur la pluie ; 1 = baseline, 0.5 = −50 %.</summary>
         public double PrecipitationFactor { get; set; } = 1.0;
 
+        // --- Phase saisonnière de départ ---
+
+        /// <summary>
+        /// Mois calendaire de démarrage du run (1 = janvier … 12 = décembre).
+        /// Snapshoté à la construction du moteur ; un changement mid-run ne
+        /// s'applique qu'au prochain Rebuild.
+        /// </summary>
+        public int StartingMonth { get; set; } = 1;
+
         /// <summary>Constructeur par défaut (les initialiseurs de propriété fixent les valeurs).</summary>
         public ScenarioContext() { }
 
@@ -54,6 +63,7 @@ namespace Bocage.SimulationCore.Refonte
             GrasslandFraction = other.GrasslandFraction;
             TemperatureAnomalyC = other.TemperatureAnomalyC;
             PrecipitationFactor = other.PrecipitationFactor;
+            StartingMonth = other.StartingMonth;
         }
     }
 }
