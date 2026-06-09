@@ -70,10 +70,10 @@ namespace Bocage.Tests.EditMode
             var engine = MakeEngine(seed: 100UL, precipitationFactor: 1.0, temperatureAnomaly: 0.0);
             engine.Run(TenYears);
             var m = engine.Model;
-            Assert.That(m.CropYieldTPerHa, Is.InRange(3.0, 6.5), "rendement neutre plausible");
+            Assert.That(m.CropYieldTPerHa, Is.InRange(3.5, 7.0), "rendement neutre plausible");
             Assert.That(m.Biodiversity, Is.InRange(0.35, 0.9), "biodiversité neutre plausible");
             Assert.That(m.SoilCarbonTotalTPerHa, Is.InRange(42.0, 58.0), "carbone neutre ~ référence BDAT");
-            Assert.That(m.SoilWaterMm, Is.InRange(0.0, 135.0), "θ borné par RU_max");
+            Assert.That(m.SoilWaterMm, Is.InRange(0.0, 160.0), "θ borné par RU_max");
             Assert.That(m.WaterTableDepthM, Is.InRange(0.0, 3.5), "nappe bornée près de l'équilibre profond");
         }
 

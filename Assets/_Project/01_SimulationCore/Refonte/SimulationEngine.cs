@@ -66,7 +66,7 @@ namespace Bocage.SimulationCore.Refonte
             _water.Apply(Model, dayOfYear);
             _nappe.Apply(Model);
             _weed.Apply(Model, Scenario);
-            _yield.Apply(Model);
+            _yield.Apply(Model, dayOfYear);
             _nitrogen.Apply(Model, Scenario, dayOfYear);
             _carbon.Apply(Model, Scenario);
             _flora.Apply(Model, Scenario);

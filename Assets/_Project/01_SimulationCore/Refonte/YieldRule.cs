@@ -1,33 +1,32 @@
-using System;
-
 namespace Bocage.SimulationCore.Refonte
 {
     /// <summary>
-    /// Dynamique du rendement Y (t/ha). Y relaxe (EMA, ~saison) vers une cible
-    /// produit de facteurs de stress ≤ 1 appliqués au potentiel :
+    /// Rendement Y (t/ha) modélisé comme une <b>récolte annuelle</b> : le stress
+    /// est intégré sur la <b>saison de croissance</b> (printemps → récolte), puis
+    /// la récolte fige Y pour l'année. C'est plus juste qu'un stress hydrique
+    /// appliqué toute l'année (qui pénalisait le rendement avec la sécheresse
+    /// d'août, alors que la culture est déjà récoltée), et ça préserve la cascade
+    /// (la sécheresse frappe bien la saison de croissance).
     /// <code>
-    ///   Y_target = Y_pot · Ks(θ) · Kn(N) · K_chaleur · K_adventices
+    ///   stress_jour = Ks(θ) · Kn(N) · K_chaleur · K_adventices   (chaque facteur ≤ 1)
+    ///   Y_récolte   = Y_pot · moyenne(stress_jour sur la saison)
     /// </code>
-    /// <list type="bullet">
-    ///   <item><b>Ks(θ)</b> : stress hydrique FAO-56 — la sécheresse mord le rendement
-    ///   (couplage `θ` → Y) ;</item>
-    ///   <item><b>Kn(N)</b> : limitation azotée saturante (Mitscherlich) — plateau au-delà
-    ///   de l'optimum (fertiliser plus ne gagne plus rien) ;</item>
-    ///   <item><b>K_chaleur</b> : pénalité des jours chauds accumulés ;</item>
-    ///   <item><b>K_adventices</b> : pénalité du salissement W.</item>
-    /// </list>
-    /// Y alimente les résidus (carbone) et la marge (économie). Déterministe,
-    /// sans I/O. Sources : FAO-56 (Doorenbos &amp; Kassam) ; Mitscherlich/COMIFER ;
-    /// IPCC AR6 (chaleur).
+    /// Y_pot = potentiel non stressé ; l'actuel en découle par les stress.
+    /// Déterministe, sans I/O. Sources : FAO-56 (Doorenbos &amp; Kassam) ;
+    /// Mitscherlich/COMIFER ; IPCC AR6 (chaleur).
     /// </summary>
     public sealed class YieldRule
     {
-        public const double YieldPotentialTPerHa = 5.5;
-        public const double NitrogenScaleKgPerHa = 15.0;   // Kn = 1 − exp(−N/scale) ; plateau ~ 60-90 kgN
+        public const double YieldPotentialTPerHa = 7.0;    // potentiel non stressé
+        public const double NitrogenScaleKgPerHa = 15.0;   // Kn = 1 − exp(−N/scale)
         public const double HeatPenaltyPerDay = 0.003;
         public const double HeatPenaltyCap = 0.09;
         public const double WeedYieldPenalty = 0.3;
-        public const double RelaxationDays = 100.0;
+        public const int GrowingSeasonStartDay = 90;       // ~avril
+        public const int GrowingSeasonEndDay = 210;        // ~fin juillet (récolte)
+
+        private double _stressSum;
+        private int _stressDays;
 
         /// <summary>Stress hydrique Ks = clamp(θ / (p·RU_max), 0, 1) — FAO-56.</summary>
         public static double WaterFactor(EcosystemModel model)
@@ -40,7 +39,7 @@ namespace Bocage.SimulationCore.Refonte
         }
 
         public static double NitrogenFactor(double mineralNitrogenKgPerHa)
-            => 1.0 - Math.Exp(-mineralNitrogenKgPerHa / NitrogenScaleKgPerHa);
+            => 1.0 - System.Math.Exp(-mineralNitrogenKgPerHa / NitrogenScaleKgPerHa);
 
         public static double HeatFactor(int recentHeatDayCount)
         {
@@ -51,18 +50,35 @@ namespace Bocage.SimulationCore.Refonte
 
         public static double WeedFactor(double weedPressure) => 1.0 - WeedYieldPenalty * weedPressure;
 
-        public static double Target(EcosystemModel model)
-            => YieldPotentialTPerHa
-               * WaterFactor(model)
+        /// <summary>Facteur de stress instantané du jour (produit des facteurs ≤ 1).</summary>
+        public static double DailyStressFactor(EcosystemModel model)
+            => WaterFactor(model)
                * NitrogenFactor(model.MineralNitrogenKgPerHa)
                * HeatFactor(model.RecentHeatDayCount)
                * WeedFactor(model.WeedPressure);
 
-        public void Apply(EcosystemModel model)
+        /// <summary>
+        /// Accumule le stress du jour sur la saison de croissance ; à la récolte
+        /// (<see cref="GrowingSeasonEndDay"/>), fige le rendement de l'année.
+        /// <paramref name="dayOfYear"/> ∈ [1, 365].
+        /// </summary>
+        public void Apply(EcosystemModel model, int dayOfYear)
         {
-            double target = Target(model);
-            double y = model.CropYieldTPerHa;
-            model.SetCropYieldTPerHa(y + (target - y) / RelaxationDays);
+            if (dayOfYear == GrowingSeasonStartDay)
+            {
+                _stressSum = 0.0;
+                _stressDays = 0;
+            }
+            if (dayOfYear >= GrowingSeasonStartDay && dayOfYear <= GrowingSeasonEndDay)
+            {
+                _stressSum += DailyStressFactor(model);
+                _stressDays++;
+            }
+            if (dayOfYear == GrowingSeasonEndDay && _stressDays > 0)
+            {
+                double meanStress = _stressSum / _stressDays;
+                model.SetCropYieldTPerHa(YieldPotentialTPerHa * meanStress);
+            }
         }
     }
 }

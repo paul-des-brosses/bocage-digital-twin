@@ -50,6 +50,7 @@ namespace Bocage.SimulationCore.Refonte
         public const double MaxUptakeFractionPerDay = 0.5;                  // plafond d'accès journalier au pool
         public const double LeachableFraction = 0.5;                       // λ
         public const double VolatilizationFraction = 0.10;                 // pertes gazeuses sur l'apport
+        public const double OrganicLossRatePerYear = 0.8;                  // dénitrification/immobilisation ∝ pool (borne N)
 
         // Calendrier agronomique (jour de l'année, 1-365).
         public const int FertilizationStartDay = 60;                       // ~mars
@@ -93,7 +94,9 @@ namespace Bocage.SimulationCore.Refonte
             double ruMax = WaterBalanceRule.SoilWaterCapacityMm(model.SoilCarbonTotalTPerHa);
             double leaching = LeachableFraction * model.LastDrainageMm * (n / ruMax);
 
-            double gaseous = VolatilizationFraction * fert;
+            // Pertes gazeuses (volatilisation de l'apport) + pertes diffuses
+            // proportionnelles au pool (dénitrification/immobilisation) qui bornent N.
+            double gaseous = VolatilizationFraction * fert + OrganicLossRatePerYear / DaysPerYear * n;
 
             return new NitrogenFlux(inputs, uptake, leaching, gaseous);
         }

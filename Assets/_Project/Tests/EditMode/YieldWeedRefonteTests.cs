@@ -22,7 +22,7 @@ namespace Bocage.Tests.EditMode
         private static void RunYield(EcosystemModel model, int days)
         {
             var rule = new YieldRule();
-            for (int d = 0; d < days; d++) rule.Apply(model);
+            for (int d = 0; d < days; d++) rule.Apply(model, (d % 365) + 1);
         }
 
         // ---------------- Adventices ----------------
@@ -61,8 +61,8 @@ namespace Bocage.Tests.EditMode
             model.SetWeather(Weather(15.0));
             model.SetSoilWaterMm(90.0);
             RunYield(model, 800);
-            Assert.That(model.CropYieldTPerHa, Is.InRange(5.2, 5.6),
-                "au référentiel (eau ample, N suffisant, sans adventices) → ~potentiel");
+            Assert.That(model.CropYieldTPerHa, Is.InRange(6.5, 7.1),
+                "au référentiel (eau ample, N suffisant, sans adventices) → ~potentiel 7 t/ha");
         }
 
         [Test]
@@ -117,8 +117,9 @@ namespace Bocage.Tests.EditMode
             var yield = new YieldRule();
             for (int d = 0; d < 800; d++)
             {
-                weed.Apply(controlled, sControlled); yield.Apply(controlled);
-                weed.Apply(infested, sInfested); yield.Apply(infested);
+                int doy = (d % 365) + 1;
+                weed.Apply(controlled, sControlled); yield.Apply(controlled, doy);
+                weed.Apply(infested, sInfested); yield.Apply(infested, doy);
             }
             Assert.Less(infested.CropYieldTPerHa, controlled.CropYieldTPerHa,
                 "le non-labour sans désherbage chimique pénalise le rendement (salissement)");

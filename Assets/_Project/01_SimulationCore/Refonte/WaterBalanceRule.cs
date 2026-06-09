@@ -16,7 +16,7 @@ namespace Bocage.SimulationCore.Refonte
     /// </summary>
     public sealed class WaterBalanceRule
     {
-        public const double RuBaseMm = 130.0;                  // réserve utile de base (limon profond Perche)
+        public const double RuBaseMm = 150.0;                  // réserve utile de base (limon profond Perche)
         public const double CarbonReferenceTPerHa = 50.0;      // C de référence (BDAT)
         public const double CapacityCarbonSensitivity = 0.5;   // β : ±20 % C → ±10 % RU_max
         public const double ReadilyAvailableFraction = 0.5;    // p (FAO-56)

@@ -16,10 +16,10 @@ namespace Bocage.SimulationCore.Refonte
     public sealed class HedgeFloraRule
     {
         public const double ReferenceDensityMPerHa = 90.0;
-        public const double WaterHealthOptimalMm = 60.0;
+        public const double WaterHealthOptimalMm = 50.0;
         public const double NitrogenReferenceKgPerHa = 60.0;
         public const double InputsHealthPenalty = 0.3;   // au-delà de N_ref, la flore régresse
-        public const double HealthFloor = 0.3;
+        public const double HealthFloor = 0.5;
         public const double RelaxationDays = 365.0;
         private const double DaysPerYear = 365.0;
 
