@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Bocage.SimulationCore.Refonte;
 using Bocage.Sensors.Refonte;
 using SeededRandom = Bocage.SimulationCore.SeededRandom;
@@ -31,6 +32,20 @@ namespace Bocage.Decision.Refonte
         private readonly RecommendationEngine _recommendationEngine;
 
         private double _totalInvestmentEurosPerHa;
+
+        // --- Cycle de vie des recommandations ---
+        public const int RecoActiveDays = 45;     // > cooldown détecteur (30 j) : une condition persistante reste « active »
+        public const int RecoCooldownDays = 60;   // anti-spam : après résolution, pas de nouvelle reco du même type avant ce délai
+        public const double LeverSatisfiedToleranceFraction = 0.02;  // reco « satisfaite » si le levier est à ±2 % de la plage du niveau recommandé
+        private static readonly EventKind[] AllEventKinds =
+        {
+            EventKind.HydricStress, EventKind.SoilCarbonLow, EventKind.FaunaAnomaly,
+            EventKind.NitrogenDeficiency, EventKind.NitrogenExcess, EventKind.LowProfitability
+        };
+        private readonly List<Recommendation> _pending = new List<Recommendation>();
+        private readonly HashSet<Recommendation> _deferred = new HashSet<Recommendation>();
+        private readonly Dictionary<EventKind, int> _recoCooldownUntilDay = new Dictionary<EventKind, int>();
+        private readonly Dictionary<EventKind, int> _lastAttemptEventDay = new Dictionary<EventKind, int>();
 
         public EcosystemModel RealModel => _real.Model;
         public EcosystemModel ShadowModel => _shadow.Model;
@@ -95,6 +110,8 @@ namespace Bocage.Decision.Refonte
 
             _detector.Detect(m.CurrentDay, MeasuredHumidityFraction, _eddyTower.EstimatedCarbonStockTPerHa,
                 MeasuredFauna, m.MineralNitrogenKgPerHa, m.LastAnnualMarginEurosPerHa, _eventLog);
+
+            UpdateRecommendations();
         }
 
         public void Run(int days)
@@ -131,5 +148,110 @@ namespace Bocage.Decision.Refonte
         /// <summary>Produit la meilleure recommandation pour un type d'événement (à la demande de l'UI), ou null.</summary>
         public Recommendation Recommend(EventKind kind)
             => _recommendationEngine.TryProduce(kind, _real.Model, _liveScenario, _masterSeed);
+
+        // ===== Cycle de vie des recommandations =====
+
+        /// <summary>Recommandations en attente (affichées dans le panneau de décision).</summary>
+        public IReadOnlyList<Recommendation> PendingRecommendations => _pending;
+
+        /// <summary>Vrai si la reco a été différée (« Plus tard ») → ne plus l'auto-popup.</summary>
+        public bool IsDeferred(Recommendation r) => r != null && _deferred.Contains(r);
+
+        /// <summary>Valider : applique le levier au niveau recommandé (reco ⊆ leviers), puis résout la reco.</summary>
+        public void AcceptRecommendation(Recommendation r)
+        {
+            if (r == null) return;
+            ApplyDecision(r.Lever, r.RecommendedLevel);
+            ResolveRecommendation(r);
+        }
+
+        /// <summary>Ignorer : résout la reco sans rien appliquer (+ cooldown anti-spam).</summary>
+        public void DismissRecommendation(Recommendation r) => ResolveRecommendation(r);
+
+        /// <summary>Plus tard : la reco reste dans la liste mais n'auto-popup plus.</summary>
+        public void DeferRecommendation(Recommendation r)
+        {
+            if (r != null && _pending.Contains(r)) _deferred.Add(r);
+        }
+
+        /// <summary>Prochaine reco à auto-ouvrir (win-win ou urgence écologique), ou null.</summary>
+        public Recommendation NextAutoPopupRecommendation()
+        {
+            double biodiversity = _real.Model.Biodiversity;
+            for (int i = 0; i < _pending.Count; i++)
+            {
+                Recommendation r = _pending[i];
+                if (_deferred.Contains(r)) continue;
+                if (RecommendationSurfacing.ShouldAutoPopup(r, biodiversity)) return r;
+            }
+            return null;
+        }
+
+        private void ResolveRecommendation(Recommendation r)
+        {
+            if (r == null) return;
+            _pending.Remove(r);
+            _deferred.Remove(r);
+            _recoCooldownUntilDay[r.TriggeredBy] = _real.Model.CurrentDay + RecoCooldownDays;
+        }
+
+        /// <summary>
+        /// Met à jour la liste des recos (chaque tick) : retire les recos satisfaites
+        /// (levier déjà au niveau recommandé) ou périmées (plus d'événement récent),
+        /// puis produit une reco par événement récent sans reco active — la projection
+        /// ne tourne qu'<b>une seule fois</b> par déclenchement d'événement (coûteuse).
+        /// </summary>
+        private void UpdateRecommendations()
+        {
+            int day = _real.Model.CurrentDay;
+
+            for (int i = _pending.Count - 1; i >= 0; i--)
+            {
+                Recommendation r = _pending[i];
+                if (IsSatisfied(r) || IsStale(r.TriggeredBy, day))
+                {
+                    _pending.RemoveAt(i);
+                    _deferred.Remove(r);
+                }
+            }
+
+            foreach (EventKind kind in AllEventKinds)
+            {
+                if (HasPendingForKind(kind)) continue;
+                if (day < CooldownUntil(kind)) continue;
+                DetectedEvent? latest = _eventLog.LatestOfKind(kind);
+                if (latest == null) continue;
+                int eventDay = latest.Value.Day;
+                if (day - eventDay > RecoActiveDays) continue;                                         // périmé
+                if (_lastAttemptEventDay.TryGetValue(kind, out int lastTry) && eventDay <= lastTry) continue; // déjà tenté pour cet événement
+                _lastAttemptEventDay[kind] = eventDay;
+                Recommendation produced = _recommendationEngine.TryProduce(kind, _real.Model, _liveScenario, _masterSeed);
+                if (produced != null) _pending.Add(produced);
+            }
+        }
+
+        private bool IsSatisfied(Recommendation r)
+        {
+            double current = DecisionLevers.Get(_liveScenario, r.Lever);
+            (double min, double max) = DecisionLevers.Range(r.Lever);
+            double tol = LeverSatisfiedToleranceFraction * (max - min);
+            return Math.Abs(current - r.RecommendedLevel) <= tol;
+        }
+
+        private bool IsStale(EventKind kind, int day)
+        {
+            DetectedEvent? latest = _eventLog.LatestOfKind(kind);
+            return latest == null || day - latest.Value.Day > RecoActiveDays;
+        }
+
+        private bool HasPendingForKind(EventKind kind)
+        {
+            for (int i = 0; i < _pending.Count; i++)
+                if (_pending[i].TriggeredBy == kind) return true;
+            return false;
+        }
+
+        private int CooldownUntil(EventKind kind)
+            => _recoCooldownUntilDay.TryGetValue(kind, out int d) ? d : 0;
     }
 }

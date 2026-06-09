@@ -43,6 +43,9 @@ namespace Bocage.Decision.Refonte
     /// <summary>Classe une recommandation à partir des signes de ses Δ projetés (doc 10 §C.7).</summary>
     public static class RecommendationSurfacing
     {
+        /// <summary>Sous ce seuil de biodiversité, un compromis écologique devient une urgence qui interrompt.</summary>
+        public const double CriticalBiodiversityThreshold = 0.35;
+
         public static RecommendationClass Classify(LeverOutcome outcome)
         {
             bool economic = outcome.DeltaMarginEurosPerHa.Expected >= 0.0;
@@ -51,6 +54,20 @@ namespace Bocage.Decision.Refonte
             if (economic) return RecommendationClass.EconomicTradeoff;
             if (ecological) return RecommendationClass.EcologicalTradeoff;
             return RecommendationClass.LoseLose;
+        }
+
+        /// <summary>
+        /// Gate d'auto-popup : on n'interrompt l'utilisateur que pour un <b>win-win</b>,
+        /// ou une <b>urgence écologique</b> (compromis écologique alors que la
+        /// biodiversité est sous le seuil critique). Les compromis ordinaires
+        /// patientent dans la liste du panneau de décision.
+        /// </summary>
+        public static bool ShouldAutoPopup(Recommendation recommendation, double biodiversity)
+        {
+            if (recommendation == null) return false;
+            if (recommendation.Class == RecommendationClass.WinWin) return true;
+            return recommendation.Class == RecommendationClass.EcologicalTradeoff
+                   && biodiversity < CriticalBiodiversityThreshold;
         }
     }
 }
