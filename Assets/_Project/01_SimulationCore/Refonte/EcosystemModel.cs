@@ -60,6 +60,12 @@ namespace Bocage.SimulationCore.Refonte
         /// <summary>Évapotranspiration réelle du jour (mm) — transitoire, pour diagnostics/conservation.</summary>
         public double LastEvapotranspirationMm { get; private set; }
 
+        /// <summary>Apports carbone du jour (tC/ha) — transitoire (tour Eddy / conservation).</summary>
+        public double LastCarbonInputTPerHa { get; private set; }
+
+        /// <summary>Respiration CO₂ du jour (tC/ha) — transitoire ; flux net NEE = respiration − apports.</summary>
+        public double LastCarbonRespirationTPerHa { get; private set; }
+
         // --- Fenêtres glissantes de chaleur (même mécanique que le modèle actuel) ---
         public int RecentHeatDayCount { get; private set; }
         public int RecentCanicularDayCount { get; private set; }
@@ -119,6 +125,8 @@ namespace Bocage.SimulationCore.Refonte
         public void AddCapitalEurosPerHa(double delta) => CapitalEurosPerHa += delta;
         public void SetLastDrainageMm(double mm) => LastDrainageMm = ClampNonNegative(mm);
         public void SetLastEvapotranspirationMm(double mm) => LastEvapotranspirationMm = ClampNonNegative(mm);
+        public void SetLastCarbonInputTPerHa(double tPerHa) => LastCarbonInputTPerHa = ClampNonNegative(tPerHa);
+        public void SetLastCarbonRespirationTPerHa(double tPerHa) => LastCarbonRespirationTPerHa = ClampNonNegative(tPerHa);
 
         /// <summary>
         /// Fenêtre glissante O(1) : enregistre la T° moyenne du jour et maintient
