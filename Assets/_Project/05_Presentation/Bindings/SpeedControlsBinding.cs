@@ -1,4 +1,4 @@
-using Bocage.Presentation.Simulation;
+using Bocage.Presentation.Refonte;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -41,8 +41,8 @@ namespace Bocage.Presentation.Bindings
         private const float SpeedX10 = 10f;
         private const float SpeedX20 = 20f;
 
-        [SerializeField, Tooltip("Source of the engine. Drag the GameObject carrying the SimulationRunner.")]
-        private SimulationRunner runner;
+        [SerializeField, Tooltip("Source du moteur. Glisse le GameObject portant le RefonteSimulationRunner.")]
+        private RefonteSimulationRunner runner;
 
         [Header("UXML element names — buttons")]
         [SerializeField] private string pauseButtonName = "speed-pause-button";
@@ -225,8 +225,8 @@ namespace Bocage.Presentation.Bindings
 
         private void OnSkipToEnd()
         {
-            if (runner == null || runner.Scenario == null) return;
-            int horizon = runner.Scenario.HorizonInDays;
+            if (runner == null) return;
+            int horizon = runner.HorizonInDays;
             int from = runner.CurrentDay;
             // Skip-to-end is meaningful relative to "from now": one click
             // advances by exactly HorizonInDays, regardless of how many

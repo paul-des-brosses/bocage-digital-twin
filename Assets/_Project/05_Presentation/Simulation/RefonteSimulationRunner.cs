@@ -30,8 +30,10 @@ namespace Bocage.Presentation.Refonte
         [Header("Cadence")]
         [SerializeField, Range(0.5f, 20f), Tooltip("Jours simulés par seconde réelle. 1 = x1, 10 = x10.")]
         private float ticksPerSecond = 1f;
-        [SerializeField, Tooltip("Si vrai, le tick démarre à Start(). Sinon un contrôleur externe appelle StartTicking().")]
-        private bool autoStart = true;
+        [SerializeField, Tooltip("Laisser DÉCOCHÉ : la sim boote en pause au jour 0 (KPI statiques affichés) et n'avance qu'au clic « Lancer la simulation ». Cocher seulement pour un run automatique de test.")]
+        private bool autoStart = false;
+        [SerializeField, Min(1), Tooltip("Horizon (jours simulés) avancé d'un coup par « skip-to-end ». 3650 = 10 ans. Remplace l'ancien ScenarioContext.HorizonInDays.")]
+        private int horizonInDays = 3650;
 
         [Header("Scénario initial (climat + leviers)")]
         [SerializeField, Tooltip("Anomalie de température (°C) appliquée au générateur.")]
@@ -73,8 +75,17 @@ namespace Bocage.Presentation.Refonte
             set => ticksPerSecond = Mathf.Clamp(value, 0.01f, 200f);
         }
 
+        /// <summary>Horizon (jours) avancé d'un coup par « skip-to-end ». Remplace l'ancien <c>ScenarioContext.HorizonInDays</c>.</summary>
+        public int HorizonInDays
+        {
+            get => horizonInDays;
+            set => horizonInDays = Mathf.Max(1, value);
+        }
+
         public event System.Action TickCompleted;
         public event System.Action TickingStateChanged;
+        /// <summary>Levé après un <see cref="Rebuild"/> (session reconstruite au jour 0). Les contrôles de vitesse / conditions initiales s'y abonnent pour resynchroniser leur état.</summary>
+        public event System.Action Rebuilt;
 
         private void Awake()
         {
@@ -92,18 +103,19 @@ namespace Bocage.Presentation.Refonte
 
         private void BuildSession()
         {
-            var model = new EcosystemModel();
-            var scenario = new ScenarioContext
-            {
-                TemperatureAnomalyC = temperatureAnomalyC,
-                PrecipitationFactor = precipitationFactor,
-                NitrogenDoseKgPerHaPerYear = initialNitrogenDoseKgPerHa,
-                PesticideIntensity = initialPesticideIntensity,
-                TillageIntensity = initialTillageIntensity,
-                CoverCropsCoveragePercent = initialCoverCropsPercent
-            };
-            _session = new SimulationSession(model, scenario, TourouvreClimatology(), masterSeed);
+            _session = new SimulationSession(new EcosystemModel(), BuildScenarioFromInspector(),
+                TourouvreClimatology(), masterSeed);
         }
+
+        private ScenarioContext BuildScenarioFromInspector() => new ScenarioContext
+        {
+            TemperatureAnomalyC = temperatureAnomalyC,
+            PrecipitationFactor = precipitationFactor,
+            NitrogenDoseKgPerHaPerYear = initialNitrogenDoseKgPerHa,
+            PesticideIntensity = initialPesticideIntensity,
+            TillageIntensity = initialTillageIntensity,
+            CoverCropsCoveragePercent = initialCoverCropsPercent
+        };
 
         public void StartTicking()
         {
@@ -134,15 +146,41 @@ namespace Bocage.Presentation.Refonte
             }
         }
 
-        /// <summary>Avance la simulation de N jours d'un coup (skip-to-end), puis publie.</summary>
-        public void FastForward(int days)
+        /// <summary>
+        /// Avance la simulation jusqu'au jour <paramref name="targetDay"/> d'un coup
+        /// (skip-to-end), publie, et LAISSE EN PAUSE (l'utilisateur inspecte le
+        /// résultat). Ne fait rien si la cible est déjà atteinte.
+        /// </summary>
+        public void FastForwardTo(int targetDay)
         {
-            if (_session == null || days <= 0) return;
-            bool wasRunning = IsRunning;
+            if (_session == null) return;
+            int days = targetDay - CurrentDay;
+            if (days <= 0) return;
             StopTicking();
             _session.Run(days);
             PublishIndicators();
-            if (wasRunning) StartTicking();
+            // Pas de redémarrage : skip-to-end finit en pause (comme l'ancien runner).
+        }
+
+        /// <summary>
+        /// Reconstruit la session au jour 0 avec de nouvelles conditions initiales
+        /// (densité de haie, profondeur de nappe, biodiversité de départ). Le
+        /// scénario courant (leviers + climat) est RÉUTILISÉ — les choix de
+        /// l'utilisateur survivent à un reset. Publie l'état neuf puis lève
+        /// <see cref="Rebuilt"/>. Ne touche pas l'état de tick (l'appelant décide).
+        /// </summary>
+        public void Rebuild(double initialHedgerowDensity, double initialWaterTableDepth, double initialBiodiversity)
+        {
+            ScenarioContext scenario = _session != null
+                ? new ScenarioContext(_session.Scenario)
+                : BuildScenarioFromInspector();
+            var model = new EcosystemModel(
+                initialHedgerowDensityMPerHa: initialHedgerowDensity,
+                initialWaterTableDepthM: initialWaterTableDepth,
+                initialBiodiversity: initialBiodiversity);
+            _session = new SimulationSession(model, scenario, TourouvreClimatology(), masterSeed);
+            PublishIndicators();
+            Rebuilt?.Invoke();
         }
 
         /// <summary>Applique une décision (lève un levier sur le run réel ; le fantôme reste gelé).</summary>

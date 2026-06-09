@@ -1,5 +1,5 @@
 using System.Globalization;
-using Bocage.Presentation.Simulation;
+using Bocage.Presentation.Refonte;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -8,12 +8,12 @@ namespace Bocage.Presentation.Bindings
 {
     /// <summary>
     /// Wires the three "Conditions initiales du bocage" sliders
-    /// (HedgerowDensity, WaterTableDepth, FaunaPopulation) and the
+    /// (densité de haie, profondeur de nappe, biodiversité initiale) and the
     /// "Réinitialiser le bocage" button to
-    /// <see cref="SimulationRunner.Rebuild"/>.
+    /// <see cref="RefonteSimulationRunner.Rebuild"/>.
     /// <para>
     /// Sliders are editable only when
-    /// <c>SimulationRunner.CurrentDay == 0</c>. Once the simulation has
+    /// <c>RefonteSimulationRunner.CurrentDay == 0</c>. Once the simulation has
     /// advanced past day 0, the sliders are disabled and a "verrouillé"
     /// hint appears — clicking Reset is the only way back to an
     /// editable state. The Reset button itself stays enabled at all
@@ -22,20 +22,24 @@ namespace Bocage.Presentation.Bindings
     /// </para>
     /// <para>
     /// Sliders' default values mirror the EcosystemModel's hardcoded
-    /// initial defaults (hedge 90 m/ha, depth 2 m, fauna 1.0). The
-    /// scenario context (climate, policies, horizon) is preserved
-    /// across a reset — only the bocage state is wiped.
+    /// initial defaults (hedge 90 m/ha, depth 2 m, biodiversité 0.6). Le
+    /// scénario (climat + 6 leviers) est préservé à travers un reset —
+    /// seul l'état du bocage est remis à zéro.
     /// </para>
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class InitialConditionsBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source of the current day and the Rebuild API. Drag the GameObject carrying the SimulationRunner.")]
-        private SimulationRunner runner;
+        [SerializeField, Tooltip("Source du jour courant et de l'API Rebuild. Glisse le GameObject portant le RefonteSimulationRunner.")]
+        private RefonteSimulationRunner runner;
 
         [Header("UXML element names")]
         [SerializeField] private string hedgerowDensitySliderName = "initial-hedgerow-density-slider";
         [SerializeField] private string waterTableDepthSliderName = "initial-water-table-depth-slider";
+        // Historiquement « abondance faune » ; ce slider pilote désormais la
+        // biodiversité initiale [0,1] (initialBiodiversity du nouveau modèle).
+        // Nom d'élément UXML conservé pour ne pas casser le câblage scène —
+        // renommage complet prévu au cutover (étape 5).
         [SerializeField] private string faunaPopulationSliderName = "initial-fauna-population-slider";
         [SerializeField] private string resetButtonName = "initial-reset-button";
         [SerializeField] private string lockHintLabelName = "initial-lock-hint";
@@ -199,6 +203,6 @@ namespace Bocage.Presentation.Bindings
 
         private static string FormatMetersPerHectare(float v) => v.ToString("0", Inv) + " m/ha";
         private static string FormatMeters(float v) => v.ToString("0.0", Inv) + " m";
-        private static string FormatIndex(float v) => v.ToString("0.00", Inv) + " × réf.";
+        private static string FormatIndex(float v) => v.ToString("0.00", Inv); // biodiversité initiale [0,1]
     }
 }

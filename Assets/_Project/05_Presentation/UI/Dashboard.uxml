@@ -182,10 +182,10 @@
 
                     <ui:VisualElement class="scenario-control">
                         <ui:VisualElement class="scenario-control-header">
-                            <ui:Label text="Abondance faune (t=0)" class="scenario-control-label" />
-                            <ui:Label name="initial-fauna-population-value" text="1.00 × réf." class="scenario-control-value" />
+                            <ui:Label text="Biodiversité (t=0)" class="scenario-control-label" />
+                            <ui:Label name="initial-fauna-population-value" text="0.60" class="scenario-control-value" />
                         </ui:VisualElement>
-                        <ui:Slider name="initial-fauna-population-slider" low-value="0" high-value="1.5" value="1" class="scenario-slider" show-input-field="true" />
+                        <ui:Slider name="initial-fauna-population-slider" low-value="0" high-value="1" value="0.6" class="scenario-slider" show-input-field="true" />
                     </ui:VisualElement>
 
                     <ui:Label name="initial-lock-hint" text="Ajustez puis cliquez Réinitialiser pour appliquer." class="initial-lock-hint" />
