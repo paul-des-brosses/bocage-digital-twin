@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4ac0727e4587e94390b6b11e3fbe34f, type: 3}
   m_Name: ScenarioPreset_RCP45_2050
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
-  id: rcp45
-  displayName: Trajectoire RCP4.5
-  description: "Horizon 2050, +2 \xB0C et −20 % pr\xE9cipitations (sc\xE9nario
-    IPCC AR6 RCP4.5). Sans aide publique."
-  temperatureAnomalyC: 2
-  precipitationAnomalyPercent: -20
-  maecCoveragePercent: 0
-  pseSubsidyRate: 0
-  horizonInDays: 1825
+  id: secheresse-rcp45
+  displayName: "S\xE9cheresse RCP4.5"
+  description: "Climat dur (+3 \xB0C, -50% pluie) avec pratiques de r\xE9f\xE9rence. Observe la cascade, puis adapte (prairie, couverts, moins d'intrants)."
+  temperatureAnomalyC: 3
+  precipitationAnomalyPercent: -50
+  nitrogenDoseKgPerHa: 120
+  pesticideIntensity: 1
+  tillageIntensity: 1
+  coverCropsPercent: 0
+  hedgeManagementMetersPerHaPerYear: 0
+  grasslandFraction: 0

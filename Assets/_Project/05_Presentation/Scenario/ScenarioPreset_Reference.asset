@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: ScenarioPreset_Reference
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
   id: reference
-  displayName: "R\xE9f\xE9rence"
-  description: "Climat neutre, sans aide publique. Cadre de r\xE9f\xE9rence Perche.\
-    \ L'agriculteur d\xE9finit ses pratiques librement (sliders \xE0 droite)."
+  displayName: "R\xE9f\xE9rence Perche"
+  description: "Climat neutre, pratiques conventionnelles calibr\xE9es Perche. Point de d\xE9part : l'agriculteur optimise \xE0 partir d'ici."
   temperatureAnomalyC: 0
   precipitationAnomalyPercent: 0
-  maecCoveragePercent: 0
-  pseSubsidyRate: 0
-  horizonInDays: 365
+  nitrogenDoseKgPerHa: 120
+  pesticideIntensity: 1
+  tillageIntensity: 1
+  coverCropsPercent: 0
+  hedgeManagementMetersPerHaPerYear: 0
+  grasslandFraction: 0

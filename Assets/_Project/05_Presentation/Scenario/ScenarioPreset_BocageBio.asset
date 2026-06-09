@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4ac0727e4587e94390b6b11e3fbe34f, type: 3}
   m_Name: ScenarioPreset_BocageBio
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
-  id: politique-vertueuse
-  displayName: "Politique vertueuse"
-  description: "Climat neutre, politiques publiques maximales (MAEC 100 %, PSE plein).
-    \ Cadre o\xF9 l'\xC9tat soutient pleinement le bocage. L'agriculteur reste libre
-    \ d'aligner ses pratiques (sliders \xE0 droite)."
+  id: bas-intrants
+  displayName: "Bas-intrants"
+  description: "Azote et phyto r\xE9duits, couverts, travail du sol minimal, un peu de prairie. Le win-win d\xE9montr\xE9 (capital +55%, carbone +5%)."
   temperatureAnomalyC: 0
   precipitationAnomalyPercent: 0
-  maecCoveragePercent: 100
-  pseSubsidyRate: 1
-  horizonInDays: 1825
+  nitrogenDoseKgPerHa: 60
+  pesticideIntensity: 0.4
+  tillageIntensity: 0.3
+  coverCropsPercent: 100
+  hedgeManagementMetersPerHaPerYear: 2
+  grasslandFraction: 0.2

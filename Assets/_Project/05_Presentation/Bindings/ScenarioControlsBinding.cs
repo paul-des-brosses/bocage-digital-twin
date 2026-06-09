@@ -1,5 +1,6 @@
 using System.Globalization;
-using Bocage.Presentation.Simulation;
+using Bocage.Decision.Refonte;
+using Bocage.Presentation.Refonte;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,72 +8,58 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Wires the seven scenario controls (sliders with visible numeric
-    /// labels) to the simulation's
-    /// <see cref="Bocage.SimulationCore.Scenario.ScenarioContext"/>.
-    /// After the 2026-05-21 UX iteration the controls are
-    /// <see cref="Slider"/>/<see cref="SliderInt"/> with concrete physical
-    /// units displayed inline (°C, %, m/ha/yr, etc.) — the abstract [0,1]
-    /// dials and free-typed FloatFields of the previous iterations are
-    /// retired.
-    /// <para>
-    /// Each value is pushed to the ScenarioContext via
-    /// <c>TransitioningParameter.SetTarget</c> with a transition over
-    /// <see cref="transitionDurationDays"/> simulated days
-    /// (CLAUDE.md §15). The horizon is applied directly (it's a deadline,
-    /// not a smoothed setpoint).
-    /// </para>
-    /// <para>
-    /// Per CLAUDE.md §5.5 Couche 5 may push user inputs to the
-    /// ScenarioContext — the only allowed downstream write.
-    /// </para>
+    /// Câble les 6 sliders de leviers agriculteur + 2 sliders climat au
+    /// <see cref="RefonteSimulationRunner"/>. Les leviers passent par
+    /// <see cref="RefonteSimulationRunner.ApplyDecision"/> — exactement le chemin
+    /// des recommandations (« reco ⊆ leviers ») ; le climat (exogène) par
+    /// <see cref="RefonteSimulationRunner.SetClimate"/>, appliqué aux deux runs.
+    /// Application instantanée : les variables d'état lentes (azote, carbone,
+    /// biodiversité, densité) lissent l'effet ; les transitions douces §15 ne sont
+    /// pas retenues au MVP. Couche 05 (Unity) — validée en Play Mode.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class ScenarioControlsBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source of the scenario context. Drag the GameObject carrying the SimulationRunner.")]
-        private SimulationRunner runner;
+        [SerializeField, Tooltip("Source du scénario. Glisse le GameObject portant le RefonteSimulationRunner.")]
+        private RefonteSimulationRunner runner;
 
-        [SerializeField, Range(1, 30), Tooltip("Simulated days over which a user-set scenario value transitions. 7-14 per CLAUDE.md §15.")]
-        private int transitionDurationDays = 10;
+        [Header("UXML — sliders leviers")]
+        [SerializeField] private string nitrogenSliderName = "nitrogen-dose-slider";
+        [SerializeField] private string pesticideSliderName = "pesticide-slider";
+        [SerializeField] private string tillageSliderName = "tillage-slider";
+        [SerializeField] private string coverCropsSliderName = "cover-crops-slider";
+        [SerializeField] private string hedgeSliderName = "hedge-management-slider";
+        [SerializeField] private string grasslandSliderName = "grassland-slider";
 
-        [Header("UXML element names — sliders")]
+        [Header("UXML — sliders climat")]
         [SerializeField] private string temperatureSliderName = "temperature-anomaly-slider";
         [SerializeField] private string precipitationSliderName = "precipitation-anomaly-slider";
-        [SerializeField] private string hedgeRemovalSliderName = "hedge-removal-slider";
-        [SerializeField] private string inputIntensitySliderName = "input-intensity-slider";
-        [SerializeField] private string maecCoverageSliderName = "maec-coverage-slider";
-        [SerializeField] private string pseRateSliderName = "pse-rate-slider";
-        [SerializeField] private string horizonSliderName = "horizon-slider";
-        [SerializeField] private string coverCropsSliderName = "cover-crops-slider";
-        [SerializeField] private string residueRestitutionSliderName = "residue-restitution-slider";
 
-        [Header("UXML element names — value labels")]
-        [SerializeField] private string temperatureValueLabelName = "temperature-anomaly-value";
-        [SerializeField] private string precipitationValueLabelName = "precipitation-anomaly-value";
-        [SerializeField] private string hedgeRemovalValueLabelName = "hedge-removal-value";
-        [SerializeField] private string inputIntensityValueLabelName = "input-intensity-value";
-        [SerializeField] private string maecCoverageValueLabelName = "maec-coverage-value";
-        [SerializeField] private string pseRateValueLabelName = "pse-rate-value";
-        [SerializeField] private string horizonValueLabelName = "horizon-value";
-        [SerializeField] private string coverCropsValueLabelName = "cover-crops-value";
-        [SerializeField] private string residueRestitutionValueLabelName = "residue-restitution-value";
+        [Header("UXML — labels valeurs leviers")]
+        [SerializeField] private string nitrogenValueName = "nitrogen-dose-value";
+        [SerializeField] private string pesticideValueName = "pesticide-value";
+        [SerializeField] private string tillageValueName = "tillage-value";
+        [SerializeField] private string coverCropsValueName = "cover-crops-value";
+        [SerializeField] private string hedgeValueName = "hedge-management-value";
+        [SerializeField] private string grasslandValueName = "grassland-value";
+
+        [Header("UXML — labels valeurs climat")]
+        [SerializeField] private string temperatureValueName = "temperature-anomaly-value";
+        [SerializeField] private string precipitationValueName = "precipitation-anomaly-value";
 
         private UIDocument _document;
-        private Slider _tempSlider, _precipSlider, _hedgeRemovalSlider, _inputIntensitySlider, _maecSlider, _pseSlider, _coverCropsSlider, _residueRestitutionSlider;
-        private SliderInt _horizonSlider;
-        private Label _tempLabel, _precipLabel, _hedgeRemovalLabel, _inputIntensityLabel, _maecLabel, _pseLabel, _horizonLabel, _coverCropsLabel, _residueRestitutionLabel;
-        private bool _wiredCallbacks;
+        private Slider _nitrogen, _pesticide, _tillage, _cover, _hedge, _grassland, _temp, _precip;
+        private Label _nitrogenL, _pesticideL, _tillageL, _coverL, _hedgeL, _grasslandL, _tempL, _precipL;
+        private bool _wired;
 
-        private void Awake()
-        {
-            _document = GetComponent<UIDocument>();
-        }
+        private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
+        private void Awake() => _document = GetComponent<UIDocument>();
 
         private void OnEnable()
         {
             ResolveElements();
-            InitializeFromScenario();
+            InitFromScenario();
             WireCallbacks();
             if (runner != null) runner.TickCompleted += OnTickSync;
         }
@@ -83,228 +70,174 @@ namespace Bocage.Presentation.Bindings
             if (runner != null) runner.TickCompleted -= OnTickSync;
         }
 
-        /// <summary>
-        /// Once per simulated day, reflect scenario changes made OUTSIDE the UI
-        /// (e.g. a « baisser intrants » recommendation lowering input intensity)
-        /// by snapping the farmer sliders to their current TARGET — not the
-        /// in-transit Current, so a slider the user just dragged stays where
-        /// they put it. Idempotent when the user is the source of the target.
-        /// </summary>
-        private void OnTickSync()
-        {
-            if (runner == null || runner.Scenario == null) return;
-            var s = runner.Scenario;
-            SyncSliderToTarget(_hedgeRemovalSlider, _hedgeRemovalLabel, (float)s.HedgeRemovalRate.Target, FormatHedgeRemoval);
-            SyncSliderToTarget(_inputIntensitySlider, _inputIntensityLabel, (float)s.InputIntensityFactor.Target, FormatIntensity);
-            SyncSliderToTarget(_coverCropsSlider, _coverCropsLabel, (float)s.CoverCropsCoveragePercent.Target, FormatPercent);
-            SyncSliderToTarget(_residueRestitutionSlider, _residueRestitutionLabel, (float)s.ResidueRestitutionPercent.Target, FormatPercent);
-        }
-
-        private static void SyncSliderToTarget(Slider slider, Label label, float target, System.Func<float, string> format)
-        {
-            if (slider == null) return;
-            if (Mathf.Approximately(slider.value, target)) return;
-            slider.SetValueWithoutNotify(target);
-            if (label != null) label.text = format(target);
-        }
-
         private void ResolveElements()
         {
             if (_document == null || _document.rootVisualElement == null) return;
-            var root = _document.rootVisualElement;
-            _tempSlider = root.Q<Slider>(temperatureSliderName);
-            _precipSlider = root.Q<Slider>(precipitationSliderName);
-            _hedgeRemovalSlider = root.Q<Slider>(hedgeRemovalSliderName);
-            _inputIntensitySlider = root.Q<Slider>(inputIntensitySliderName);
-            _maecSlider = root.Q<Slider>(maecCoverageSliderName);
-            _pseSlider = root.Q<Slider>(pseRateSliderName);
-            _horizonSlider = root.Q<SliderInt>(horizonSliderName);
-            _coverCropsSlider = root.Q<Slider>(coverCropsSliderName);
-            _residueRestitutionSlider = root.Q<Slider>(residueRestitutionSliderName);
+            var r = _document.rootVisualElement;
+            _nitrogen = r.Q<Slider>(nitrogenSliderName);
+            _pesticide = r.Q<Slider>(pesticideSliderName);
+            _tillage = r.Q<Slider>(tillageSliderName);
+            _cover = r.Q<Slider>(coverCropsSliderName);
+            _hedge = r.Q<Slider>(hedgeSliderName);
+            _grassland = r.Q<Slider>(grasslandSliderName);
+            _temp = r.Q<Slider>(temperatureSliderName);
+            _precip = r.Q<Slider>(precipitationSliderName);
 
-            _tempLabel = root.Q<Label>(temperatureValueLabelName);
-            _precipLabel = root.Q<Label>(precipitationValueLabelName);
-            _hedgeRemovalLabel = root.Q<Label>(hedgeRemovalValueLabelName);
-            _inputIntensityLabel = root.Q<Label>(inputIntensityValueLabelName);
-            _maecLabel = root.Q<Label>(maecCoverageValueLabelName);
-            _pseLabel = root.Q<Label>(pseRateValueLabelName);
-            _horizonLabel = root.Q<Label>(horizonValueLabelName);
-            _coverCropsLabel = root.Q<Label>(coverCropsValueLabelName);
-            _residueRestitutionLabel = root.Q<Label>(residueRestitutionValueLabelName);
+            _nitrogenL = r.Q<Label>(nitrogenValueName);
+            _pesticideL = r.Q<Label>(pesticideValueName);
+            _tillageL = r.Q<Label>(tillageValueName);
+            _coverL = r.Q<Label>(coverCropsValueName);
+            _hedgeL = r.Q<Label>(hedgeValueName);
+            _grasslandL = r.Q<Label>(grasslandValueName);
+            _tempL = r.Q<Label>(temperatureValueName);
+            _precipL = r.Q<Label>(precipitationValueName);
 
-            if (_tempSlider == null || _precipSlider == null || _hedgeRemovalSlider == null
-                || _inputIntensitySlider == null || _maecSlider == null || _pseSlider == null
-                || _horizonSlider == null || _coverCropsSlider == null || _residueRestitutionSlider == null)
-            {
-                SimLogger.DebugLog("[ScenarioControlsBinding] one or more scenario sliders not found — check UXML names");
-            }
+            if (_nitrogen == null || _pesticide == null || _tillage == null || _cover == null
+                || _hedge == null || _grassland == null || _temp == null || _precip == null)
+                SimLogger.DebugLog("[ScenarioControlsBinding] un ou plusieurs sliders introuvables — vérifier les noms UXML");
         }
 
-        private void InitializeFromScenario()
+        private void InitFromScenario()
         {
-            if (runner == null || runner.Scenario == null)
-            {
-                SimLogger.DebugLog("[ScenarioControlsBinding] runner or scenario not available, skipping init");
-                return;
-            }
-            var s = runner.Scenario;
-            SetSlider(_tempSlider, _tempLabel, (float)s.TemperatureAnomalyC.Current, FormatTemperature);
-            SetSlider(_precipSlider, _precipLabel, (float)s.PrecipitationAnomalyPercent.Current, FormatPercentSigned);
-            SetSlider(_hedgeRemovalSlider, _hedgeRemovalLabel, (float)s.HedgeRemovalRate.Current, FormatHedgeRemoval);
-            SetSlider(_inputIntensitySlider, _inputIntensityLabel, (float)s.InputIntensityFactor.Current, FormatIntensity);
-            SetSlider(_maecSlider, _maecLabel, (float)s.MaecCoveragePercent.Current, FormatPercent);
-            SetSlider(_pseSlider, _pseLabel, (float)s.PseSubsidyRate.Current, FormatPseRate);
-            SetSliderInt(_horizonSlider, _horizonLabel, s.HorizonInDays, FormatHorizon);
-            SetSlider(_coverCropsSlider, _coverCropsLabel, (float)s.CoverCropsCoveragePercent.Current, FormatPercent);
-            SetSlider(_residueRestitutionSlider, _residueRestitutionLabel, (float)s.ResidueRestitutionPercent.Current, FormatPercent);
+            var s = runner != null ? runner.Scenario : null;
+            if (s == null) { SimLogger.DebugLog("[ScenarioControlsBinding] scénario indisponible, init ignorée"); return; }
+            Set(_nitrogen, _nitrogenL, (float)s.NitrogenDoseKgPerHaPerYear, FormatN);
+            Set(_pesticide, _pesticideL, (float)s.PesticideIntensity, FormatIft);
+            Set(_tillage, _tillageL, (float)s.TillageIntensity, FormatTillage);
+            Set(_cover, _coverL, (float)s.CoverCropsCoveragePercent, FormatPercent);
+            Set(_hedge, _hedgeL, (float)s.HedgeManagementMetersPerHaPerYear, FormatHedge);
+            Set(_grassland, _grasslandL, (float)(s.GrasslandFraction * 100.0), FormatPercent);
+            Set(_temp, _tempL, (float)s.TemperatureAnomalyC, FormatTemp);
+            Set(_precip, _precipL, (float)((s.PrecipitationFactor - 1.0) * 100.0), FormatPercentSigned);
         }
 
         private void WireCallbacks()
         {
-            if (_wiredCallbacks) return;
-            if (_tempSlider != null) _tempSlider.RegisterValueChangedCallback(OnTempChanged);
-            if (_precipSlider != null) _precipSlider.RegisterValueChangedCallback(OnPrecipChanged);
-            if (_hedgeRemovalSlider != null) _hedgeRemovalSlider.RegisterValueChangedCallback(OnHedgeRemovalChanged);
-            if (_inputIntensitySlider != null) _inputIntensitySlider.RegisterValueChangedCallback(OnInputIntensityChanged);
-            if (_maecSlider != null) _maecSlider.RegisterValueChangedCallback(OnMaecChanged);
-            if (_pseSlider != null) _pseSlider.RegisterValueChangedCallback(OnPseChanged);
-            if (_horizonSlider != null) _horizonSlider.RegisterValueChangedCallback(OnHorizonChanged);
-            if (_coverCropsSlider != null) _coverCropsSlider.RegisterValueChangedCallback(OnCoverCropsChanged);
-            if (_residueRestitutionSlider != null) _residueRestitutionSlider.RegisterValueChangedCallback(OnResidueRestitutionChanged);
-            _wiredCallbacks = true;
+            if (_wired) return;
+            if (_nitrogen != null) _nitrogen.RegisterValueChangedCallback(OnNitrogen);
+            if (_pesticide != null) _pesticide.RegisterValueChangedCallback(OnPesticide);
+            if (_tillage != null) _tillage.RegisterValueChangedCallback(OnTillage);
+            if (_cover != null) _cover.RegisterValueChangedCallback(OnCover);
+            if (_hedge != null) _hedge.RegisterValueChangedCallback(OnHedge);
+            if (_grassland != null) _grassland.RegisterValueChangedCallback(OnGrassland);
+            if (_temp != null) _temp.RegisterValueChangedCallback(OnTemp);
+            if (_precip != null) _precip.RegisterValueChangedCallback(OnPrecip);
+            _wired = true;
         }
 
         private void UnwireCallbacks()
         {
-            if (!_wiredCallbacks) return;
-            if (_tempSlider != null) _tempSlider.UnregisterValueChangedCallback(OnTempChanged);
-            if (_precipSlider != null) _precipSlider.UnregisterValueChangedCallback(OnPrecipChanged);
-            if (_hedgeRemovalSlider != null) _hedgeRemovalSlider.UnregisterValueChangedCallback(OnHedgeRemovalChanged);
-            if (_inputIntensitySlider != null) _inputIntensitySlider.UnregisterValueChangedCallback(OnInputIntensityChanged);
-            if (_maecSlider != null) _maecSlider.UnregisterValueChangedCallback(OnMaecChanged);
-            if (_pseSlider != null) _pseSlider.UnregisterValueChangedCallback(OnPseChanged);
-            if (_horizonSlider != null) _horizonSlider.UnregisterValueChangedCallback(OnHorizonChanged);
-            if (_coverCropsSlider != null) _coverCropsSlider.UnregisterValueChangedCallback(OnCoverCropsChanged);
-            if (_residueRestitutionSlider != null) _residueRestitutionSlider.UnregisterValueChangedCallback(OnResidueRestitutionChanged);
-            _wiredCallbacks = false;
+            if (!_wired) return;
+            if (_nitrogen != null) _nitrogen.UnregisterValueChangedCallback(OnNitrogen);
+            if (_pesticide != null) _pesticide.UnregisterValueChangedCallback(OnPesticide);
+            if (_tillage != null) _tillage.UnregisterValueChangedCallback(OnTillage);
+            if (_cover != null) _cover.UnregisterValueChangedCallback(OnCover);
+            if (_hedge != null) _hedge.UnregisterValueChangedCallback(OnHedge);
+            if (_grassland != null) _grassland.UnregisterValueChangedCallback(OnGrassland);
+            if (_temp != null) _temp.UnregisterValueChangedCallback(OnTemp);
+            if (_precip != null) _precip.UnregisterValueChangedCallback(OnPrecip);
+            _wired = false;
         }
 
-        // ---- Callbacks ----
+        // ---- Leviers → ApplyDecision (run réel ; divergence vs fantôme = valeur de la décision) ----
 
-        private void OnTempChanged(ChangeEvent<float> evt)
+        private void OnNitrogen(ChangeEvent<float> e)
         {
-            if (_tempLabel != null) _tempLabel.text = FormatTemperature(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.TemperatureAnomalyC.SetTarget(evt.newValue, transitionDurationDays);
+            if (_nitrogenL != null) _nitrogenL.text = FormatN(e.newValue);
+            if (runner != null) runner.ApplyDecision(DecisionLever.NitrogenDose, e.newValue);
         }
 
-        private void OnPrecipChanged(ChangeEvent<float> evt)
+        private void OnPesticide(ChangeEvent<float> e)
         {
-            if (_precipLabel != null) _precipLabel.text = FormatPercentSigned(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.PrecipitationAnomalyPercent.SetTarget(evt.newValue, transitionDurationDays);
+            if (_pesticideL != null) _pesticideL.text = FormatIft(e.newValue);
+            if (runner != null) runner.ApplyDecision(DecisionLever.Pesticide, e.newValue);
         }
 
-        private void OnHedgeRemovalChanged(ChangeEvent<float> evt)
+        private void OnTillage(ChangeEvent<float> e)
         {
-            if (_hedgeRemovalLabel != null) _hedgeRemovalLabel.text = FormatHedgeRemoval(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.HedgeRemovalRate.SetTarget(evt.newValue, transitionDurationDays);
+            if (_tillageL != null) _tillageL.text = FormatTillage(e.newValue);
+            if (runner != null) runner.ApplyDecision(DecisionLever.Tillage, e.newValue);
         }
 
-        private void OnInputIntensityChanged(ChangeEvent<float> evt)
+        private void OnCover(ChangeEvent<float> e)
         {
-            if (_inputIntensityLabel != null) _inputIntensityLabel.text = FormatIntensity(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.InputIntensityFactor.SetTarget(evt.newValue, transitionDurationDays);
+            if (_coverL != null) _coverL.text = FormatPercent(e.newValue);
+            if (runner != null) runner.ApplyDecision(DecisionLever.CoverCrops, e.newValue);
         }
 
-        private void OnMaecChanged(ChangeEvent<float> evt)
+        private void OnHedge(ChangeEvent<float> e)
         {
-            if (_maecLabel != null) _maecLabel.text = FormatPercent(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.MaecCoveragePercent.SetTarget(evt.newValue, transitionDurationDays);
+            if (_hedgeL != null) _hedgeL.text = FormatHedge(e.newValue);
+            if (runner != null) runner.ApplyDecision(DecisionLever.HedgeManagement, e.newValue);
         }
 
-        private void OnPseChanged(ChangeEvent<float> evt)
+        private void OnGrassland(ChangeEvent<float> e)
         {
-            if (_pseLabel != null) _pseLabel.text = FormatPseRate(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.PseSubsidyRate.SetTarget(evt.newValue, transitionDurationDays);
+            if (_grasslandL != null) _grasslandL.text = FormatPercent(e.newValue);
+            if (runner != null) runner.ApplyDecision(DecisionLever.Grassland, e.newValue / 100.0);
         }
 
-        private void OnHorizonChanged(ChangeEvent<int> evt)
+        // ---- Climat → SetClimate (appliqué aux DEUX runs) ----
+
+        private void OnTemp(ChangeEvent<float> e)
         {
-            if (_horizonLabel != null) _horizonLabel.text = FormatHorizon(evt.newValue);
+            if (_tempL != null) _tempL.text = FormatTemp(e.newValue);
             if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.HorizonInDays = evt.newValue;
+            runner.SetClimate(e.newValue, runner.Scenario.PrecipitationFactor);
         }
 
-        private void OnCoverCropsChanged(ChangeEvent<float> evt)
+        private void OnPrecip(ChangeEvent<float> e)
         {
-            if (_coverCropsLabel != null) _coverCropsLabel.text = FormatPercent(evt.newValue);
+            if (_precipL != null) _precipL.text = FormatPercentSigned(e.newValue);
             if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.CoverCropsCoveragePercent.SetTarget(evt.newValue, transitionDurationDays);
-        }
-
-        private void OnResidueRestitutionChanged(ChangeEvent<float> evt)
-        {
-            if (_residueRestitutionLabel != null) _residueRestitutionLabel.text = FormatPercent(evt.newValue);
-            if (runner == null || runner.Scenario == null) return;
-            runner.Scenario.ResidueRestitutionPercent.SetTarget(evt.newValue, transitionDurationDays);
+            runner.SetClimate(runner.Scenario.TemperatureAnomalyC, 1.0 + e.newValue / 100.0);
         }
 
         /// <summary>
-        /// Snaps the EXOGENOUS sliders (climate, public policy, horizon)
-        /// to the supplied target values without triggering callbacks —
-        /// so this method alone does NOT push anything to the
-        /// ScenarioContext. Used by <see cref="ScenarioPresetsBinding"/>
-        /// after it has applied a preset: visual snap of the climate /
-        /// policy / horizon sliders while the model interpolates.
-        /// <para>
-        /// The farmer-controlled sliders (hedge removal, input intensity)
-        /// are deliberately NOT touched here — they remain under user
-        /// control regardless of which preset is loaded.
-        /// </para>
+        /// Re-synchronise tous les sliders depuis le scénario courant sans déclencher
+        /// les callbacks. Appelé après l'application d'un preset, et à chaque tick
+        /// pour refléter un changement venu d'ailleurs (ex. recommandation acceptée).
+        /// Un slider que l'utilisateur vient de bouger reste où il l'a mis (le
+        /// scénario y est déjà → snap sans effet).
         /// </summary>
-        public void SnapToPresetExogenousValues(
-            double temperatureAnomalyC,
-            double precipitationAnomalyPercent,
-            double maecCoveragePercent,
-            double pseSubsidyRate,
-            int horizonInDays)
+        public void SyncAllFromScenario()
         {
-            SetSlider(_tempSlider, _tempLabel, (float)temperatureAnomalyC, FormatTemperature);
-            SetSlider(_precipSlider, _precipLabel, (float)precipitationAnomalyPercent, FormatPercentSigned);
-            SetSlider(_maecSlider, _maecLabel, (float)maecCoveragePercent, FormatPercent);
-            SetSlider(_pseSlider, _pseLabel, (float)pseSubsidyRate, FormatPseRate);
-            SetSliderInt(_horizonSlider, _horizonLabel, horizonInDays, FormatHorizon);
+            var s = runner != null ? runner.Scenario : null;
+            if (s == null) return;
+            Snap(_nitrogen, _nitrogenL, (float)s.NitrogenDoseKgPerHaPerYear, FormatN);
+            Snap(_pesticide, _pesticideL, (float)s.PesticideIntensity, FormatIft);
+            Snap(_tillage, _tillageL, (float)s.TillageIntensity, FormatTillage);
+            Snap(_cover, _coverL, (float)s.CoverCropsCoveragePercent, FormatPercent);
+            Snap(_hedge, _hedgeL, (float)s.HedgeManagementMetersPerHaPerYear, FormatHedge);
+            Snap(_grassland, _grasslandL, (float)(s.GrasslandFraction * 100.0), FormatPercent);
+            Snap(_temp, _tempL, (float)s.TemperatureAnomalyC, FormatTemp);
+            Snap(_precip, _precipL, (float)((s.PrecipitationFactor - 1.0) * 100.0), FormatPercentSigned);
         }
 
-        // ---- Formatting (InvariantCulture so decimal sep is locale-stable) ----
-
-        private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
-
-        private static string FormatTemperature(float v) => v.ToString("+0.0;-0.0;0.0", Inv) + " °C";
-        private static string FormatPercentSigned(float v) => v.ToString("+0;-0;0", Inv) + " %";
-        private static string FormatPercent(float v) => v.ToString("0", Inv) + " %";
-        private static string FormatHedgeRemoval(float v) => v.ToString("0.0", Inv) + " m/ha/an";
-        private static string FormatIntensity(float v) => v.ToString("0.0", Inv) + "× réf.";
-        private static string FormatPseRate(float v) => v.ToString("0.00", Inv) + " €/m/an";
-        private static string FormatHorizon(int v) => v.ToString(Inv) + " j";
+        private void OnTickSync() => SyncAllFromScenario();
 
         // ---- Helpers ----
 
-        private static void SetSlider(Slider slider, Label label, float value, System.Func<float, string> format)
+        private static void Set(Slider sl, Label lb, float v, System.Func<float, string> fmt)
         {
-            if (slider != null) slider.SetValueWithoutNotify(value);
-            if (label != null) label.text = format(value);
+            if (sl != null) sl.SetValueWithoutNotify(v);
+            if (lb != null) lb.text = fmt(v);
         }
 
-        private static void SetSliderInt(SliderInt slider, Label label, int value, System.Func<int, string> format)
+        private static void Snap(Slider sl, Label lb, float v, System.Func<float, string> fmt)
         {
-            if (slider != null) slider.SetValueWithoutNotify(value);
-            if (label != null) label.text = format(value);
+            if (sl == null) return;
+            if (Mathf.Approximately(sl.value, v)) return;
+            sl.SetValueWithoutNotify(v);
+            if (lb != null) lb.text = fmt(v);
         }
+
+        private static string FormatN(float v) => v.ToString("0", Inv) + " kgN/ha";
+        private static string FormatIft(float v) => "IFT " + v.ToString("0.0", Inv);
+        private static string FormatTillage(float v) => v >= 0.85f ? "labour" : (v <= 0.15f ? "semis direct" : v.ToString("0.0", Inv) + " (réduit)");
+        private static string FormatPercent(float v) => v.ToString("0", Inv) + " %";
+        private static string FormatPercentSigned(float v) => v.ToString("+0;-0;0", Inv) + " %";
+        private static string FormatHedge(float v) => v.ToString("+0.0;-0.0;0.0", Inv) + " m/ha/an";
+        private static string FormatTemp(float v) => v.ToString("+0.0;-0.0;0.0", Inv) + " °C";
     }
 }

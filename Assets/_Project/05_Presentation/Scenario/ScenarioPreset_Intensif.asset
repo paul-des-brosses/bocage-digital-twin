@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4ac0727e4587e94390b6b11e3fbe34f, type: 3}
   m_Name: ScenarioPreset_Intensif
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Scenario.ScenarioPresetDefinition
-  id: rcp45-politique
-  displayName: "RCP4.5 + Politique forte"
-  description: "Climat stress\xE9 RCP4.5 ET soutien public maximal. Cadre de test
-    \ 'l'\xC9tat compense-t-il le climat ?' — l'agriculteur joue ses pratiques."
-  temperatureAnomalyC: 2
-  precipitationAnomalyPercent: -20
-  maecCoveragePercent: 100
-  pseSubsidyRate: 1
-  horizonInDays: 1825
+  id: intensif
+  displayName: "Intensif"
+  description: "Forte charge d'intrants et arrachage de haies. Rendement pouss\xE9, co\xFBt \xE9cologique \xE9lev\xE9."
+  temperatureAnomalyC: 0
+  precipitationAnomalyPercent: 0
+  nitrogenDoseKgPerHa: 180
+  pesticideIntensity: 1.8
+  tillageIntensity: 1
+  coverCropsPercent: 0
+  hedgeManagementMetersPerHaPerYear: -5
+  grasslandFraction: 0

@@ -123,24 +123,6 @@
                         <ui:Slider name="precipitation-anomaly-slider" low-value="-60" high-value="20" value="0" class="scenario-slider" show-input-field="true" tooltip="−60 % (sécheresse extrême) à +20 % (excès humidité). Référence Perche ≈ 730 mm/an." />
                     </ui:VisualElement>
 
-                    <ui:Label text="Politiques publiques (cadre)" class="scenario-section-title scenario-section-title--policy" tooltip="Cadre financier MAEC + PSE défini par l'État et la PAC. Les taux ne sont pas choisis par l'agriculteur ; il peut seulement s'engager ou non dans ces dispositifs." />
-
-                    <ui:VisualElement class="scenario-control">
-                        <ui:VisualElement class="scenario-control-header">
-                            <ui:Label text="Couverture MAEC" class="scenario-control-label" />
-                            <ui:Label name="maec-coverage-value" text="0 %" class="scenario-control-value" />
-                        </ui:VisualElement>
-                        <ui:Slider name="maec-coverage-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de la ferme sous contrat MAEC (% SAU). Réduit le coût d'intrants jusqu'à −30 % à 100 %." />
-                    </ui:VisualElement>
-
-                    <ui:VisualElement class="scenario-control">
-                        <ui:VisualElement class="scenario-control-header">
-                            <ui:Label text="Taux PSE" class="scenario-control-label" />
-                            <ui:Label name="pse-rate-value" text="0.00 €/m/an" class="scenario-control-value" />
-                        </ui:VisualElement>
-                        <ui:Slider name="pse-rate-slider" low-value="0" high-value="1" value="0" class="scenario-slider" show-input-field="true" tooltip="Paiement pour Services Environnementaux par mètre de haie. 0.30 à 0.80 selon contrat MAEC linéaire + PNR Perche." />
-                    </ui:VisualElement>
-
                     <!--
                     Initial conditions (sub-étape 8c.4) — state of the bocage
                     at day 0. Editable only while CurrentDay == 0; locked once
@@ -234,18 +216,26 @@
 
                         <ui:VisualElement class="scenario-control">
                             <ui:VisualElement class="scenario-control-header">
-                                <ui:Label text="Taux d'arrachage de haies" class="scenario-control-label" />
-                                <ui:Label name="hedge-removal-value" text="0.0 m/ha/an" class="scenario-control-value" />
+                                <ui:Label text="Dose d'azote" class="scenario-control-label" />
+                                <ui:Label name="nitrogen-dose-value" text="120 kgN/ha" class="scenario-control-value" />
                             </ui:VisualElement>
-                            <ui:Slider name="hedge-removal-slider" low-value="0" high-value="10" value="0" class="scenario-slider" show-input-field="true" tooltip="0 = aucune destruction. 5 = remembrement agressif (Perche 1970-90)." />
+                            <ui:Slider name="nitrogen-dose-slider" low-value="0" high-value="250" value="120" class="scenario-slider" show-input-field="true" tooltip="Azote minéral apporté (kgN/ha/an). 0 = aucun, ~120 = conventionnel. La dose optimale dépend du sol et du climat." />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
                             <ui:VisualElement class="scenario-control-header">
-                                <ui:Label text="Intensité d'intrants" class="scenario-control-label" />
-                                <ui:Label name="input-intensity-value" text="1.0× réf." class="scenario-control-value" />
+                                <ui:Label text="Traitements phyto (IFT)" class="scenario-control-label" />
+                                <ui:Label name="pesticide-value" text="IFT 1.0" class="scenario-control-value" />
                             </ui:VisualElement>
-                            <ui:Slider name="input-intensity-slider" low-value="0.5" high-value="2" value="1" class="scenario-slider" show-input-field="true" tooltip="0.5 = bio extensif (engrais/phytos −50 %). 1 = conventionnel. 2 = intensif." />
+                            <ui:Slider name="pesticide-slider" low-value="0" high-value="2" value="1" class="scenario-slider" show-input-field="true" tooltip="Intensité de traitement (IFT relatif). 0 = zéro phyto, 1 = conventionnel. IFT ≤ 0.7 déclenche le paiement MAEC." />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="scenario-control">
+                            <ui:VisualElement class="scenario-control-header">
+                                <ui:Label text="Travail du sol" class="scenario-control-label" />
+                                <ui:Label name="tillage-value" text="labour" class="scenario-control-value" />
+                            </ui:VisualElement>
+                            <ui:Slider name="tillage-slider" low-value="0" high-value="1" value="1" class="scenario-slider" show-input-field="true" tooltip="1 = labour conventionnel, 0 = semis direct. Réduire le travail favorise le carbone et la vie du sol." />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
@@ -253,25 +243,23 @@
                                 <ui:Label text="Couverts d'interculture" class="scenario-control-label" />
                                 <ui:Label name="cover-crops-value" text="0 %" class="scenario-control-value" />
                             </ui:VisualElement>
-                            <ui:Slider name="cover-crops-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de la sole semée en couverts entre cultures. 0 = sol nu. 100 = couverts intégraux (Solagro Afterres 2050)." />
+                            <ui:Slider name="cover-crops-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de la sole semée en couverts entre cultures. 0 = sol nu, 100 = couverts intégraux (Solagro Afterres 2050)." />
                         </ui:VisualElement>
 
                         <ui:VisualElement class="scenario-control">
                             <ui:VisualElement class="scenario-control-header">
-                                <ui:Label text="Restitution des résidus" class="scenario-control-label" />
-                                <ui:Label name="residue-restitution-value" text="0 %" class="scenario-control-value" />
+                                <ui:Label text="Gestion des haies" class="scenario-control-label" />
+                                <ui:Label name="hedge-management-value" text="0.0 m/ha/an" class="scenario-control-value" />
                             </ui:VisualElement>
-                            <ui:Slider name="residue-restitution-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part des résidus de récolte laissés au sol (vs. exportés en paille/ensilage)." />
+                            <ui:Slider name="hedge-management-slider" low-value="-10" high-value="10" value="0" class="scenario-slider" show-input-field="true" tooltip="Solde net annuel : positif = plantation, négatif = arrachage (remembrement Perche ≈ -5). Pilote la densité de haie (santé de la flore + habitat)." />
                         </ui:VisualElement>
-
-                        <ui:Label text="Horizon de simulation" class="scenario-section-title scenario-section-title--decision" tooltip="Durée totale du run sur laquelle l'agriculteur veut projeter sa stratégie." />
 
                         <ui:VisualElement class="scenario-control">
                             <ui:VisualElement class="scenario-control-header">
-                                <ui:Label text="Durée du run" class="scenario-control-label" />
-                                <ui:Label name="horizon-value" text="365 j" class="scenario-control-value" />
+                                <ui:Label text="Part de prairie" class="scenario-control-label" />
+                                <ui:Label name="grassland-value" text="0 %" class="scenario-control-value" />
                             </ui:VisualElement>
-                            <ui:SliderInt name="horizon-slider" low-value="30" high-value="1825" value="365" class="scenario-slider" show-input-field="true" tooltip="30 j (1 mois) à 1825 j (5 ans). Utilisé par skip-to-end." />
+                            <ui:Slider name="grassland-slider" low-value="0" high-value="100" value="0" class="scenario-slider" show-input-field="true" tooltip="Part de l'assolement en prairie permanente. Revenu fourrager stable (élevage) + bonus carbone/biodiversité, au prix d'un coût d'opportunité vs culture." />
                         </ui:VisualElement>
 
                         <!--
