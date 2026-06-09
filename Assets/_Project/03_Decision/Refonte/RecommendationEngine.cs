@@ -29,17 +29,17 @@ namespace Bocage.Decision.Refonte
             switch (kind)
             {
                 case EventKind.HydricStress:
-                    return new[] { DecisionLever.CoverCrops, DecisionLever.Tillage };
+                    return new[] { DecisionLever.CoverCrops, DecisionLever.Tillage, DecisionLever.Grassland };
                 case EventKind.SoilCarbonLow:
-                    return new[] { DecisionLever.CoverCrops, DecisionLever.Tillage };
+                    return new[] { DecisionLever.CoverCrops, DecisionLever.Tillage, DecisionLever.Grassland };
                 case EventKind.FaunaAnomaly:
-                    return new[] { DecisionLever.Pesticide, DecisionLever.NitrogenDose, DecisionLever.HedgeManagement };
+                    return new[] { DecisionLever.Pesticide, DecisionLever.NitrogenDose, DecisionLever.HedgeManagement, DecisionLever.Grassland };
                 case EventKind.NitrogenDeficiency:
                     return new[] { DecisionLever.NitrogenDose };
                 case EventKind.NitrogenExcess:
                     return new[] { DecisionLever.NitrogenDose };
                 case EventKind.LowProfitability:
-                    return new[] { DecisionLever.NitrogenDose, DecisionLever.Pesticide };
+                    return new[] { DecisionLever.NitrogenDose, DecisionLever.Pesticide, DecisionLever.Grassland };
                 default:
                     return Array.Empty<DecisionLever>();
             }

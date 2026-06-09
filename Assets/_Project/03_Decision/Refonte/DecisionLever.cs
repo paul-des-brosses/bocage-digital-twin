@@ -9,15 +9,16 @@ namespace Bocage.Decision.Refonte
         Pesticide,
         Tillage,
         CoverCrops,
-        HedgeManagement
+        HedgeManagement,
+        Grassland
     }
 
     /// <summary>
     /// Plage, lecture et écriture de chaque levier sur un <see cref="ScenarioContext"/>.
     /// Conformément à la règle « reco ⊆ leviers », ces mêmes leviers sont pilotables
     /// directement (sliders) ; le moteur ne fait qu'en proposer un niveau optimal.
-    /// (La part de prairie n'est pas encore câblée dans le modèle — exclue des
-    /// candidats pour l'instant.)
+    /// La part de prairie (g) est désormais un levier à part entière (S0a) :
+    /// elle arbitre l'assolement culture/prairie permanente.
     /// </summary>
     public static class DecisionLevers
     {
@@ -30,6 +31,7 @@ namespace Bocage.Decision.Refonte
                 case DecisionLever.Tillage: return (0.0, 1.0);
                 case DecisionLever.CoverCrops: return (0.0, 100.0);
                 case DecisionLever.HedgeManagement: return (-10.0, 10.0);
+                case DecisionLever.Grassland: return (0.0, 1.0);
                 default: return (0.0, 1.0);
             }
         }
@@ -43,6 +45,7 @@ namespace Bocage.Decision.Refonte
                 case DecisionLever.Tillage: return scenario.TillageIntensity;
                 case DecisionLever.CoverCrops: return scenario.CoverCropsCoveragePercent;
                 case DecisionLever.HedgeManagement: return scenario.HedgeManagementMetersPerHaPerYear;
+                case DecisionLever.Grassland: return scenario.GrasslandFraction;
                 default: return 0.0;
             }
         }
@@ -56,6 +59,7 @@ namespace Bocage.Decision.Refonte
                 case DecisionLever.Tillage: scenario.TillageIntensity = value; break;
                 case DecisionLever.CoverCrops: scenario.CoverCropsCoveragePercent = value; break;
                 case DecisionLever.HedgeManagement: scenario.HedgeManagementMetersPerHaPerYear = value; break;
+                case DecisionLever.Grassland: scenario.GrasslandFraction = value; break;
             }
         }
     }

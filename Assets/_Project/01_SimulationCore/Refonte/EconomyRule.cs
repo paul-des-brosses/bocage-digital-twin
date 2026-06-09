@@ -13,6 +13,9 @@ namespace Bocage.SimulationCore.Refonte
     /// L'écologie « paie » donc en euros traçables. Déterministe, sans I/O.
     /// Sources : Agreste/CerFrance (prix, charges), PAC 2025, CIVAM (MAEC),
     /// Label Bas-Carbone (crédit).
+    /// <para>La part de prairie g pondère le revenu et les coûts d'intrants
+    /// (culture sur 1−g, fourrage résilient sur g) — un coût d'opportunité qui
+    /// crée un optimum intérieur (S0a).</para>
     /// </summary>
     public sealed class EconomyRule
     {
@@ -28,16 +31,33 @@ namespace Bocage.SimulationCore.Refonte
         public const double CarbonReferenceTPerHa = 50.0;
         public const double CarbonPaymentEurosPerTonneAboveBaseline = 6.0; // crédit carbone (services)
 
+        // --- Prairie permanente (part d'assolement g) ---
+        public const double ForageGrossRevenueEurosPerHa = 900.0;   // produit brut fourrage en bocage d'élevage (fourrage + concentrés évités, Idele/CerFrance Normandie)
+        public const double ForageWaterResilienceFloor = 0.6;       // le fourrage garde ≥60% du produit même en sécheresse (racines profondes, INRAE)
+        public const double GrasslandUpkeepEurosPerHa = 150.0;      // fauche/clôture/sursemis amorti (CerFrance)
+
         private const double DaysPerYear = 365.0;
 
         /// <summary>Marge annualisée (€/ha/an) à l'état courant. Peut être négative (année déficitaire).</summary>
         public static double AnnualMarginEurosPerHa(EcosystemModel model, ScenarioContext scenario)
         {
-            double revenue = model.CropYieldTPerHa * CropPriceEurosPerTonne;
+            // Assolement : (1−g) en culture annuelle, g en prairie permanente.
+            double g = scenario.GrasslandFraction;
+            if (g < 0.0) g = 0.0; else if (g > 1.0) g = 1.0;
+            double cropShare = 1.0 - g;
 
-            double costNitrogen = scenario.NitrogenDoseKgPerHaPerYear * NitrogenPriceEurosPerKg;
-            double costPesticide = scenario.PesticideIntensity * PesticideCostEurosPerUnit;
-            double costTillage = scenario.TillageIntensity * TillageFuelCostEurosPerYear;
+            // Revenu : culture sur (1−g) + fourrage sur g. Le fourrage est résilient
+            // (plancher) mais pas immunisé à la sécheresse (via Ks = YieldRule.WaterFactor).
+            double forageResilience = ForageWaterResilienceFloor
+                + (1.0 - ForageWaterResilienceFloor) * YieldRule.WaterFactor(model);
+            double revenue = cropShare * model.CropYieldTPerHa * CropPriceEurosPerTonne
+                + g * ForageGrossRevenueEurosPerHa * forageResilience;
+
+            // Coûts d'intrants : sur la seule part cultivée ; entretien sur la part en herbe.
+            double costNitrogen = cropShare * scenario.NitrogenDoseKgPerHaPerYear * NitrogenPriceEurosPerKg;
+            double costPesticide = cropShare * scenario.PesticideIntensity * PesticideCostEurosPerUnit;
+            double costTillage = cropShare * scenario.TillageIntensity * TillageFuelCostEurosPerYear;
+            double costGrassland = g * GrasslandUpkeepEurosPerHa;
 
             double pse = model.HedgerowDensityMPerHa * PseRateEurosPerMeter;
             double maec = scenario.PesticideIntensity <= MaecIftThreshold ? MaecPaymentEurosPerHa : 0.0;
@@ -45,7 +65,7 @@ namespace Bocage.SimulationCore.Refonte
             double carbonPayment = carbonAbove > 0.0 ? carbonAbove * CarbonPaymentEurosPerTonneAboveBaseline : 0.0;
 
             return revenue
-                - costNitrogen - costPesticide - costTillage - BaseChargesEurosPerHaPerYear
+                - costNitrogen - costPesticide - costTillage - costGrassland - BaseChargesEurosPerHaPerYear
                 + PacBaseEurosPerHa + pse + maec + carbonPayment;
         }
 

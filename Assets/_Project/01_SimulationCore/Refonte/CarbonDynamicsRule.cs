@@ -36,6 +36,7 @@ namespace Bocage.SimulationCore.Refonte
         public const double CoverCropInputCoeff = 1.2;          // à 100 % de couverts (Solagro)
         public const double YieldReferenceTPerHa = 5.5;
         public const double HedgeDensityReferenceMPerHa = 90.0;
+        public const double GrasslandCarbonInputTPerHaPerYear = 2.5;  // litière racinaire prairie permanente (Soussana/INRAE)
 
         private const double DaysPerYear = 365.0;
 
@@ -52,10 +53,16 @@ namespace Bocage.SimulationCore.Refonte
         /// <summary>Apports carbone annuels i (tC/ha/an) : baseline + résidus(Y) + flore(densité) + couverts.</summary>
         public static double CarbonInputsTPerHaPerYear(EcosystemModel model, ScenarioContext scenario)
         {
+            // Résidus de culture et couverts ne concernent que la part cultivée (1−g) ;
+            // la prairie permanente apporte sa propre litière racinaire (forte, g).
+            double g = scenario.GrasslandFraction;
+            if (g < 0.0) g = 0.0; else if (g > 1.0) g = 1.0;
+            double cropShare = 1.0 - g;
             return BaselineInputTPerHaPerYear
-                + ResidueInputCoeff * (model.CropYieldTPerHa / YieldReferenceTPerHa)
+                + cropShare * ResidueInputCoeff * (model.CropYieldTPerHa / YieldReferenceTPerHa)
                 + FloraInputCoeff * (model.HedgerowDensityMPerHa / HedgeDensityReferenceMPerHa)
-                + CoverCropInputCoeff * (scenario.CoverCropsCoveragePercent / 100.0);
+                + cropShare * CoverCropInputCoeff * (scenario.CoverCropsCoveragePercent / 100.0)
+                + g * GrasslandCarbonInputTPerHaPerYear;
         }
 
         public void Apply(EcosystemModel model, ScenarioContext scenario)
