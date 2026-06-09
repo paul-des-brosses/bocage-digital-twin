@@ -69,6 +69,9 @@ namespace Bocage.Presentation.Refonte
         public int CurrentDay => _session?.CurrentDay ?? 0;
         public bool IsRunning => _tickRoutine != null;
 
+        /// <summary>Scénario vivant (lecture pour init des sliders ; écriture des leviers via <see cref="ApplyDecision"/>, du climat via <see cref="SetClimate"/>).</summary>
+        public ScenarioContext Scenario => _session?.Scenario;
+
         public float TicksPerSecond
         {
             get => ticksPerSecond;
@@ -186,6 +189,10 @@ namespace Bocage.Presentation.Refonte
         /// <summary>Applique une décision (lève un levier sur le run réel ; le fantôme reste gelé).</summary>
         public void ApplyDecision(DecisionLever lever, double level, double investmentEurosPerHa = 0.0)
             => _session?.ApplyDecision(lever, level, investmentEurosPerHa);
+
+        /// <summary>Applique le forçage climatique (exogène) aux deux runs. Cf <see cref="SimulationSession.SetClimate"/>.</summary>
+        public void SetClimate(double temperatureAnomalyC, double precipitationFactor)
+            => _session?.SetClimate(temperatureAnomalyC, precipitationFactor);
 
         /// <summary>Recommande pour un type d'événement (à la demande de l'UI), ou null.</summary>
         public Recommendation Recommend(EventKind kind) => _session?.Recommend(kind);

@@ -112,6 +112,22 @@ namespace Bocage.Decision.Refonte
             if (investmentEurosPerHa > 0.0) _totalInvestmentEurosPerHa += investmentEurosPerHa;
         }
 
+        /// <summary>
+        /// Applique le forçage climatique exogène (ΔT additif, ×pluie) aux <b>deux</b>
+        /// runs — réel et fantôme. Le climat n'est pas une décision : l'appliquer aux
+        /// deux garantit que la divergence (l'apport de la techno) ne capte QUE les
+        /// décisions de l'agriculteur, jamais le climat. À distinguer d'
+        /// <see cref="ApplyDecision"/> (réel seul). Le mois de départ, lui, reste
+        /// snapshoté à la construction des moteurs.
+        /// </summary>
+        public void SetClimate(double temperatureAnomalyC, double precipitationFactor)
+        {
+            _liveScenario.TemperatureAnomalyC = temperatureAnomalyC;
+            _liveScenario.PrecipitationFactor = precipitationFactor;
+            _shadow.Scenario.TemperatureAnomalyC = temperatureAnomalyC;
+            _shadow.Scenario.PrecipitationFactor = precipitationFactor;
+        }
+
         /// <summary>Produit la meilleure recommandation pour un type d'événement (à la demande de l'UI), ou null.</summary>
         public Recommendation Recommend(EventKind kind)
             => _recommendationEngine.TryProduce(kind, _real.Model, _liveScenario, _masterSeed);

@@ -43,6 +43,16 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
+        public void SetClimate_applies_to_both_runs_no_spurious_tech_value()
+        {
+            var session = MakeSession(new ScenarioContext());
+            session.SetClimate(3.0, 0.5); // sécheresse appliquée aux DEUX runs
+            session.Run(365);
+            Assert.AreEqual(0.0, session.TechValueNetEurosPerHa, 1e-6,
+                "le climat (exogène) s'applique aux deux runs → aucune divergence sans décision");
+        }
+
+        [Test]
         public void Beneficial_decision_creates_positive_tech_value()
         {
             // Carence SÉVÈRE (dose quasi nulle, gelée pour le fantôme) ; le réel corrige.
