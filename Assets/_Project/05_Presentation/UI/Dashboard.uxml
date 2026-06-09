@@ -486,19 +486,11 @@
 
                 <ui:VisualElement name="decision-popup-outcomes" class="decision-popup-outcomes" />
 
-                <ui:Label text="Choisir l'ampleur de l'action :" class="decision-popup-prompt" />
-                <ui:VisualElement class="decision-popup-magnitude-row">
-                    <ui:Label name="decision-popup-magnitude-label" text="Magnitude" class="decision-popup-magnitude-label" />
-                    <ui:Label name="decision-popup-magnitude-value" text="—" class="decision-popup-magnitude-value" />
-                </ui:VisualElement>
-                <ui:Slider name="decision-popup-magnitude-slider" low-value="0" high-value="1" value="0" class="decision-popup-magnitude-slider" show-input-field="true" />
-
-                <ui:Label name="decision-popup-investment" text="" class="decision-popup-investment hidden" />
 
                 <ui:VisualElement class="decision-popup-actions">
                     <ui:Button name="decision-popup-ignore-button" text="Ignorer" class="decision-popup-button decision-popup-button--ignore" tooltip="Rejette définitivement cette recommandation. Aucune action mécanique. La simulation reprend." />
                     <ui:Button name="decision-popup-defer-button" text="Voir plus tard" class="decision-popup-button decision-popup-button--defer" tooltip="Garde la recommandation en attente sans décider maintenant. Retrouvable via le bouton 'Recommandations en cours'. La simulation reprend." />
-                    <ui:Button name="decision-popup-validate-button" text="Valider" class="decision-popup-button decision-popup-button--validate" tooltip="Applique l'action avec la magnitude choisie. La simulation reprend." />
+                    <ui:Button name="decision-popup-validate-button" text="Valider" class="decision-popup-button decision-popup-button--validate" tooltip="Applique le niveau recommandé par le moteur (modifiable ensuite via le slider du levier). La simulation reprend." />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

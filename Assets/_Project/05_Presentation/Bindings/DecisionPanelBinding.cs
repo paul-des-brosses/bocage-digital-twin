@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using Bocage.Decision;
-using Bocage.Decision.Recommendations;
-using Bocage.Presentation.Simulation;
+using Bocage.Decision.Refonte;
+using Bocage.Presentation.Refonte;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,28 +7,18 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Renders the « Recommandations en cours » button in the right-hand
-    /// decision-panel, and the centred list popup that opens when the
-    /// user clicks it. The list shows every pending recommendation (in
-    /// the journal but not yet resolved, whether previously deferred
-    /// via "Voir plus tard" or never shown). Clicking an entry in the
-    /// list re-opens the full <see cref="DecisionPopupBinding"/>
-    /// popup for that recommendation.
-    /// <para>
-    /// Button text follows the pending count : « Recommandations en
-    /// cours (3) » when there's something to act on, « Aucune
-    /// recommandation en cours » when the queue is empty. The button
-    /// is enabled either way so the user can always open the list
-    /// (which then displays an empty-state placeholder).
-    /// </para>
+    /// Bouton « Recommandations en cours (N) » + liste modale des recos en attente
+    /// (<see cref="SimulationSession.PendingRecommendations"/>). Badge « compromis »
+    /// pour les recos non win-win — lu directement sur <c>Recommendation.Class</c>,
+    /// sans projection (la session l'a déjà calculée). « Examiner » ré-ouvre la
+    /// popup pour la reco. Couche 05 (Unity) — Play Mode.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class DecisionPanelBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source of the journal and current day. Drag the GameObject carrying the SimulationRunner.")]
-        private SimulationRunner runner;
-
-        [SerializeField, Tooltip("Sibling binding that owns the single-recommendation popup. Click-through from the history list re-opens that popup.")]
+        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
+        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Le DecisionPopupBinding voisin (ré-ouverture d'une reco depuis la liste).")]
         private DecisionPopupBinding recommendationPopup;
 
         [Header("UXML element names")]
@@ -43,89 +31,72 @@ namespace Bocage.Presentation.Bindings
         private const string HiddenClass = "hidden";
 
         private UIDocument _document;
-        private Button _openHistoryButton;
-        private VisualElement _historyOverlay;
-        private VisualElement _historyList;
+        private Button _openHistoryButton, _historyCloseButton;
+        private VisualElement _historyOverlay, _historyList;
         private Label _historyEmptyLabel;
-        private Button _historyCloseButton;
-
         private int _lastPendingCount = -1;
         private bool _wired;
 
-        private void Awake()
-        {
-            _document = GetComponent<UIDocument>();
-        }
+        private void Awake() => _document = GetComponent<UIDocument>();
 
         private void OnEnable()
         {
             ResolveElements();
             WireCallbacks();
             HideHistoryOverlay();
-            RefreshButtonLabel(force: true);
+            RefreshButtonLabel(true);
         }
 
-        private void OnDisable()
-        {
-            UnwireCallbacks();
-        }
+        private void OnDisable() => UnwireCallbacks();
+
+        private SimulationSession Session => runner != null ? runner.Session : null;
+        private int PendingCount => Session != null ? Session.PendingRecommendations.Count : 0;
 
         private void Update()
         {
-            // Cheap text update when the pending count changes between ticks.
-            int pending = (runner != null && runner.DecisionJournal != null)
-                ? runner.DecisionJournal.PendingEntries.Count
-                : _lastPendingCount;
-            bool countChanged = pending != _lastPendingCount;
-            RefreshButtonLabel(force: false);
-
-            // Rebuild the OPEN list ONLY when its content actually changed.
-            // Rebuilding every frame (the previous behaviour) re-created every row
-            // each frame, so the « Examiner » button was destroyed between the
-            // pointer-down and pointer-up of a click and never fired — that was the
-            // C2 « bouton Examiner invalide » bug.
-            if (countChanged && _historyOverlay != null && !_historyOverlay.ClassListContains(HiddenClass))
-            {
+            int pending = PendingCount;
+            bool changed = pending != _lastPendingCount;
+            RefreshButtonLabel(false);
+            // Reconstruit la liste OUVERTE seulement quand son contenu change
+            // (sinon on recrée les lignes chaque frame → le bouton Examiner est
+            // détruit entre pointer-down et pointer-up et ne fire jamais).
+            if (changed && _historyOverlay != null && !_historyOverlay.ClassListContains(HiddenClass))
                 RebuildHistoryList();
-            }
         }
 
         private void ResolveElements()
         {
             if (_document == null || _document.rootVisualElement == null) return;
-            var root = _document.rootVisualElement;
-            _openHistoryButton = root.Q<Button>(openHistoryButtonName);
-            _historyOverlay = root.Q<VisualElement>(historyOverlayName);
-            _historyList = root.Q<VisualElement>(historyListName);
-            _historyEmptyLabel = root.Q<Label>(historyEmptyLabelName);
-            _historyCloseButton = root.Q<Button>(historyCloseButtonName);
-
+            var r = _document.rootVisualElement;
+            _openHistoryButton = r.Q<Button>(openHistoryButtonName);
+            _historyOverlay = r.Q<VisualElement>(historyOverlayName);
+            _historyList = r.Q<VisualElement>(historyListName);
+            _historyEmptyLabel = r.Q<Label>(historyEmptyLabelName);
+            _historyCloseButton = r.Q<Button>(historyCloseButtonName);
             if (_openHistoryButton == null || _historyOverlay == null || _historyList == null)
-            {
-                SimLogger.DebugLog("[DecisionPanelBinding] history button or overlay not found — check UXML names");
-            }
+                SimLogger.DebugLog("[DecisionPanelBinding] bouton/overlay historique introuvable — vérifier les noms UXML");
         }
 
         private void WireCallbacks()
         {
             if (_wired) return;
-            if (_openHistoryButton != null) _openHistoryButton.clicked += OnOpenHistoryClicked;
-            if (_historyCloseButton != null) _historyCloseButton.clicked += OnCloseHistoryClicked;
+            if (_openHistoryButton != null) _openHistoryButton.clicked += OnOpenHistory;
+            if (_historyCloseButton != null) _historyCloseButton.clicked += OnCloseHistory;
             _wired = true;
         }
 
         private void UnwireCallbacks()
         {
             if (!_wired) return;
-            if (_openHistoryButton != null) _openHistoryButton.clicked -= OnOpenHistoryClicked;
-            if (_historyCloseButton != null) _historyCloseButton.clicked -= OnCloseHistoryClicked;
+            if (_openHistoryButton != null) _openHistoryButton.clicked -= OnOpenHistory;
+            if (_historyCloseButton != null) _historyCloseButton.clicked -= OnCloseHistory;
             _wired = false;
         }
 
         private void RefreshButtonLabel(bool force)
         {
-            if (_openHistoryButton == null || runner == null || runner.DecisionJournal == null) return;
-            int pending = runner.DecisionJournal.PendingEntries.Count;
+            if (_openHistoryButton == null) return;
+            int pending = PendingCount;
             if (!force && pending == _lastPendingCount) return;
             _lastPendingCount = pending;
             _openHistoryButton.text = pending > 0
@@ -133,44 +104,28 @@ namespace Bocage.Presentation.Bindings
                 : "Aucune recommandation en cours";
         }
 
-        private void OnOpenHistoryClicked()
-        {
-            ShowHistoryOverlay();
-            RebuildHistoryList();
-        }
-
-        private void OnCloseHistoryClicked()
-        {
-            HideHistoryOverlay();
-        }
-
-        private void ShowHistoryOverlay()
-        {
-            if (_historyOverlay != null) _historyOverlay.RemoveFromClassList(HiddenClass);
-        }
-
-        private void HideHistoryOverlay()
-        {
-            if (_historyOverlay != null) _historyOverlay.AddToClassList(HiddenClass);
-        }
+        private void OnOpenHistory() { ShowHistoryOverlay(); RebuildHistoryList(); }
+        private void OnCloseHistory() => HideHistoryOverlay();
+        private void ShowHistoryOverlay() { if (_historyOverlay != null) _historyOverlay.RemoveFromClassList(HiddenClass); }
+        private void HideHistoryOverlay() { if (_historyOverlay != null) _historyOverlay.AddToClassList(HiddenClass); }
 
         private void RebuildHistoryList()
         {
-            if (_historyList == null || runner == null || runner.DecisionJournal == null) return;
-            var pending = runner.DecisionJournal.PendingEntries;
-
+            if (_historyList == null) return;
+            SimulationSession s = Session;
             _historyList.Clear();
-            for (int i = 0; i < pending.Count; i++)
+            int count = 0;
+            if (s != null)
             {
-                _historyList.Add(BuildHistoryRow(pending[i].Recommendation));
+                var pending = s.PendingRecommendations;
+                count = pending.Count;
+                for (int i = 0; i < pending.Count; i++)
+                    _historyList.Add(BuildRow(pending[i]));
             }
-            if (_historyEmptyLabel != null)
-            {
-                _historyEmptyLabel.EnableInClassList(HiddenClass, pending.Count > 0);
-            }
+            if (_historyEmptyLabel != null) _historyEmptyLabel.EnableInClassList(HiddenClass, count > 0);
         }
 
-        private VisualElement BuildHistoryRow(IRecommendation rec)
+        private VisualElement BuildRow(Recommendation reco)
         {
             var row = new VisualElement();
             row.AddToClassList("decision-history-row");
@@ -178,16 +133,11 @@ namespace Bocage.Presentation.Bindings
             var info = new VisualElement();
             info.AddToClassList("decision-history-row-info");
 
-            var titleLabel = new Label(rec.Title);
-            titleLabel.AddToClassList("decision-history-row-title");
-            info.Add(titleLabel);
+            var title = new Label(RecommendationDisplay.LeverLabel(reco.Lever));
+            title.AddToClassList("decision-history-row-title");
+            info.Add(title);
 
-            // E9: mark trade-off recommendations (economy-for-ecology, or any with
-            // a worsening projected dimension) so the user spots arbitrages at a
-            // glance. The classification reads the model-derived projection memoised
-            // by the popup binding (no second forward simulation here). Minimal
-            // inline style; refine via the USS class in polish.
-            if (recommendationPopup != null && recommendationPopup.IsTradeoff(rec))
+            if (RecommendationDisplay.IsTradeoff(reco.Class))
             {
                 var badge = new Label("compromis");
                 badge.AddToClassList("decision-history-row-badge");
@@ -196,32 +146,23 @@ namespace Bocage.Presentation.Bindings
                 info.Add(badge);
             }
 
-            // Sub-line: causal chain (sensor + event + day). Replaces
-            // the previous standalone "Détectée au jour N" line which
-            // had less context. Sub-étape 10a friction #2 fix.
-            var provenanceText = RecommendationProvenance.Format(
-                rec, runner != null ? runner.EventLog : null);
-            var provenanceLabel = new Label(provenanceText);
-            provenanceLabel.AddToClassList("decision-history-row-provenance");
-            info.Add(provenanceLabel);
+            var provenance = new Label("Déclencheur : " + RecommendationDisplay.EventLabel(reco.TriggeredBy));
+            provenance.AddToClassList("decision-history-row-provenance");
+            info.Add(provenance);
 
             row.Add(info);
 
-            var openButton = new Button(() => OpenRecommendation(rec))
-            {
-                text = "Examiner"
-            };
+            var openButton = new Button(() => OpenReco(reco)) { text = "Examiner" };
             openButton.AddToClassList("decision-history-row-button");
             row.Add(openButton);
-
             return row;
         }
 
-        private void OpenRecommendation(IRecommendation rec)
+        private void OpenReco(Recommendation reco)
         {
-            if (recommendationPopup == null || rec == null) return;
+            if (recommendationPopup == null || reco == null) return;
             HideHistoryOverlay();
-            recommendationPopup.ShowRecommendationFromHistory(rec);
+            recommendationPopup.ShowRecommendationFor(reco);
         }
     }
 }
