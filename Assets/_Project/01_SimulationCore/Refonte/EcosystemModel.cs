@@ -114,6 +114,36 @@ namespace Bocage.SimulationCore.Refonte
             CapitalEurosPerHa = initialCapitalEurosPerHa;
         }
 
+        /// <summary>Copie profonde de l'état (pour la projection forward, Couche 03).</summary>
+        public EcosystemModel(EcosystemModel other)
+        {
+            CurrentDay = other.CurrentDay;
+            CurrentWeather = other.CurrentWeather;
+            SoilWaterMm = other.SoilWaterMm;
+            WaterTableDepthM = other.WaterTableDepthM;
+            CarbonYoungTPerHa = other.CarbonYoungTPerHa;
+            CarbonOldTPerHa = other.CarbonOldTPerHa;
+            MineralNitrogenKgPerHa = other.MineralNitrogenKgPerHa;
+            CropYieldTPerHa = other.CropYieldTPerHa;
+            HedgerowDensityMPerHa = other.HedgerowDensityMPerHa;
+            Biodiversity = other.Biodiversity;
+            WeedPressure = other.WeedPressure;
+            CapitalEurosPerHa = other.CapitalEurosPerHa;
+            LastDrainageMm = other.LastDrainageMm;
+            LastEvapotranspirationMm = other.LastEvapotranspirationMm;
+            LastCarbonInputTPerHa = other.LastCarbonInputTPerHa;
+            LastCarbonRespirationTPerHa = other.LastCarbonRespirationTPerHa;
+            LastNitrogenUptakeKgPerHa = other.LastNitrogenUptakeKgPerHa;
+            LastNitrogenLeachingKgPerHa = other.LastNitrogenLeachingKgPerHa;
+            LastAnnualMarginEurosPerHa = other.LastAnnualMarginEurosPerHa;
+            RecentHeatDayCount = other.RecentHeatDayCount;
+            RecentCanicularDayCount = other.RecentCanicularDayCount;
+            System.Array.Copy(other._heatDayBuffer, _heatDayBuffer, HeatDayWindowDays);
+            _heatDayBufferIndex = other._heatDayBufferIndex;
+            System.Array.Copy(other._canicularDayBuffer, _canicularDayBuffer, HeatDayWindowDays);
+            _canicularDayBufferIndex = other._canicularDayBufferIndex;
+        }
+
         public void AdvanceDay() => CurrentDay++;
         public void SetWeather(DailyWeather weather) => CurrentWeather = weather;
         public void SetSoilWaterMm(double mm) => SoilWaterMm = ClampNonNegative(mm);

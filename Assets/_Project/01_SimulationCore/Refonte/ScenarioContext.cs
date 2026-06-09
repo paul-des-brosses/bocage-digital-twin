@@ -39,5 +39,21 @@ namespace Bocage.SimulationCore.Refonte
 
         /// <summary>Facteur multiplicatif sur la pluie ; 1 = baseline, 0.5 = −50 %.</summary>
         public double PrecipitationFactor { get; set; } = 1.0;
+
+        /// <summary>Constructeur par défaut (les initialiseurs de propriété fixent les valeurs).</summary>
+        public ScenarioContext() { }
+
+        /// <summary>Copie (pour la projection forward, Couche 03).</summary>
+        public ScenarioContext(ScenarioContext other)
+        {
+            NitrogenDoseKgPerHaPerYear = other.NitrogenDoseKgPerHaPerYear;
+            CoverCropsCoveragePercent = other.CoverCropsCoveragePercent;
+            PesticideIntensity = other.PesticideIntensity;
+            TillageIntensity = other.TillageIntensity;
+            HedgeManagementMetersPerHaPerYear = other.HedgeManagementMetersPerHaPerYear;
+            GrasslandFraction = other.GrasslandFraction;
+            TemperatureAnomalyC = other.TemperatureAnomalyC;
+            PrecipitationFactor = other.PrecipitationFactor;
+        }
     }
 }
