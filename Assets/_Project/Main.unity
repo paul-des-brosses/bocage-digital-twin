@@ -3409,12 +3409,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61659d16fef42c2458bb39fcdeaefe06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.MonthSelectorBinding
-  runner: {fileID: 0}
+  runner: {fileID: 2115294099}
   dropdownName: starting-month-dropdown
   hintLabelName: starting-month-hint
 --- !u!114 &1463489841
@@ -3439,21 +3439,19 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 605b3f5008334ed40808edfdf237a0c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.OngletEconomieBinding
-  runner: {fileID: 0}
-  totalInvestment: {fileID: 11400000, guid: 690dd7e9cd25351449495fa55aca9ad3, type: 2}
-  investmentHorizon: {fileID: 11400000, guid: 16decbaa7511a64449f9400e812a97bf, type: 2}
+  runner: {fileID: 2115294099}
   cropYieldLabelName: eco-yield-value
   inputCostLabelName: eco-input-cost-value
-  maintenanceLabelName: eco-maintenance-value
+  baseChargesLabelName: eco-maintenance-value
   pseLabelName: eco-pse-value
   pacLabelName: eco-pac-value
-  totalInvestmentLabelName: eco-total-investment-value
-  horizonLabelName: eco-horizon-value
+  maecLabelName: eco-total-investment-value
+  carbonCreditLabelName: eco-horizon-value
 --- !u!114 &1463489843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3461,12 +3459,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9fa1a5ba3b45f924a9c064b74fcb5786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.OngletClimatBinding
-  runner: {fileID: 0}
+  runner: {fileID: 2115294099}
   soilCarbon: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
   temperatureMeanLabelName: climat-temp-mean-value
   precipitationCumulativeLabelName: climat-precip-cumul-value
@@ -3523,12 +3521,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbe78de83c47e2c47abe8916f41bfa11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.SensorInspectorPanelBinding
-  runner: {fileID: 0}
+  runner: {fileID: 2115294099}
   overlayName: sensor-inspector-overlay
   closeButtonName: sensor-inspector-close
   titleLabelName: sensor-inspector-title
@@ -3539,9 +3537,6 @@ MonoBehaviour:
   chart1YMinName: sensor-inspector-chart1-ymin
   chart2CaptionName: sensor-inspector-chart2-caption
   chart2RowName: sensor-inspector-chart2-row
-  chart2HostName: sensor-inspector-chart2-host
-  chart2YMaxName: sensor-inspector-chart2-ymax
-  chart2YMinName: sensor-inspector-chart2-ymin
   footerInfoName: sensor-inspector-footer-info
 --- !u!114 &1463489847
 MonoBehaviour:
