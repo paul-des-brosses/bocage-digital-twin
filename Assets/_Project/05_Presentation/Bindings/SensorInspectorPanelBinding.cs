@@ -189,6 +189,11 @@ namespace Bocage.Presentation.Bindings
             label.style.unityTextAlign = TextAnchor.MiddleCenter;
             label.style.whiteSpace = WhiteSpace.Normal;
             label.style.flexGrow = 1f;
+            // Crème explicite (CLAUDE.md §11) : un Label ajouté en code n'hérite
+            // d'aucune couleur (la racine n'en fixe pas) et tomberait sur le défaut
+            // sombre du thème runtime → invisible sur le host sombre. Les autres
+            // labels du panneau ont leur couleur via leur classe USS ; pas celui-ci.
+            label.style.color = new Color(238f / 255f, 232f / 255f, 217f / 255f, 1f);
             _chart1Host.Add(label);
         }
     }
