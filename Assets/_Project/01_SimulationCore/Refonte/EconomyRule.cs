@@ -38,8 +38,17 @@ namespace Bocage.SimulationCore.Refonte
 
         private const double DaysPerYear = 365.0;
 
-        /// <summary>Marge annualisée (€/ha/an) à l'état courant. Peut être négative (année déficitaire).</summary>
+        /// <summary>Marge annualisée (€/ha/an) — somme de la décomposition. Peut être négative (année déficitaire).</summary>
         public static double AnnualMarginEurosPerHa(EcosystemModel model, ScenarioContext scenario)
+            => Breakdown(model, scenario).TotalEurosPerHa;
+
+        /// <summary>
+        /// Décompose la marge en ses postes (revenu, coûts par levier, charges, et
+        /// les paiements de services éco). Source unique de vérité : la marge totale
+        /// EST la somme des postes — l'onglet Économie lit cette décompo, pas une
+        /// recomputation parallèle.
+        /// </summary>
+        public static MarginBreakdown Breakdown(EcosystemModel model, ScenarioContext scenario)
         {
             // Assolement : (1−g) en culture annuelle, g en prairie permanente.
             double g = scenario.GrasslandFraction;
@@ -62,11 +71,10 @@ namespace Bocage.SimulationCore.Refonte
             double pse = model.HedgerowDensityMPerHa * PseRateEurosPerMeter;
             double maec = scenario.PesticideIntensity <= MaecIftThreshold ? MaecPaymentEurosPerHa : 0.0;
             double carbonAbove = model.SoilCarbonTotalTPerHa - CarbonReferenceTPerHa;
-            double carbonPayment = carbonAbove > 0.0 ? carbonAbove * CarbonPaymentEurosPerTonneAboveBaseline : 0.0;
+            double carbonCredit = carbonAbove > 0.0 ? carbonAbove * CarbonPaymentEurosPerTonneAboveBaseline : 0.0;
 
-            return revenue
-                - costNitrogen - costPesticide - costTillage - costGrassland - BaseChargesEurosPerHaPerYear
-                + PacBaseEurosPerHa + pse + maec + carbonPayment;
+            return new MarginBreakdown(revenue, costNitrogen, costPesticide, costTillage, costGrassland,
+                BaseChargesEurosPerHaPerYear, PacBaseEurosPerHa, pse, maec, carbonCredit);
         }
 
         public void Apply(EcosystemModel model, ScenarioContext scenario)
@@ -75,5 +83,46 @@ namespace Bocage.SimulationCore.Refonte
             model.AddCapitalEurosPerHa(margin / DaysPerYear);
             model.SetLastAnnualMarginEurosPerHa(margin);
         }
+    }
+
+    /// <summary>
+    /// Décomposition de la marge annualisée en postes (€/ha/an), affichée par
+    /// l'onglet Économie. <see cref="TotalEurosPerHa"/> EST la marge — revenu moins
+    /// tous les coûts plus tous les paiements de services écosystémiques.
+    /// </summary>
+    public readonly struct MarginBreakdown
+    {
+        public double RevenueEurosPerHa { get; }
+        public double NitrogenCostEurosPerHa { get; }
+        public double PesticideCostEurosPerHa { get; }
+        public double TillageCostEurosPerHa { get; }
+        public double GrasslandUpkeepEurosPerHa { get; }
+        public double BaseChargesEurosPerHa { get; }
+        public double PacEurosPerHa { get; }
+        public double PseEurosPerHa { get; }
+        public double MaecEurosPerHa { get; }
+        public double CarbonCreditEurosPerHa { get; }
+
+        public MarginBreakdown(double revenue, double nitrogenCost, double pesticideCost, double tillageCost,
+            double grasslandUpkeep, double baseCharges, double pac, double pse, double maec, double carbonCredit)
+        {
+            RevenueEurosPerHa = revenue;
+            NitrogenCostEurosPerHa = nitrogenCost;
+            PesticideCostEurosPerHa = pesticideCost;
+            TillageCostEurosPerHa = tillageCost;
+            GrasslandUpkeepEurosPerHa = grasslandUpkeep;
+            BaseChargesEurosPerHa = baseCharges;
+            PacEurosPerHa = pac;
+            PseEurosPerHa = pse;
+            MaecEurosPerHa = maec;
+            CarbonCreditEurosPerHa = carbonCredit;
+        }
+
+        /// <summary>Marge totale = revenu − (coûts intrants + entretien + charges) + (PAC + PSE + MAEC + crédit carbone).</summary>
+        public double TotalEurosPerHa =>
+            RevenueEurosPerHa
+            - NitrogenCostEurosPerHa - PesticideCostEurosPerHa - TillageCostEurosPerHa
+            - GrasslandUpkeepEurosPerHa - BaseChargesEurosPerHa
+            + PacEurosPerHa + PseEurosPerHa + MaecEurosPerHa + CarbonCreditEurosPerHa;
     }
 }

@@ -47,6 +47,15 @@ namespace Bocage.Decision.Refonte
         private readonly Dictionary<EventKind, int> _recoCooldownUntilDay = new Dictionary<EventKind, int>();
         private readonly Dictionary<EventKind, int> _lastAttemptEventDay = new Dictionary<EventKind, int>();
 
+        // --- Fenêtre glissante météo (365 j) + dernier flux Eddy (onglet Climat) ---
+        private const int WeatherWindowDays = 365;
+        private readonly double[] _tempWindow = new double[WeatherWindowDays];
+        private readonly double[] _precipWindow = new double[WeatherWindowDays];
+        private int _weatherWindowIndex;
+        private int _weatherWindowCount;
+        private double _tempSum;
+        private double _precipSum;
+
         public EcosystemModel RealModel => _real.Model;
         public EcosystemModel ShadowModel => _shadow.Model;
         public ScenarioContext Scenario => _liveScenario;
@@ -58,6 +67,11 @@ namespace Bocage.Decision.Refonte
         public double MeasuredFauna { get; private set; }
         public double MeasuredWaterTableDepthM { get; private set; }
         public double EstimatedCarbonTPerHa => _eddyTower.EstimatedCarbonStockTPerHa;
+
+        // Données météo agrégées + dernier flux CO2 (onglet Climat / inspecteur capteurs).
+        public double LastFluxKgCo2 { get; private set; }
+        public double MeanRecentTemperatureC => _weatherWindowCount > 0 ? _tempSum / _weatherWindowCount : 0.0;
+        public double RecentPrecipitationCumulMm => _precipSum;
 
         /// <summary>Apport de la techno = capital réel − capital fantôme − investissements.</summary>
         public double TechValueNetEurosPerHa
@@ -106,7 +120,8 @@ namespace Bocage.Decision.Refonte
             MeasuredHumidityFraction = _weatherStation.ReadHumidityFraction(humidityTruth);
             MeasuredFauna = _faunaSensor.ReadBiodiversity(m.Biodiversity);
             MeasuredWaterTableDepthM = _piezometer.ReadDepthMeters(m.WaterTableDepthM);
-            _eddyTower.ReadFluxKgCo2(m.LastCarbonRespirationTPerHa - m.LastCarbonInputTPerHa);
+            LastFluxKgCo2 = _eddyTower.ReadFluxKgCo2(m.LastCarbonRespirationTPerHa - m.LastCarbonInputTPerHa);
+            RecordWeatherWindow(m.CurrentWeather.TMeanCelsius, m.CurrentWeather.PrecipMm);
 
             _detector.Detect(m.CurrentDay, MeasuredHumidityFraction, _eddyTower.EstimatedCarbonStockTPerHa,
                 MeasuredFauna, m.MineralNitrogenKgPerHa, m.LastAnnualMarginEurosPerHa, _eventLog);
@@ -117,6 +132,23 @@ namespace Bocage.Decision.Refonte
         public void Run(int days)
         {
             for (int d = 0; d < days; d++) Tick();
+        }
+
+        // Fenêtre glissante O(1) : enregistre la T° + pluie (vérité) du jour et tient
+        // la moyenne de T° et le cumul de pluie sur 365 jours (onglet Climat).
+        private void RecordWeatherWindow(double temperatureC, double precipMm)
+        {
+            if (_weatherWindowCount >= WeatherWindowDays)
+            {
+                _tempSum -= _tempWindow[_weatherWindowIndex];
+                _precipSum -= _precipWindow[_weatherWindowIndex];
+            }
+            else _weatherWindowCount++;
+            _tempWindow[_weatherWindowIndex] = temperatureC;
+            _precipWindow[_weatherWindowIndex] = precipMm;
+            _tempSum += temperatureC;
+            _precipSum += precipMm;
+            _weatherWindowIndex = (_weatherWindowIndex + 1) % WeatherWindowDays;
         }
 
         /// <summary>
