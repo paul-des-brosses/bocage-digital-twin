@@ -2186,7 +2186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74f50dc5e66f4974885edce9cdc5828f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Diagnostics.SimulationTraceRecorder
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
   hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
   waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
   profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
@@ -3244,25 +3244,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.ScenarioControlsBinding
   runner: {fileID: 2115294099}
-  transitionDurationDays: 10
+  nitrogenSliderName: nitrogen-dose-slider
+  pesticideSliderName: pesticide-slider
+  tillageSliderName: tillage-slider
+  coverCropsSliderName: cover-crops-slider
+  hedgeSliderName: hedge-management-slider
+  grasslandSliderName: grassland-slider
   temperatureSliderName: temperature-anomaly-slider
   precipitationSliderName: precipitation-anomaly-slider
-  hedgeRemovalSliderName: hedge-removal-slider
-  inputIntensitySliderName: input-intensity-slider
-  maecCoverageSliderName: maec-coverage-slider
-  pseRateSliderName: pse-rate-slider
-  horizonSliderName: horizon-slider
-  coverCropsSliderName: cover-crops-slider
-  residueRestitutionSliderName: residue-restitution-slider
-  temperatureValueLabelName: temperature-anomaly-value
-  precipitationValueLabelName: precipitation-anomaly-value
-  hedgeRemovalValueLabelName: hedge-removal-value
-  inputIntensityValueLabelName: input-intensity-value
-  maecCoverageValueLabelName: maec-coverage-value
-  pseRateValueLabelName: pse-rate-value
-  horizonValueLabelName: horizon-value
-  coverCropsValueLabelName: cover-crops-value
-  residueRestitutionValueLabelName: residue-restitution-value
+  nitrogenValueName: nitrogen-dose-value
+  pesticideValueName: pesticide-value
+  tillageValueName: tillage-value
+  coverCropsValueName: cover-crops-value
+  hedgeValueName: hedge-management-value
+  grasslandValueName: grassland-value
+  temperatureValueName: temperature-anomaly-value
+  precipitationValueName: precipitation-anomaly-value
 --- !u!114 &1463489832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3317,12 +3314,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a4ce2899bce174b4e9cd1c05f12229aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Decision.AutoActionApplier
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
 --- !u!114 &1463489836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3342,7 +3339,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2d3f050a464141b45b440ab34e33f5f2, type: 2}
   - {fileID: 11400000, guid: f0b8a3594cbd0c54e87742d17c944649, type: 2}
   - {fileID: 11400000, guid: ed963d8f7dbd8274987594f053585f9e, type: 2}
-  transitionDurationDays: 10
   presetsContainerName: scenario-presets-row
 --- !u!114 &1463489837
 MonoBehaviour:
@@ -3403,10 +3399,6 @@ MonoBehaviour:
   sourceEventLabelName: decision-popup-source-event
   rationaleLabelName: decision-popup-rationale
   outcomesContainerName: decision-popup-outcomes
-  magnitudeLabelName: decision-popup-magnitude-label
-  magnitudeSliderName: decision-popup-magnitude-slider
-  magnitudeValueLabelName: decision-popup-magnitude-value
-  investmentLabelName: decision-popup-investment
   validateButtonName: decision-popup-validate-button
   ignoreButtonName: decision-popup-ignore-button
   deferButtonName: decision-popup-defer-button
@@ -3417,12 +3409,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61659d16fef42c2458bb39fcdeaefe06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.MonthSelectorBinding
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
   dropdownName: starting-month-dropdown
   hintLabelName: starting-month-hint
 --- !u!114 &1463489841
@@ -3447,12 +3439,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 605b3f5008334ed40808edfdf237a0c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.OngletEconomieBinding
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
   totalInvestment: {fileID: 11400000, guid: 690dd7e9cd25351449495fa55aca9ad3, type: 2}
   investmentHorizon: {fileID: 11400000, guid: 16decbaa7511a64449f9400e812a97bf, type: 2}
   cropYieldLabelName: eco-yield-value
@@ -3469,12 +3461,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9fa1a5ba3b45f924a9c064b74fcb5786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.OngletClimatBinding
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
   soilCarbon: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
   temperatureMeanLabelName: climat-temp-mean-value
   precipitationCumulativeLabelName: climat-precip-cumul-value
@@ -3531,12 +3523,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbe78de83c47e2c47abe8916f41bfa11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.SensorInspectorPanelBinding
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
   overlayName: sensor-inspector-overlay
   closeButtonName: sensor-inspector-close
   titleLabelName: sensor-inspector-title
@@ -3563,16 +3555,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a8f0b2c5e6d7f8b1c4a9d2e5f8b3c0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.ManualActionsBinding
-  runner: {fileID: 2115294099}
+  runner: {fileID: 0}
   plantHedgesSliderName: manual-plant-hedges-slider
   plantHedgesValueLabelName: manual-plant-hedges-value
   plantHedgesButtonName: manual-plant-hedges-button
   irrigationSliderName: manual-irrigation-slider
   irrigationValueLabelName: manual-irrigation-value
   irrigationButtonName: manual-irrigation-button
-  reduceInputsSliderName: manual-reduce-inputs-slider
-  reduceInputsValueLabelName: manual-reduce-inputs-value
-  reduceInputsButtonName: manual-reduce-inputs-button
 --- !u!114 &1463489848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4868,7 +4857,6 @@ GameObject:
   - component: {fileID: 2115294098}
   - component: {fileID: 2115294097}
   - component: {fileID: 2115294099}
-  - component: {fileID: 2115294100}
   m_Layer: 0
   m_Name: _Bootstrap
   m_TagString: Untagged
@@ -4912,40 +4900,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 2115294096}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7aa59714138e0e849af4f9f11a88f056, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d95424e62eeee842b543adf180404eb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Simulation.SimulationRunner
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Refonte.RefonteSimulationRunner
   masterSeed: 1
-  seasonalWeatherAsset: {fileID: 11400000, guid: d8be50f171b7b074d9929f5d35577ed0, type: 2}
-  ticksPerSecond: 10
-  autoStart: 1
-  hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
-  waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
+  ticksPerSecond: 1
+  autoStart: 0
+  horizonInDays: 3650
+  temperatureAnomalyC: 0
+  precipitationFactor: 1
+  initialNitrogenDoseKgPerHa: 120
+  initialPesticideIntensity: 1
+  initialTillageIntensity: 1
+  initialCoverCropsPercent: 0
   profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
   biodiversityContainer: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
-  techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
   soilCarbonContainer: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
-  totalInvestmentContainer: {fileID: 11400000, guid: 690dd7e9cd25351449495fa55aca9ad3, type: 2}
-  investmentHorizonContainer: {fileID: 11400000, guid: 16decbaa7511a64449f9400e812a97bf, type: 2}
+  hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
+  waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
+  soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
+  techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
+  nitrogenContainer: {fileID: 11400000, guid: 52e933bea7813214fac4fd346a3a4657, type: 2}
   faunaFactorHabitatContainer: {fileID: 11400000, guid: eb4348d0290d2294e87a06c9d5799cf4, type: 2}
   faunaFactorWaterContainer: {fileID: 11400000, guid: 4956b208ed4df5e4aa9b625d88179fc2, type: 2}
   faunaFactorInputsContainer: {fileID: 11400000, guid: be322440217f58345b5231cbc6d85e79, type: 2}
-  soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
-  hedgerowHealthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
-  shadowRunner: {fileID: 2115294100}
---- !u!114 &2115294100
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2115294096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1541686c89f21840a0c303b0d811165, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Simulation.ShadowSimulationRunner
-  realRunner: {fileID: 2115294099}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
