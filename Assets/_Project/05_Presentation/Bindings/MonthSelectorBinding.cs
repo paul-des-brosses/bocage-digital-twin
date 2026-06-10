@@ -1,4 +1,4 @@
-using Bocage.Presentation.Simulation;
+using Bocage.Presentation.Refonte;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -6,34 +6,18 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Wires the "Mois de démarrage" dropdown (chantier E2 / ADR #52) in
-    /// the "Conditions initiales du bocage" section of the dashboard to
-    /// <see cref="Bocage.SimulationCore.Scenario.ScenarioContext.StartingMonth"/>.
-    /// <para>
-    /// The dropdown writes the chosen month (1 = January … 12 = December)
-    /// into the scenario as soon as the user changes it. The active
-    /// engine ignores the new value — the engine's
-    /// <see cref="Bocage.SimulationCore.Rules.WeatherUpdateRule"/>
-    /// snapshots the starting month at construction so the seasonal
-    /// cycle stays continuous across the run. The next call to
-    /// <see cref="SimulationRunner.Rebuild"/> picks up the user's new
-    /// choice via <see cref="Bocage.SimulationCore.DefaultSimulation.Build"/>.
-    /// This is the contract documented in ROADMAP §E2: "Reset only at
-    /// CurrentDay == 0".
-    /// </para>
-    /// <para>
-    /// A small hint label flips between two messages depending on the
-    /// run state (mirrors the lock-hint pattern of
-    /// <see cref="InitialConditionsBinding"/>):
-    /// fresh start ("appliqué immédiatement au lancement") vs mid-run
-    /// ("effectif à la prochaine réinitialisation").
-    /// </para>
+    /// Câble le dropdown « Mois de démarrage » à
+    /// <see cref="Bocage.SimulationCore.Refonte.ScenarioContext.StartingMonth"/>
+    /// (refonte S0b). Le choix est écrit dans le scénario vivant ; le moteur le
+    /// snapshote à la construction → effectif au <b>prochain Rebuild</b> (lancement
+    /// ou réinitialisation), pas en cours de run (la saison reste continue).
+    /// Couche 05 — Play Mode.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class MonthSelectorBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source of the scenario context and run state. Drag the GameObject carrying the SimulationRunner.")]
-        private SimulationRunner runner;
+        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
+        private RefonteSimulationRunner runner;
 
         [Header("UXML element names")]
         [SerializeField] private string dropdownName = "starting-month-dropdown";
@@ -50,10 +34,7 @@ namespace Bocage.Presentation.Bindings
         private Label _hintLabel;
         private bool _wired;
 
-        private void Awake()
-        {
-            _document = GetComponent<UIDocument>();
-        }
+        private void Awake() => _document = GetComponent<UIDocument>();
 
         private void OnEnable()
         {
@@ -78,7 +59,7 @@ namespace Bocage.Presentation.Bindings
             _hintLabel = root.Q<Label>(hintLabelName);
             if (_dropdown == null)
             {
-                SimLogger.DebugLog("[MonthSelectorBinding] dropdown '" + dropdownName + "' not found — check UXML name");
+                SimLogger.DebugLog("[MonthSelectorBinding] dropdown '" + dropdownName + "' introuvable — vérifier le nom UXML");
                 return;
             }
             _dropdown.choices = new System.Collections.Generic.List<string>(MonthLabels);
@@ -115,15 +96,7 @@ namespace Bocage.Presentation.Bindings
             RefreshHint();
         }
 
-        private void OnTickCompleted()
-        {
-            // The dropdown selection itself doesn't need refreshing — the
-            // engine's snapshot of StartingMonth is locked, and the user's
-            // choice in scenario.StartingMonth is what we display. We only
-            // refresh the hint label so the "mid-run" wording kicks in
-            // exactly as the run starts.
-            RefreshHint();
-        }
+        private void OnTickCompleted() => RefreshHint();
 
         private void RefreshHint()
         {
