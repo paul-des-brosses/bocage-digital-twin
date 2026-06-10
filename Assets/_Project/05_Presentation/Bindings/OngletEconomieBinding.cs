@@ -1,7 +1,6 @@
 using System.Globalization;
-using Bocage.Data.RuntimeContainers;
-using Bocage.Indicators.Hero;
-using Bocage.Presentation.Simulation;
+using Bocage.Presentation.Refonte;
+using Bocage.SimulationCore.Refonte;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,171 +8,83 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Fills the seven rows of the "Économie" Niveau B panel (chantier E6 /
-    /// ADR #54). Crop yield, input cost, maintenance cost, PSE and CAP are
-    /// read from the model + scenario on the runner's <c>TickCompleted</c>;
-    /// cumulative investment and the rentability horizon are driven by their
-    /// RCs' <c>OnChanged</c> (raised after <c>TickCompleted</c>). PSE/CAP
-    /// reuse the public constants of
-    /// <see cref="IntegratedProfitabilityIndicator"/> so the breakdown shown
-    /// here can never drift from the Hero profitability KPI.
+    /// Remplit les 7 lignes de l'onglet « Économie » depuis
+    /// <see cref="EconomyRule.Breakdown"/> (source unique : la somme des postes EST
+    /// la marge) : rendement, coûts d'intrants, charges fixes, et les 4 paiements de
+    /// services écosystémiques (PSE, PAC, MAEC, crédit carbone). Les deux anciennes
+    /// lignes « investissement / horizon de rentabilité » sont repurposées en MAEC /
+    /// crédit carbone — il n'y a plus d'investissement upfront dans la refonte, donc
+    /// ces lignes auraient été « sans objet » (cf §17 : afficher de l'info utile).
+    /// Rafraîchi sur TickCompleted / Rebuilt du runner. Couche 05 — Play Mode.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class OngletEconomieBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source of the model + scenario. Drag the GameObject carrying the SimulationRunner.")]
-        private SimulationRunner runner;
-
-        [SerializeField, Tooltip("Cumulative investment container (€/ha).")]
-        private RC_TotalInvestment totalInvestment;
-        [SerializeField, Tooltip("Investment rentability horizon container.")]
-        private RC_InvestmentHorizon investmentHorizon;
+        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
+        private RefonteSimulationRunner runner;
 
         [SerializeField] private string cropYieldLabelName = "eco-yield-value";
         [SerializeField] private string inputCostLabelName = "eco-input-cost-value";
-        [SerializeField] private string maintenanceLabelName = "eco-maintenance-value";
+        [SerializeField] private string baseChargesLabelName = "eco-maintenance-value";   // libellé UXML repurposé en « Charges fixes »
         [SerializeField] private string pseLabelName = "eco-pse-value";
         [SerializeField] private string pacLabelName = "eco-pac-value";
-        [SerializeField] private string totalInvestmentLabelName = "eco-total-investment-value";
-        [SerializeField] private string horizonLabelName = "eco-horizon-value";
+        [SerializeField] private string maecLabelName = "eco-total-investment-value";      // repurposé en « Paiement MAEC »
+        [SerializeField] private string carbonCreditLabelName = "eco-horizon-value";       // repurposé en « Crédit carbone »
 
+        private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
         private UIDocument _document;
-        private Label _cropYieldLabel, _inputCostLabel, _maintenanceLabel, _pseLabel, _pacLabel, _totalInvestmentLabel, _horizonLabel;
+        private Label _cropYield, _inputCost, _baseCharges, _pse, _pac, _maec, _carbonCredit;
 
         private void Awake() => _document = GetComponent<UIDocument>();
 
         private void OnEnable()
         {
             ResolveLabels();
-            if (runner != null)
-            {
-                runner.TickCompleted += HandleTick;
-                runner.Rebuilt += HandleTick;
-            }
-            else
-            {
-                SimLogger.DebugLog("[OngletEconomieBinding] runner not assigned on " + name);
-            }
-
-            if (totalInvestment != null)
-            {
-                totalInvestment.OnChanged += HandleTotalInvestmentChanged;
-                HandleTotalInvestmentChanged(totalInvestment.EurosPerHectare);
-            }
-            if (investmentHorizon != null)
-            {
-                investmentHorizon.OnChanged += HandleHorizonChanged;
-                HandleHorizonChanged(investmentHorizon.IsReached);
-            }
-
+            if (runner != null) { runner.TickCompleted += HandleTick; runner.Rebuilt += HandleTick; }
+            else SimLogger.DebugLog("[OngletEconomieBinding] runner non assigné sur " + name);
             HandleTick();
         }
 
         private void OnDisable()
         {
-            if (runner != null)
-            {
-                runner.TickCompleted -= HandleTick;
-                runner.Rebuilt -= HandleTick;
-            }
-            if (totalInvestment != null) totalInvestment.OnChanged -= HandleTotalInvestmentChanged;
-            if (investmentHorizon != null) investmentHorizon.OnChanged -= HandleHorizonChanged;
+            if (runner != null) { runner.TickCompleted -= HandleTick; runner.Rebuilt -= HandleTick; }
         }
 
         private void ResolveLabels()
         {
             if (_document == null || _document.rootVisualElement == null) return;
             var root = _document.rootVisualElement;
-            _cropYieldLabel = root.Q<Label>(cropYieldLabelName);
-            _inputCostLabel = root.Q<Label>(inputCostLabelName);
-            _maintenanceLabel = root.Q<Label>(maintenanceLabelName);
-            _pseLabel = root.Q<Label>(pseLabelName);
-            _pacLabel = root.Q<Label>(pacLabelName);
-            _totalInvestmentLabel = root.Q<Label>(totalInvestmentLabelName);
-            _horizonLabel = root.Q<Label>(horizonLabelName);
+            _cropYield = root.Q<Label>(cropYieldLabelName);
+            _inputCost = root.Q<Label>(inputCostLabelName);
+            _baseCharges = root.Q<Label>(baseChargesLabelName);
+            _pse = root.Q<Label>(pseLabelName);
+            _pac = root.Q<Label>(pacLabelName);
+            _maec = root.Q<Label>(maecLabelName);
+            _carbonCredit = root.Q<Label>(carbonCreditLabelName);
         }
 
         private void EnsureResolved()
         {
-            if (_cropYieldLabel == null || _inputCostLabel == null || _maintenanceLabel == null
-                || _pseLabel == null || _pacLabel == null || _totalInvestmentLabel == null || _horizonLabel == null)
-            {
+            if (_cropYield == null || _inputCost == null || _baseCharges == null || _pse == null
+                || _pac == null || _maec == null || _carbonCredit == null)
                 ResolveLabels();
-            }
         }
 
         private void HandleTick()
         {
             EnsureResolved();
-            var model = runner != null ? runner.Model : null;
-            if (model == null) return;
-            var scenario = runner.Scenario;
-            double pseRate = scenario != null ? scenario.PseSubsidyRate.Current : 0.0;
+            var s = runner != null ? runner.Session : null;
+            if (s == null) return;
+            MarginBreakdown b = EconomyRule.Breakdown(s.RealModel, s.Scenario);
 
-            if (_cropYieldLabel != null) _cropYieldLabel.text = model.CropYield.ToString("F1", CultureInfo.InvariantCulture);
-            if (_inputCostLabel != null) _inputCostLabel.text = model.InputCost.ToString("F0", CultureInfo.InvariantCulture);
-            if (_maintenanceLabel != null) _maintenanceLabel.text = model.MaintenanceCost.ToString("F0", CultureInfo.InvariantCulture);
-            if (_pseLabel != null) _pseLabel.text = ComputePseEurosPerHectare(model.HedgerowDensity, pseRate).ToString("F0", CultureInfo.InvariantCulture);
-            if (_pacLabel != null) _pacLabel.text = ComputePacEurosPerHectare(model.HedgerowDensity).ToString("F0", CultureInfo.InvariantCulture);
-        }
-
-        private void HandleTotalInvestmentChanged(float eurosPerHectare)
-        {
-            EnsureResolved();
-            if (_totalInvestmentLabel != null)
-                _totalInvestmentLabel.text = eurosPerHectare.ToString("F0", CultureInfo.InvariantCulture);
-            // The « Sans objet » vs « Non atteint » horizon wording depends on
-            // whether any capital has been invested, so refresh it here too —
-            // the horizon RC's OnChanged does not fire when only the investment
-            // changes (IsReached / HorizonYears stay put).
-            RefreshHorizonLabel();
-        }
-
-        private void HandleHorizonChanged(bool _)
-        {
-            RefreshHorizonLabel();
-        }
-
-        /// <summary>
-        /// Three-state « horizon de rentabilité » row:
-        /// <list type="bullet">
-        ///   <item><b>Sans objet</b> — no capital invested yet, nothing to
-        ///         amortise.</item>
-        ///   <item><b>Non atteint</b> — invested, but the NET tech value has
-        ///         not reached break-even.</item>
-        ///   <item><b>X.X ans</b> — simulated years from day 0 to the day the
-        ///         NET first broke even.</item>
-        /// </list>
-        /// </summary>
-        private void RefreshHorizonLabel()
-        {
-            EnsureResolved();
-            if (_horizonLabel == null) return;
-            bool hasInvestment = totalInvestment != null && totalInvestment.EurosPerHectare > 0f;
-            if (investmentHorizon != null && investmentHorizon.IsReached)
-                _horizonLabel.text = investmentHorizon.HorizonYears.ToString("F1", CultureInfo.InvariantCulture) + " ans";
-            else if (!hasInvestment)
-                _horizonLabel.text = "Sans objet";
-            else
-                _horizonLabel.text = "Non atteint";
-        }
-
-        /// <summary>PSE payment (€/ha/yr): linear hedgerow density × the scenario PSE rate (€/m/yr). Pure, tested.</summary>
-        public static double ComputePseEurosPerHectare(double hedgerowDensity, double pseSubsidyRate)
-        {
-            return hedgerowDensity * pseSubsidyRate;
-        }
-
-        /// <summary>
-        /// CAP payment (€/ha/yr): the fixed basic support (DPB + redistributive
-        /// + base eco-scheme) plus the per-hectare hedge bonus when hedgerows
-        /// are present. Reuses the Hero KPI's public constants so the two views
-        /// stay in lockstep. Pure, tested.
-        /// </summary>
-        public static double ComputePacEurosPerHectare(double hedgerowDensity)
-        {
-            double bonus = hedgerowDensity > 0.0 ? IntegratedProfitabilityIndicator.PacHedgeBonusEurosPerHectare : 0.0;
-            return IntegratedProfitabilityIndicator.BasicCapPaymentEurosPerHectare + bonus;
+            if (_cropYield != null) _cropYield.text = s.RealModel.CropYieldTPerHa.ToString("F1", Inv);
+            if (_inputCost != null)
+                _inputCost.text = (b.NitrogenCostEurosPerHa + b.PesticideCostEurosPerHa + b.TillageCostEurosPerHa).ToString("F0", Inv);
+            if (_baseCharges != null) _baseCharges.text = b.BaseChargesEurosPerHa.ToString("F0", Inv);
+            if (_pse != null) _pse.text = b.PseEurosPerHa.ToString("F0", Inv);
+            if (_pac != null) _pac.text = b.PacEurosPerHa.ToString("F0", Inv);
+            if (_maec != null) _maec.text = b.MaecEurosPerHa.ToString("F0", Inv);
+            if (_carbonCredit != null) _carbonCredit.text = b.CarbonCreditEurosPerHa.ToString("F0", Inv) + " €/ha";
         }
     }
 }

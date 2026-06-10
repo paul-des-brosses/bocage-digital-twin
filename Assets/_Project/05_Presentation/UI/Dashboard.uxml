@@ -402,7 +402,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
-                    <ui:Label text="Entretien haies" class="panel-row-label" />
+                    <ui:Label text="Charges fixes" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
                         <ui:Label name="eco-maintenance-value" text="—" class="panel-row-value" />
                         <ui:Label text="€/ha" class="panel-row-unit" />
@@ -423,14 +423,14 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
-                    <ui:Label text="Investissement cumulé" class="panel-row-label" />
+                    <ui:Label text="Paiement MAEC" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
                         <ui:Label name="eco-total-investment-value" text="—" class="panel-row-value" />
                         <ui:Label text="€/ha" class="panel-row-unit" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
-                    <ui:Label text="Horizon rentabilité" class="panel-row-label" />
+                    <ui:Label text="Crédit carbone" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
                         <ui:Label name="eco-horizon-value" text="—" class="panel-row-value" />
                     </ui:VisualElement>
