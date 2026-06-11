@@ -1,11 +1,13 @@
-# Refonte du backend — spec cible
+# Le modèle — spec technique (niveau 3)
 
-Ce dossier contient la **spec autoritaire de la refonte du backend** du
-digital twin : le modèle de simulation, le moteur de KPI/décision, et sa
-vérification mathématique. C'est la **cible à implémenter** — distincte des
-docs qui décrivent le code *actuel* (`../ARCHITECTURE.md`,
-`../CALIBRATION.md`, `../SIMULATION_OVERVIEW.md`, `../DECISIONS.md`…),
-lesquels restent valides jusqu'à ce que la refonte soit codée.
+Ce dossier contient la **spec autoritaire du modèle** du digital twin : le
+modèle biophysique, le moteur de KPI/décision, et sa vérification mathématique.
+Depuis le **cutover S5** (2026-06-11), **la refonte EST le code** : ces
+documents décrivent le modèle *actuel*, plus une cible. La vue d'ensemble
+vulgarisée (niveau 2) vit dans
+[`../SIMULATION_OVERVIEW.md`](../SIMULATION_OVERVIEW.md), qui pointe ici pour le
+détail. L'ancien [`../CALIBRATION.md`](../CALIBRATION.md) est conservé comme
+**archive pré-refonte**.
 
 ## Les documents
 
@@ -36,11 +38,13 @@ boucle de rétroaction `rendement → résidus → carbone → réserve en eau`.
 - **6 leviers MVP** : fertilisation azotée, IFT/pesticides, travail du sol,
   couverts, gestion flore/haies, part de prairie (revenu fourrager léger).
 
-## Statut & suite
+## Statut
 
-Spec figée et **vérifiée mathématiquement** (doc 11). Prochaine phase :
-**implémentation headless** des couches 01-04, avec la batterie B1-B10
-(08 §11) comme gate numérique. C'est là que commence le code.
+Spec **implémentée et vérifiée** : couches 01-04 codées et validées par une
+suite de tests EditMode headless ; la calibration de la réponse azotée a été
+refaite sur Arvalis/COMIFER/INRAE (cf [`08_MODELE.md`](08_MODELE.md) §5.5) ;
+l'ancien modèle a été supprimé au cutover S5. Le modèle vivant est celui décrit
+ici.
 
 ## Données de calibration
 
