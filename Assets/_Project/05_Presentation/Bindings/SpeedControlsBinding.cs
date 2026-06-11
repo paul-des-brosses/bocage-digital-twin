@@ -7,10 +7,10 @@ namespace Bocage.Presentation.Bindings
 {
     /// <summary>
     /// Wires the four speed-control buttons (pause, play x1, play x10,
-    /// skip-to-end) to the <see cref="SimulationRunner"/>'s
+    /// skip-to-end) to the <see cref="RefonteSimulationRunner"/>'s
     /// <c>StartTicking</c>/<c>StopTicking</c>/<c>TicksPerSecond</c>/
     /// <c>FastForwardTo</c> surface. Also maintains a small day counter
-    /// label that reads <see cref="SimulationRunner.CurrentDay"/> after
+    /// label that reads <see cref="RefonteSimulationRunner.CurrentDay"/> after
     /// every tick.
     /// <para>
     /// The last selected play-speed (x1 or x10) is persisted in
@@ -135,7 +135,7 @@ namespace Bocage.Presentation.Bindings
 
         /// <summary>
         /// Mirrors the runner's actual ticking state onto the speed bar.
-        /// Fired by <see cref="SimulationRunner.TickingStateChanged"/>
+        /// Fired by <see cref="RefonteSimulationRunner.TickingStateChanged"/>
         /// whenever StartTicking/StopTicking flips IsRunning — notably the
         /// fresh « Lancer la simulation » path, where Rebuild fires the
         /// Rebuilt event while still paused and StartTicking(×1) runs only
