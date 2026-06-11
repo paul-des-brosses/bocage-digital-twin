@@ -17,7 +17,7 @@ namespace Bocage.SimulationCore.Refonte
     /// </summary>
     public sealed class YieldRule
     {
-        public const double YieldPotentialTPerHa = 7.0;    // potentiel non stressé
+        public const double YieldPotentialTPerHa = 7.6;    // potentiel non stressé (blé atteignable Perche → ~5,5 actuel après stress)
         public const double NitrogenScaleKgPerHa = 15.0;   // Kn = 1 − exp(−N/scale)
         public const double HeatPenaltyPerDay = 0.003;
         public const double HeatPenaltyCap = 0.09;

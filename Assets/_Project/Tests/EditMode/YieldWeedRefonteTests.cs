@@ -61,8 +61,8 @@ namespace Bocage.Tests.EditMode
             model.SetWeather(Weather(15.0));
             model.SetSoilWaterMm(90.0);
             RunYield(model, 800);
-            Assert.That(model.CropYieldTPerHa, Is.InRange(6.5, 7.1),
-                "au référentiel (eau ample, N suffisant, sans adventices) → ~potentiel 7 t/ha");
+            Assert.That(model.CropYieldTPerHa, Is.InRange(7.2, 7.7),
+                "au référentiel (eau ample, N suffisant, sans adventices) → ~potentiel 7,6 t/ha");
         }
 
         [Test]

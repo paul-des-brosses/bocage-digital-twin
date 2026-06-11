@@ -45,12 +45,18 @@ namespace Bocage.SimulationCore.Refonte
     {
         public const double CarbonNitrogenRatio = 10.0;                     // C/N humus
         public const double AtmosphericDepositionKgPerHaPerYear = 15.0;
+        // Minéralisation de la fraction active (Mh) que le pool « vieux » lent du
+        // 2-pools ICBM sous-représente : le SOC total est bien suivi, mais l'azote
+        // de court terme de la fraction labile manquait → plancher N=0 trop bas.
+        // Modulé par le climat (re) comme la minéralisation de l'humus.
+        // Source : INRAE/COMIFER (Mh des sols cultivés tempérés ≈ 30-80 kgN/ha/an).
+        public const double ActiveMineralizationKgPerHaPerYear = 40.0;
         public const double LegumeFixationKgPerHaPerYear = 80.0;            // à 100 % de couverts légumineux
         public const double NitrogenDemandKgPerTonne = 22.0;
         public const double MaxUptakeFractionPerDay = 0.5;                  // plafond d'accès journalier au pool
         public const double LeachableFraction = 0.5;                       // λ
         public const double VolatilizationFraction = 0.10;                 // pertes gazeuses sur l'apport
-        public const double OrganicLossRatePerYear = 0.8;                  // dénitrification/immobilisation ∝ pool (borne N)
+        public const double OrganicLossRatePerYear = 0.6;                  // dénitrification/immobilisation ∝ pool (borne N) — recalibré (80%/an était trop agressif vs littérature)
 
         // Calendrier agronomique (jour de l'année, 1-365).
         public const int FertilizationStartDay = 60;                       // ~mars
@@ -78,11 +84,12 @@ namespace Bocage.SimulationCore.Refonte
             double re = CarbonDynamicsRule.ClimateFactor(model.CurrentWeather.TMeanCelsius, model.SoilWaterMm);
             double oldDecayDaily = (CarbonDynamicsRule.DecayOldPerYear / DaysPerYear) * re * model.CarbonOldTPerHa;
             double nMin = oldDecayDaily / CarbonNitrogenRatio * 1000.0;   // tN/ha/j → kgN/ha/j
+            double activeMin = ActiveMineralizationKgPerHaPerYear / DaysPerYear * re; // fraction labile (Mh), modulée climat
 
             double deposition = AtmosphericDepositionKgPerHaPerYear / DaysPerYear;
             double fixation = LegumeFixationKgPerHaPerYear * (scenario.CoverCropsCoveragePercent / 100.0) / DaysPerYear;
 
-            double inputs = fert + nMin + deposition + fixation;
+            double inputs = fert + nMin + activeMin + deposition + fixation;
 
             // --- Sorties ---
             double demandWindow = CropDemandEndDay - CropDemandStartDay + 1;
