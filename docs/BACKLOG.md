@@ -3,6 +3,11 @@
 Évolutions envisagées au-delà du MVP. L'ordre n'est pas une priorité ;
 chaque item porte son estimation, ses dépendances et son origine.
 
+> **Mis à jour 2026-06-11.** La **refonte intégrale du backend** (I1-I6) et le
+> **cutover S5** sont livrés : modèle eau/carbone/azote/rendement recalibré, UI
+> rebranchée, ancien code supprimé. Les items ci-dessous restent post-MVP ; le
+> **Reporter de session** (cf CLAUDE.md §5.4) reste à construire.
+
 ---
 
 ## 1. Polish visuel & expérience

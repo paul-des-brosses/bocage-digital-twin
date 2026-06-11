@@ -4,6 +4,14 @@ Document de référence pour chaque constante de calibration du
 simulation core. Une entrée par paramètre : valeur, source, fenêtre de
 plausibilité, dernière révision.
 
+> **⚠️ Document pré-refonte (archive).** Ce fichier décrit la calibration de
+> l'**ancien** simulation core, supprimé au cutover S5 (2026-06-11). Le modèle
+> courant est le **refonte** : la spécification et les paramètres sourcés font
+> désormais autorité dans **`docs/refonte/08_MODELE.md`** (+ les commits de
+> recalibration azote). Ce document reste utile pour ses **sources** (Agreste,
+> INRAE, COMIFER…), réutilisées par la refonte, mais ses *valeurs de constantes*
+> ne reflètent plus le code.
+
 > **Avertissement** : ce modèle reste un démonstrateur portfolio. Les
 > ordres de grandeur sont ancrés sur des sources publiques mais aucune
 > calibration ne fait l'objet d'une validation par un agronome ou un

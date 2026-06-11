@@ -146,10 +146,10 @@ feat(simulation): add deterministic seeded random with sub-seed derivation
 
 - Agrégation en Hero KPIs (5 indicateurs principaux).
 - Panneaux Niveau B (Biodiversité, Climat & ressources, Économie).
-- Simulation fantôme (shadow run) à baseline gelée, mêmes seeds (le moteur
-  parallèle est orchestré en Couche 05 par `ShadowSimulationRunner` ; la
-  Couche 04 porte la comparaison real-vs-shadow via
-  `CumulativeTechValueIndicator`).
+- Simulation fantôme (shadow run) à baseline gelée, mêmes seeds (le run
+  parallèle est orchestré en Couche 03 par `SimulationSession`, qui ticke le
+  réel et le fantôme en lockstep ; la valeur-techno real-vs-shadow est exposée
+  par la session via `TechValueNetEurosPerHa`).
 - Reporter de session (prévu, non encore construit — backlog).
 - Référence Couches 1, 2, 3.
 
@@ -373,8 +373,9 @@ Tests unitaires en **EditMode** sur la Couche 1, **obligatoires**.
   gelée** (les décisions de l'agriculteur sont figées à leur valeur de départ
   via `ScenarioContext.CreateFrozenShadowFrom`, cf ADR #58) — il n'y a pas de
   drapeau `applyTechActions`.
-- **Transitions de paramètres** : interpolation sur 7-14 jours simulés
-  via `TransitioningParameter<T>`. Aucune mutation abrupte.
+- **Transitions de paramètres** : application **immédiate** des leviers dans la
+  refonte (décision MVP S2). L'interpolation 7-14 jours (`TransitioningParameter`)
+  de l'ancien modèle a été retirée au cutover S5.
 
 ---
 

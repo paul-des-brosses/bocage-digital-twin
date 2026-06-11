@@ -2,6 +2,13 @@
 
 > **Mis à jour 2026-06-04 : réconciliation E8/E9 (voir entrées E8/E9 du
 > Journal des modifications).**
+>
+> **Mis à jour 2026-06-11 (cutover S5) : la scène ne porte plus que des
+> composants refonte.** Le runner est `RefonteSimulationRunner` ; l'ancien
+> `SimulationRunner`, le `ShadowSimulationRunner`, `AutoActionApplier`,
+> `ManualActionsBinding` et `SimulationTraceRecorder` ont été supprimés du code
+> et retirés de la scène. Les entrées de Journal antérieures qui les mentionnent
+> sont historiques.
 
 Document vivant. **Tenu à jour à chaque sub-étape par Claude Code.** Tu y
 trouves, pour chaque GameObject de la scène `Main`, les components qui le

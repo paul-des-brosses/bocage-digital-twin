@@ -165,7 +165,9 @@ Marge = Y · prix_culture
 - **Stabilité** : `σ` inter-annuel du rendement (ou de la marge), estimé
   sur fenêtre glissante OU via le rejeu météo de la projection (Partie C).
   Affiché comme sous-indicateur « risque » (un sol résilient → `σ` bas).
-- Normalisation : `[0, 1,2·Y_pot] → [0,1]`.
+- Normalisation : `[0, 1,2·Y_pot] → [0,1]` (Y_pot = 7,6 t/ha = potentiel *non
+  stressé* après recalibration azote ; le rendement *actuel* affiché tourne
+  ~5,5 t/ha avec ~13 % de CV inter-annuel, cf 08_MODELE §5.5).
 
 ### KPI 3 — Biodiversité [0,1]
 

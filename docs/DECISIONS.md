@@ -1896,3 +1896,39 @@ dur — l'optimum émerge.
 - Optimisation continue de la magnitude (chercher la dose optimale du levier)
   — sur-ingénierie : l'utilisateur choisit la magnitude au curseur, la
   projection à magnitude par défaut suffit à classer (§17).
+
+---
+
+## Refonte du backend (2026) — décisions clés
+
+Décisions structurantes de la réécriture du modèle (I1-I6) et du cutover S5.
+
+### R1. Refonte en namespaces parallèles `*.Refonte`, puis cutover
+
+**Contexte** : le modèle pré-refonte (couches 01-04) avait atteint ses limites (couplages incomplets, décision à coefficients figés). Réécrire en place aurait cassé l'app pendant des semaines.
+
+**Décision** : développer le nouveau modèle sous des sous-namespaces `*.Refonte`, coexistant avec l'ancien, puis basculer (cutover S5) en supprimant tout l'ancien une fois la refonte validée en Play Mode.
+
+**Raison** : l'app reste lançable à chaque étape ; le harnais headless valide les couches 01-04 en continu ; la bascule est un seul commit atomique vérifiable.
+
+### R2. Recalibration de la réponse azotée du rendement (Arvalis/COMIFER/INRAE)
+
+**Contexte** : le rendement plafonnait trop bas et le plancher « zéro azote » s'effondrait sous le réalisme agronomique.
+
+**Décision** : `Y_pot` 7,0 → 7,6 t/ha (potentiel atteignable, Agreste blé Eure-et-Loir) ; ajout d'un terme de minéralisation de la fraction active `Mh` ≈ 40 kgN/ha/an que le 2-pools ICBM sous-représentait ; perte organique azotée 0,8 → 0,6/an.
+
+**Raison** : Référence N120 → ~5,5 t/ha stable (sans transitoire), plancher N=0 ~52 % du plateau, optimum ~N120-160 conforme Arvalis, ~13 % de CV inter-annuel. Verrouillé par `NitrogenResponseCalibrationTests`. Cf `docs/refonte/08_MODELE.md`.
+
+### R3. Cadrage « culture annuelle représentative d'une rotation blé/colza »
+
+**Contexte** : un bocage normand ne fait pas de monoculture ; défendre la rotation est plus honnête. Mais le modèle est mécaniquement mono-culture.
+
+**Décision** : la culture annuelle représente une rotation blé/colza, **calibrée sur le blé** (culture dominante, courbes azote documentées) ; le rendement actuel ~5,5 t/ha est la moyenne représentative.
+
+**Raison** : garde des paramètres citables (une culture = une source) tout en assumant la rotation dans la narration et via le levier Prairie.
+
+### R4. Transitions de leviers instantanées (MVP)
+
+**Décision** : les leviers s'appliquent immédiatement ; l'ancien lissage 7-14 jours (`TransitioningParameter`) est retiré.
+
+**Raison** : simplicité MVP ; l'effet reste lisible et le modèle reste déterministe.

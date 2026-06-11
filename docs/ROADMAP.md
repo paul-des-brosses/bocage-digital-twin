@@ -8,6 +8,13 @@ Mis à jour 2026-06-04 : ajout des chantiers E8 (refonte delta-tech) et
 E9 (système de recommandations) ; le polish de publication, anciennement
 E7, devient E10.
 
+Mis à jour 2026-06-11 : **refonte intégrale du backend** (I1-I6, namespaces
+`*.Refonte`) livrée et validée — modèle eau/carbone/azote/rendement, décision
+dérivée du modèle, capteurs en primauté, Couche 05 rebranchée, **recalibration
+de la réponse azotée** sur Arvalis/COMIFER/INRAE (cf `docs/refonte/08_MODELE.md`).
+**Cutover S5** : l'ancien modèle pré-refonte, ses bindings et ses tests sont
+supprimés ; le repo ne contient plus que le modèle refonte.
+
 ---
 
 ## 1. Cadre
