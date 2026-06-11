@@ -6,7 +6,7 @@ namespace Bocage.Data.RuntimeContainers
     /// <summary>
     /// Observable container for the water table depth Hero KPI (Étape 6).
     /// Same pattern as <see cref="RC_HedgerowDensity"/>: single writer
-    /// (SimulationRunner), many readers (UI labels, future gauges).
+    /// (RefonteSimulationRunner), many readers (UI labels, future gauges).
     /// <para>
     /// Two channels:
     /// <list type="bullet">

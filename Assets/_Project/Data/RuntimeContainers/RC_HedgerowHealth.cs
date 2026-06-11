@@ -7,7 +7,7 @@ namespace Bocage.Data.RuntimeContainers
     /// Observable container for the hedgerow health proxy (sub-étape 9β).
     /// Consumed by <c>HedgerowShaderBinding</c> to drive a desaturation
     /// / browning pass on the hedge sprites when an active drought
-    /// event is biting. Single writer (<c>SimulationRunner</c>), many
+    /// event is biting. Single writer (<c>RefonteSimulationRunner</c>), many
     /// readers.
     /// <para>
     /// Health is a derived presentation channel, not a model state

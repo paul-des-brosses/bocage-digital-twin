@@ -7,7 +7,7 @@ namespace Bocage.Data.RuntimeContainers
     /// Observable container for the soil organic carbon Hero KPI
     /// (chantier E3 / ADR #48). Same pattern as
     /// <see cref="RC_HedgerowDensity"/> and <see cref="RC_WaterTableDepth"/>:
-    /// single writer (SimulationRunner), many readers (UI labels, future
+    /// single writer (RefonteSimulationRunner), many readers (UI labels, future
     /// onglet Climat &amp; Ressources binding).
     /// <para>
     /// Two channels:
