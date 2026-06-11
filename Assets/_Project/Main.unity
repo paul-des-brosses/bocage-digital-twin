@@ -2151,7 +2151,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1088573111}
-  - component: {fileID: 1088573112}
   m_Layer: 0
   m_Name: _Debug
   m_TagString: Untagged
@@ -2174,25 +2173,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1088573112
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1088573110}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74f50dc5e66f4974885edce9cdc5828f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Diagnostics.SimulationTraceRecorder
-  runner: {fileID: 0}
-  hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
-  waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
-  profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
-  outputFolder: Logs
-  maxRowsBeforeFlush: 200000
-  autoExportOnDestroy: 1
 --- !u!1 &1219794906
 GameObject:
   m_ObjectHideFlags: 0
@@ -3080,7 +3060,6 @@ GameObject:
   - component: {fileID: 1463489831}
   - component: {fileID: 1463489833}
   - component: {fileID: 1463489832}
-  - component: {fileID: 1463489835}
   - component: {fileID: 1463489834}
   - component: {fileID: 1463489837}
   - component: {fileID: 1463489836}
@@ -3093,7 +3072,6 @@ GameObject:
   - component: {fileID: 1463489842}
   - component: {fileID: 1463489845}
   - component: {fileID: 1463489846}
-  - component: {fileID: 1463489847}
   - component: {fileID: 1463489848}
   m_Layer: 0
   m_Name: _UI_Canvas
@@ -3307,19 +3285,6 @@ MonoBehaviour:
   historyListName: decision-history-list
   historyEmptyLabelName: decision-history-empty
   historyCloseButtonName: decision-history-close-button
---- !u!114 &1463489835
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1463489822}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4ce2899bce174b4e9cd1c05f12229aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Decision.AutoActionApplier
-  runner: {fileID: 0}
 --- !u!114 &1463489836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3538,25 +3503,6 @@ MonoBehaviour:
   chart2CaptionName: sensor-inspector-chart2-caption
   chart2RowName: sensor-inspector-chart2-row
   footerInfoName: sensor-inspector-footer-info
---- !u!114 &1463489847
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1463489822}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a8f0b2c5e6d7f8b1c4a9d2e5f8b3c0d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.ManualActionsBinding
-  runner: {fileID: 0}
-  plantHedgesSliderName: manual-plant-hedges-slider
-  plantHedgesValueLabelName: manual-plant-hedges-value
-  plantHedgesButtonName: manual-plant-hedges-button
-  irrigationSliderName: manual-irrigation-slider
-  irrigationValueLabelName: manual-irrigation-value
-  irrigationButtonName: manual-irrigation-button
 --- !u!114 &1463489848
 MonoBehaviour:
   m_ObjectHideFlags: 0
