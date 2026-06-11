@@ -293,9 +293,13 @@ abstrait** de l'existant.
   (calendrier agronomique fixe). L'azote minéral est ~immédiatement
   disponible. *(COMIFER)*
 - **`N_min`** — minéralisation de la MO, **couplée au carbone** (§5.3) :
-  `N_min = (k_y · r_e · C_y) / (C/N)`. `r_e = f_T(T)·f_θ(θ)` → la
-  minéralisation **flambe au chaud & humide** (printemps, automne) ; le flush
-  d'automne part en partie en lessivage. `C/N ≈ 10`. *(AMG / INRAE)*
+  humus lent `N_min = (k_o · r_e · C_o) / (C/N)` **+** un terme de **fraction
+  active `Mh`** (≈ 40 kgN/ha/an, modulé par `r_e`) que le 2-pools ICBM
+  sous-représente — sans lui le plancher « zéro azote » s'effondre sous le
+  réalisme agronomique (le sol doit fournir ~50 % du potentiel sans apport).
+  `r_e = f_T(T)·f_θ(θ)` → la minéralisation **flambe au chaud & humide**
+  (printemps, automne) ; le flush d'automne part en partie en lessivage.
+  `C/N ≈ 10`. *(AMG / INRAE ; `Mh` ~ Mh COMIFER 30-80 kgN/ha/an)*
 - **`N_dépôt`** — dépôt atmosphérique ~constant ≈ 15 kgN/ha/an. *(EMEP/INRAE)*
 - **`N_fix`** — fixation biologique, **seulement si couverts légumineux** :
   `N_fix = a_fix · couverts%_légum` (~50-150 kgN/ha). *(Justes et al.)*
@@ -314,7 +318,10 @@ abstrait** de l'existant.
   apports). *(COMIFER/IPCC ; compta N₂O = GES possible post-MVP.)*
 
 **Couplage rendement — `Kn` remplace le facteur d'intensité (§5.5) :**
-`Kn = 1 − exp(−c · ΣPrélèvement / Demande_totale)` (Mitscherlich saturant).
+implémenté sous forme saturante en azote *disponible* `Kn = 1 − exp(−N / c)`
+(`c = 15 kgN/ha`, sur le pool minéral instantané) — simplification de la forme
+prélèvement/demande `1 − exp(−c · ΣPrélèvement / Demande_totale)`, même plateau
+Mitscherlich. La position de l'optimum (~N120-160) est calée par balayage headless.
 **Rendements décroissants** : doubler `N` au-delà de l'optimum ne gagne
 presque rien en rendement (plateau) mais coûte cher + lessive + abîme la
 biodiv. *(Mitscherlich ; Lechenet 2017 ; COMIFER)*
@@ -344,10 +351,12 @@ le *révèle*, ne l'impose pas.
 |---|---|---|---|---|
 | `C/N` | rapport C/N humus | 10 | sols tempérés | ⬤ |
 | `N_dépôt` | dépôt atmosphérique | ~15 kgN/ha/an | EMEP/INRAE | ◐ |
+| `Mh` | minéralisation fraction active | 40 kgN/ha/an | INRAE/COMIFER (Mh 30-80) | ◐ |
 | `a_fix` | fixation couvert légumineux | 50-150 kgN/ha | Justes et al. | ◐ |
-| teneur N | azote / rendement | ~22 kgN/t | COMIFER | ⬤ |
-| `λ` | fraction lessivable | à calibrer | COMIFER | ○ |
-| `c` | courbure Mitscherlich N | à calibrer | Lechenet | ○ |
+| teneur N | azote export grain | ~22 kgN/t | COMIFER (≠ b ~30 plante entière) | ⬤ |
+| `λ` | fraction lessivable | 0,5 | COMIFER | ◐ |
+| `c` | courbure Mitscherlich N (sur pool) | 15 kgN/ha | calé balayage / Lechenet | ◐ |
+| perte org. | dénit.+immobilisation ∝ pool | 0,6 /an | littérature | ◐ |
 | frac. volatilisation | pertes gazeuses | ~10 % apports | IPCC/COMIFER | ◐ |
 
 ### 5.5 Rendement [CHANGÉ]
@@ -364,7 +373,13 @@ Y_cible = Y_pot · Ks_saison · Kn · K_chaleur · K_intensité
   **remplace** le `K_intensité` abstrait (décision #4 verrouillée).
 - `K_chaleur` = pénalité chaleur 6 %/°C + stress aigu jours >25 °C [GARDÉ]
   *(IPCC AR6 ch.5)*.
-- `Y_pot` = 5,5 t/ha (blé/colza Eure-et-Loir/Orne) [GARDÉ] *(Agreste)*.
+- `Y_pot` = **7,6 t/ha** = potentiel *atteignable* (blé Eure-et-Loir, Agreste
+  ~70 q/ha) ; les stress (eau/chaleur/azote/adventices) le ramènent à
+  **~5,5 t/ha actuel** — la cible « culture annuelle représentative » d'une
+  **rotation blé/colza** Orne–Eure-et-Loir (le modèle est mono-culture
+  mécaniquement, ancré sur le blé dominant ; le colza tire la moyenne sous le
+  blé pur). Variabilité interannuelle ~13 % de CV (météo stochastique),
+  verrouillée par `NitrogenResponseCalibrationTests`. [RECALIBRÉ] *(Agreste 2015-24)*.
 - Relaxation EMA vers la cible (constante ~saison). Y alimente les résidus
   (→ carbone) et la marge.
 
@@ -564,9 +579,10 @@ Une reco ne se déclenche que si son `ΔU` est positif et que le levier est
 | `h_hum` | humification | 0,13 | – | ICBM / AMG | ⬤ |
 | `a_résidus…` | coefs apports carbone | 0,8 / 1,2 / 0,4 | tC/ha/an | Solagro ; AFAC | ◐ |
 | `C/N` | rapport C/N du sol | 10 | – | sols tempérés | ⬤ |
-| `λ_lessiv` | fraction N lessivable | à calibrer | – | COMIFER | ○ |
+| `Mh` | minéralisation fraction active | 40 | kgN/ha/an | INRAE/COMIFER | ◐ |
+| `λ_lessiv` | fraction N lessivable | 0,5 | – | COMIFER | ◐ |
 | `Ky` | réponse rendement-eau | par stade | – | Doorenbos & Kassam 1979 | ⬤ |
-| `Y_pot` | rendement potentiel | 5,5 | t/ha | Agreste 2015-24 | ⬤ |
+| `Y_pot` | rendement potentiel (→ ~5,5 actuel) | 7,6 | t/ha | Agreste 2015-24 (blé E-et-L) | ⬤ |
 | pénalité chaleur | sur rendement | 6 %/°C | – | IPCC AR6 ch.5 | ⬤ |
 | prix culture | farm-gate | 250 | €/t | Eure-et-Loir 2022 | ⬤ |
 | PAC base / bonus | paiements | 220 / 20 | €/ha | PAC 2025 | ⬤ |
