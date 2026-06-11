@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Bocage.Data.RuntimeContainers
 {
     /// <summary>
-    /// Conteneur observable de l'azote minéral du sol (kgN/ha) — Hero KPI de la
-    /// refonte. Même pattern que <see cref="RC_IntegratedProfitability"/> : un
-    /// seul écrivain (le RefonteSimulationRunner), plusieurs lecteurs (labels UI,
+    /// Conteneur observable de l'azote minéral du sol (kgN/ha) — Hero KPI.
+    /// Même pattern que <see cref="RC_IntegratedProfitability"/> : un
+    /// seul écrivain (le SimulationRunner), plusieurs lecteurs (labels UI,
     /// panneau Climat &amp; ressources).
     /// </summary>
     [CreateAssetMenu(menuName = "Bocage/Data/RC_Nitrogen", fileName = "RC_Nitrogen")]

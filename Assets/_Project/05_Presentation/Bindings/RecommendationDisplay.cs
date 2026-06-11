@@ -1,6 +1,6 @@
 using System.Globalization;
-using Bocage.Decision.Refonte;
-using Bocage.Sensors.Refonte;
+using Bocage.Decision;
+using Bocage.Sensors;
 
 namespace Bocage.Presentation.Bindings
 {

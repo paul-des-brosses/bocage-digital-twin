@@ -8,7 +8,7 @@ namespace Bocage.Data.RuntimeContainers
     /// hedgerow density Hero KPI. This is the bridge between the
     /// pure-C# indicator (Couche 4) and the Unity-side consumers
     /// (UI labels, shaders) in Couche 5: a single writer (the
-    /// publisher in <c>RefonteSimulationRunner</c>) pushes new values via
+    /// publisher in <c>SimulationRunner</c>) pushes new values via
     /// <see cref="Set"/>, every subscriber listens via
     /// <see cref="OnChanged"/>.
     /// <para>

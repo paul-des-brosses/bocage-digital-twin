@@ -8,7 +8,7 @@ namespace Bocage.Data.RuntimeContainers
     /// invested by the user across all manual « Replanter haies »
     /// actions (chantier E5 / ADR #50). Same single-writer pattern as
     /// <see cref="RC_IntegratedProfitability"/>: written by
-    /// <c>RefonteSimulationRunner.PublishIndicators</c> from
+    /// <c>SimulationRunner.PublishIndicators</c> from
     /// <see cref="Bocage.Decision.DecisionJournal.TotalInvestmentEurosPerHectare"/>,
     /// read by the Économie tab binding (chantier E6) and the popup
     /// for context display.

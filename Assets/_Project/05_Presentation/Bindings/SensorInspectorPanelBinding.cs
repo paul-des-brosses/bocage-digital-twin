@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Globalization;
-using Bocage.Presentation.Refonte;
+using Bocage.Presentation;
 using Bocage.Presentation.Scene.Sensors;
-using Bocage.Sensors.Refonte;
+using Bocage.Sensors;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,11 +10,11 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Panneau d'inspection capteur (version <b>légère</b> de la refonte, S4) : au
+    /// Panneau d'inspection capteur (version <b>légère</b>, S4) : au
     /// clic sur un sprite capteur (<see cref="SensorClickedEventBus"/> → un
     /// <see cref="SensorType"/>), affiche le nom du capteur, son rôle (l'alerte
     /// qu'il arme), sa <b>valeur mesurée du jour</b> (lue sur la session), et son
-    /// modèle de bruit (σ). Pas de graphe : les readers refonte sont sans historique
+    /// modèle de bruit (σ). Pas de graphe : les readers sont sans historique
     /// (décision S4). Ferme via le X, un clic sur le fond, ou Échap. Couche 05.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
@@ -23,8 +23,8 @@ namespace Bocage.Presentation.Bindings
         public const string HiddenClass = "hidden";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
 
         [SerializeField] private string overlayName = "sensor-inspector-overlay";
         [SerializeField] private string closeButtonName = "sensor-inspector-close";

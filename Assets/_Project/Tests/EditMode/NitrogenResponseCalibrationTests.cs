@@ -1,4 +1,4 @@
-using Bocage.SimulationCore.Refonte;
+using Bocage.SimulationCore;
 using NUnit.Framework;
 using SeededRandom = Bocage.SimulationCore.SeededRandom;
 
@@ -16,7 +16,7 @@ namespace Bocage.Tests.EditMode
     public sealed class NitrogenResponseCalibrationTests
     {
         // VRAIE climatologie Tourouvre (Perche, Orne) — copiée de
-        // RefonteSimulationRunner.TourouvreClimatology() pour que les rendements
+        // SimulationRunner.TourouvreClimatology() pour que les rendements
         // absolus correspondent au jeu (pas un climat synthétique).
         private static Climatology TourouvreClimatology()
         {

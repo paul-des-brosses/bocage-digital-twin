@@ -7,7 +7,7 @@ namespace Bocage.Data.RuntimeContainers
     /// Observable container for the soil moisture proxy (sub-étape 9α).
     /// Consumed by the meadow shader binding to drive the dry↔moist
     /// gradient of the prairie sprites. Single writer
-    /// (<c>RefonteSimulationRunner</c>), many readers.
+    /// (<c>SimulationRunner</c>), many readers.
     /// <para>
     /// The proxy is unit-range by construction so the raw and normalized
     /// channels carry the same value — both are written together to keep
@@ -16,7 +16,7 @@ namespace Bocage.Data.RuntimeContainers
     /// </para>
     /// <para>
     /// Per CLAUDE.md §9 (sensor primacy), the value is derived from the model
-    /// water-table depth (Couche 01 refonte),
+    /// water-table depth (Couche 01),
     /// which itself maps to the piezometer sensor — no calendar input,
     /// no scenic ambient cue.
     /// </para>

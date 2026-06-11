@@ -1,4 +1,4 @@
-using Bocage.Presentation.Refonte;
+using Bocage.Presentation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,10 +7,10 @@ namespace Bocage.Presentation.Bindings
 {
     /// <summary>
     /// Wires the four speed-control buttons (pause, play x1, play x10,
-    /// skip-to-end) to the <see cref="RefonteSimulationRunner"/>'s
+    /// skip-to-end) to the <see cref="SimulationRunner"/>'s
     /// <c>StartTicking</c>/<c>StopTicking</c>/<c>TicksPerSecond</c>/
     /// <c>FastForwardTo</c> surface. Also maintains a small day counter
-    /// label that reads <see cref="RefonteSimulationRunner.CurrentDay"/> after
+    /// label that reads <see cref="SimulationRunner.CurrentDay"/> after
     /// every tick.
     /// <para>
     /// The last selected play-speed (x1 or x10) is persisted in
@@ -41,8 +41,8 @@ namespace Bocage.Presentation.Bindings
         private const float SpeedX10 = 10f;
         private const float SpeedX20 = 20f;
 
-        [SerializeField, Tooltip("Source du moteur. Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Source du moteur. Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
 
         [Header("UXML element names — buttons")]
         [SerializeField] private string pauseButtonName = "speed-pause-button";
@@ -135,7 +135,7 @@ namespace Bocage.Presentation.Bindings
 
         /// <summary>
         /// Mirrors the runner's actual ticking state onto the speed bar.
-        /// Fired by <see cref="RefonteSimulationRunner.TickingStateChanged"/>
+        /// Fired by <see cref="SimulationRunner.TickingStateChanged"/>
         /// whenever StartTicking/StopTicking flips IsRunning — notably the
         /// fresh « Lancer la simulation » path, where Rebuild fires the
         /// Rebuilt event while still paused and StartTicking(×1) runs only

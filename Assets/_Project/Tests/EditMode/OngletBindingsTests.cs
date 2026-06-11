@@ -7,11 +7,11 @@ using UnityEngine;
 namespace Bocage.Tests.EditMode
 {
     /// <summary>
-    /// EditMode coverage du seul helper pur restant des panneaux Niveau B après la
-    /// refonte : <see cref="OngletBiodivBinding.CountDistinctSpecies"/>. Les agrégats
+    /// EditMode coverage du seul helper pur restant des panneaux Niveau B :
+    /// <see cref="OngletBiodivBinding.CountDistinctSpecies"/>. Les agrégats
     /// météo (T° moyenne / cumul pluie) et la décompo économique (PSE/PAC/MAEC/…)
     /// vivent désormais dans la session et <c>EconomyRule.Breakdown</c>, couverts par
-    /// <c>S4DataRefonteTests</c> — leurs anciens tests de binding sont retirés.
+    /// <c>S4DataTests</c> — leurs anciens tests de binding sont retirés.
     /// </summary>
     public sealed class OngletBiodivBindingTests
     {

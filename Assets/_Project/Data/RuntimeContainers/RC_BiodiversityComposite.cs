@@ -9,7 +9,7 @@ namespace Bocage.Data.RuntimeContainers
     /// inverse water-table depth into a single <c>[0, 1]</c> score
     /// (cf <c>BiodiversityCompositeIndicator</c>).
     /// <para>
-    /// Single writer (<c>RefonteSimulationRunner</c>), many readers (UI label
+    /// Single writer (<c>SimulationRunner</c>), many readers (UI label
     /// binding, gauges). The score is unit-range by construction so
     /// the raw and normalized channels carry the same value — both are
     /// written together to keep the API symmetric with sibling RCs.

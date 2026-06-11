@@ -1,6 +1,6 @@
 using System.Globalization;
-using Bocage.Presentation.Refonte;
-using Bocage.SimulationCore.Refonte;
+using Bocage.Presentation;
+using Bocage.SimulationCore;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,15 +13,15 @@ namespace Bocage.Presentation.Bindings
     /// la marge) : rendement, coûts d'intrants, charges fixes, et les 4 paiements de
     /// services écosystémiques (PSE, PAC, MAEC, crédit carbone). Les deux anciennes
     /// lignes « investissement / horizon de rentabilité » sont repurposées en MAEC /
-    /// crédit carbone — il n'y a plus d'investissement upfront dans la refonte, donc
+    /// crédit carbone — il n'y a plus d'investissement upfront, donc
     /// ces lignes auraient été « sans objet » (cf §17 : afficher de l'info utile).
     /// Rafraîchi sur TickCompleted / Rebuilt du runner. Couche 05 — Play Mode.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class OngletEconomieBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
 
         [SerializeField] private string cropYieldLabelName = "eco-yield-value";
         [SerializeField] private string inputCostLabelName = "eco-input-cost-value";

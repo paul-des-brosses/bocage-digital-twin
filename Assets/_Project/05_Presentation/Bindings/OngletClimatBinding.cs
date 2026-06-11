@@ -1,6 +1,6 @@
 using System.Globalization;
 using Bocage.Data.RuntimeContainers;
-using Bocage.Presentation.Refonte;
+using Bocage.Presentation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,15 +10,15 @@ namespace Bocage.Presentation.Bindings
     /// <summary>
     /// Remplit les 4 lignes capteur de l'onglet « Climat &amp; ressources » sur le
     /// nouveau modèle : T° moyenne + cumul de pluie (fenêtre glissante 365 j de la
-    /// <see cref="Bocage.Decision.Refonte.SimulationSession"/>), stock de carbone du
+    /// <see cref="Bocage.Decision.SimulationSession"/>), stock de carbone du
     /// sol (RC), et dernier flux net CO2 (tour Eddy). La ligne « Nappe phréatique »
     /// reste pilotée par <c>WaterTableDetailLabelBinding</c>. Couche 05 — Play Mode.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class OngletClimatBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
         [SerializeField, Tooltip("Stock de carbone du sol (tC/ha).")]
         private RC_SoilCarbonStock soilCarbon;
 

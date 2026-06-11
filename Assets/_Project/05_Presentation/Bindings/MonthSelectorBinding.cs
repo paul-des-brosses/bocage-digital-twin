@@ -1,4 +1,4 @@
-using Bocage.Presentation.Refonte;
+using Bocage.Presentation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,8 +7,8 @@ namespace Bocage.Presentation.Bindings
 {
     /// <summary>
     /// Câble le dropdown « Mois de démarrage » à
-    /// <see cref="Bocage.SimulationCore.Refonte.ScenarioContext.StartingMonth"/>
-    /// (refonte S0b). Le choix est écrit dans le scénario vivant ; le moteur le
+    /// <see cref="Bocage.SimulationCore.ScenarioContext.StartingMonth"/>
+    /// (S0b). Le choix est écrit dans le scénario vivant ; le moteur le
     /// snapshote à la construction → effectif au <b>prochain Rebuild</b> (lancement
     /// ou réinitialisation), pas en cours de run (la saison reste continue).
     /// Couche 05 — Play Mode.
@@ -16,8 +16,8 @@ namespace Bocage.Presentation.Bindings
     [RequireComponent(typeof(UIDocument))]
     public sealed class MonthSelectorBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
 
         [Header("UXML element names")]
         [SerializeField] private string dropdownName = "starting-month-dropdown";

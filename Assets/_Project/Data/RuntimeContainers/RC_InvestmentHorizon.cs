@@ -6,7 +6,7 @@ namespace Bocage.Data.RuntimeContainers
     /// <summary>
     /// Observable container for the « horizon de rentabilité » metric
     /// (chantier E5 / ADR #50, refondu E8). Single-writer pattern: written
-    /// by <c>RefonteSimulationRunner.PublishIndicators</c> from the Couche 04 refonte
+    /// by <c>SimulationRunner.PublishIndicators</c> from the Couche 04
     /// indicators, read by the Économie tab binding.
     /// <para>
     /// Two channels:

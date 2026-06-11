@@ -4843,7 +4843,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2d95424e62eeee842b543adf180404eb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Refonte.RefonteSimulationRunner
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.SimulationRunner
   masterSeed: 1
   ticksPerSecond: 1
   autoStart: 0

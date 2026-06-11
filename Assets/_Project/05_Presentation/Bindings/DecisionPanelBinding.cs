@@ -1,5 +1,5 @@
-using Bocage.Decision.Refonte;
-using Bocage.Presentation.Refonte;
+using Bocage.Decision;
+using Bocage.Presentation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,8 +16,8 @@ namespace Bocage.Presentation.Bindings
     [RequireComponent(typeof(UIDocument))]
     public sealed class DecisionPanelBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
         [SerializeField, Tooltip("Le DecisionPopupBinding voisin (ré-ouverture d'une reco depuis la liste).")]
         private DecisionPopupBinding recommendationPopup;
 

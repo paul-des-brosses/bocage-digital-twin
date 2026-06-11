@@ -7,7 +7,7 @@ namespace Bocage.Data.RuntimeContainers
     /// Observable container for the integrated profitability Hero KPI
     /// (sub-étape 7b). Mirrors the pattern of <see cref="RC_HedgerowDensity"/>
     /// and <see cref="RC_WaterTableDepth"/>: single writer
-    /// (RefonteSimulationRunner), many readers (UI label binding, future
+    /// (SimulationRunner), many readers (UI label binding, future
     /// gauges).
     /// </summary>
     [CreateAssetMenu(

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Bocage.Decision.Refonte;
-using Bocage.Presentation.Refonte;
+using Bocage.Decision;
+using Bocage.Presentation;
 using Bocage.Presentation.Scenario;
 using Bocage.SimulationCore.Logging;
-using Bocage.SimulationCore.Refonte;
+using Bocage.SimulationCore;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -11,8 +11,8 @@ namespace Bocage.Presentation.Bindings
 {
     /// <summary>
     /// Crée un bouton par <see cref="ScenarioPresetDefinition"/>, applique le preset
-    /// complet en un clic — climat via <see cref="RefonteSimulationRunner.SetClimate"/>
-    /// (les deux runs) + les 6 leviers via <see cref="RefonteSimulationRunner.ApplyDecision"/>
+    /// complet en un clic — climat via <see cref="SimulationRunner.SetClimate"/>
+    /// (les deux runs) + les 6 leviers via <see cref="SimulationRunner.ApplyDecision"/>
     /// (run réel) — puis re-synchronise les sliders. Surligne le preset dont les
     /// valeurs correspondent exactement au scénario courant : dès que l'utilisateur
     /// bouge un slider, le surlignage disparaît. Application instantanée (S2).
@@ -23,8 +23,8 @@ namespace Bocage.Presentation.Bindings
         public const string PrefsKey = "Bocage.Scenario.LastPresetId";
         private const double FloatMatchTolerance = 0.001;
 
-        [SerializeField, Tooltip("Source du scénario. Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Source du scénario. Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
         [SerializeField, Tooltip("Le ScenarioControlsBinding voisin (pour re-synchroniser les sliders après un preset).")]
         private ScenarioControlsBinding controlsBinding;
         [SerializeField, Tooltip("Presets disponibles, dans l'ordre d'affichage (tableau des 4 assets ScenarioPreset_*).")]

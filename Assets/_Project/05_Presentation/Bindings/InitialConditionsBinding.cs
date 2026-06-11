@@ -1,5 +1,5 @@
 using System.Globalization;
-using Bocage.Presentation.Refonte;
+using Bocage.Presentation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,10 +10,10 @@ namespace Bocage.Presentation.Bindings
     /// Wires the three "Conditions initiales du bocage" sliders
     /// (densité de haie, profondeur de nappe, biodiversité initiale) and the
     /// "Réinitialiser le bocage" button to
-    /// <see cref="RefonteSimulationRunner.Rebuild"/>.
+    /// <see cref="SimulationRunner.Rebuild"/>.
     /// <para>
     /// Sliders are editable only when
-    /// <c>RefonteSimulationRunner.CurrentDay == 0</c>. Once the simulation has
+    /// <c>SimulationRunner.CurrentDay == 0</c>. Once the simulation has
     /// advanced past day 0, the sliders are disabled and a "verrouillé"
     /// hint appears — clicking Reset is the only way back to an
     /// editable state. The Reset button itself stays enabled at all
@@ -30,8 +30,8 @@ namespace Bocage.Presentation.Bindings
     [RequireComponent(typeof(UIDocument))]
     public sealed class InitialConditionsBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source du jour courant et de l'API Rebuild. Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Source du jour courant et de l'API Rebuild. Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
 
         [Header("UXML element names")]
         [SerializeField] private string hedgerowDensitySliderName = "initial-hedgerow-density-slider";

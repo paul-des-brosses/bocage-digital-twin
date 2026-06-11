@@ -1,6 +1,6 @@
 using System.Globalization;
-using Bocage.Decision.Refonte;
-using Bocage.Presentation.Refonte;
+using Bocage.Decision;
+using Bocage.Presentation;
 using Bocage.SimulationCore.Logging;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,10 +9,10 @@ namespace Bocage.Presentation.Bindings
 {
     /// <summary>
     /// Câble les 6 sliders de leviers agriculteur + 2 sliders climat au
-    /// <see cref="RefonteSimulationRunner"/>. Les leviers passent par
-    /// <see cref="RefonteSimulationRunner.ApplyDecision"/> — exactement le chemin
+    /// <see cref="SimulationRunner"/>. Les leviers passent par
+    /// <see cref="SimulationRunner.ApplyDecision"/> — exactement le chemin
     /// des recommandations (« reco ⊆ leviers ») ; le climat (exogène) par
-    /// <see cref="RefonteSimulationRunner.SetClimate"/>, appliqué aux deux runs.
+    /// <see cref="SimulationRunner.SetClimate"/>, appliqué aux deux runs.
     /// Application instantanée : les variables d'état lentes (azote, carbone,
     /// biodiversité, densité) lissent l'effet ; les transitions douces §15 ne sont
     /// pas retenues au MVP. Couche 05 (Unity) — validée en Play Mode.
@@ -20,8 +20,8 @@ namespace Bocage.Presentation.Bindings
     [RequireComponent(typeof(UIDocument))]
     public sealed class ScenarioControlsBinding : MonoBehaviour
     {
-        [SerializeField, Tooltip("Source du scénario. Glisse le GameObject portant le RefonteSimulationRunner.")]
-        private RefonteSimulationRunner runner;
+        [SerializeField, Tooltip("Source du scénario. Glisse le GameObject portant le SimulationRunner.")]
+        private SimulationRunner runner;
 
         [Header("UXML — sliders leviers")]
         [SerializeField] private string nitrogenSliderName = "nitrogen-dose-slider";
