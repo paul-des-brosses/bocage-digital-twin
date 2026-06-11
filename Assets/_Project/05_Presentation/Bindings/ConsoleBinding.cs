@@ -46,6 +46,11 @@ namespace Bocage.Presentation.Bindings
 
         private void OnEnable()
         {
+            // Robuste au domain reload de l'éditeur (recompilation en Play Mode) :
+            // Awake n'est pas rappelé et les champs non-sérialisés repassent à null,
+            // alors qu'OnEnable, lui, est rappelé. On ré-initialise donc ici.
+            if (_document == null) _document = GetComponent<UIDocument>();
+            if (_buffer == null) _buffer = new ConsoleLogBuffer(maxLines);
             ResolveContainer();
             BuildLabels();
             if (!_subscribed)
