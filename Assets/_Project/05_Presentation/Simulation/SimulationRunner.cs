@@ -246,7 +246,7 @@ namespace Bocage.Presentation
 
             if (faunaFactorHabitatContainer != null)
             {
-                float v = (float)BiodiversityRule.HabitatFactor(m.HedgerowDensityMPerHa);
+                float v = (float)BiodiversityRule.HabitatFactor(m.HedgerowDensityMPerHa, s.GrasslandFraction);
                 faunaFactorHabitatContainer.Set(v, v);
             }
             if (faunaFactorWaterContainer != null)
@@ -256,7 +256,7 @@ namespace Bocage.Presentation
             }
             if (faunaFactorInputsContainer != null)
             {
-                float v = (float)BiodiversityRule.InputsFactor(m.MineralNitrogenKgPerHa, s.PesticideIntensity);
+                float v = (float)BiodiversityRule.InputsFactor(m.MineralNitrogenKgPerHa, s.PesticideIntensity, s.GrasslandFraction);
                 faunaFactorInputsContainer.Set(v, v);
             }
         }
