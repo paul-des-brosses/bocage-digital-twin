@@ -1,11 +1,13 @@
 # ARCHITECTURE.md — Architecture technique
 
 Document technique d'architecture du Bocage Digital Twin. À lire en
-complément de `CLAUDE.md` (règles opérationnelles) et `DECISIONS.md`
-(rationale des choix).
+complément de `CLAUDE.md` (règles opérationnelles), `DECISIONS.md`
+(rationale des choix), et `refonte/08_MODELE.md` (le modèle biophysique
+détaillé). Pour une vue vulgarisée, voir `SIMULATION_OVERVIEW.md`.
 
-> **Mis à jour 2026-06-04** : réconciliation avec le code post-E8/E9
-> (refonte delta tech + système de recommandations).
+> **Mis à jour 2026-06-11** : aligné sur le modèle **refonte** (cutover S5).
+> Les namespaces `*.Refonte` parallèles ont été retirés ; le code vit aux
+> racines de couche (`Bocage.SimulationCore`, `Bocage.Sensors`, …).
 
 ---
 
@@ -17,68 +19,63 @@ graph TB
         UI[Dashboard UI]
         Scene[Scene Renderer]
         Bindings[Bindings]
-        Runner[Simulation Runner]
-        Shadow[Shadow Simulation Runner]
-        AutoApply[Auto Action Applier]
+        Runner[SimulationRunner]
+        Fauna[Fauna Pool]
     end
 
     subgraph L4["04 — Indicators"]
-        Hero[Hero Indicators (per-KPI classes)]
-        LevelB[Level B Panels]
+        Hero[HeroIndicators]
     end
 
     subgraph L3["03 — Decision"]
-        RecEngine[Recommendation Engine]
-        Outcome[Outcome Projector]
-        AutoActions[Auto Actions]
-        Journal[Decision Journal]
+        Session[SimulationSession]
+        RecEngine[RecommendationEngine]
+        Projector[ModelOutcomeProjector]
+        Objective[FarmerObjective]
     end
 
     subgraph L2["02 — Sensors"]
-        Sensors[Sensor Implementations]
-        EventDetect[Event Detector]
-        History[Measurement History]
+        Readers[Sensor Readers]
+        EventDetect[EventDetector]
+        EventLog[EventLog]
     end
 
     subgraph L1["01 — Simulation Core (pure C#)"]
-        Engine[Simulation Engine]
-        Model[Ecosystem Model]
+        Engine[SimulationEngine]
+        Model[EcosystemModel]
         Rules[Biophysical Rules]
-        Random[Seeded Random]
-        Context[Scenario Context]
+        Weather[WeatherGenerator]
+        Random[SeededRandom]
+        Context[ScenarioContext]
     end
 
-    Sensors --> Model
-    EventDetect --> Sensors
-    History --> Sensors
+    Readers --> Model
+    EventDetect --> Readers
+    EventLog --> EventDetect
 
-    RecEngine --> EventDetect
-    Outcome --> Model
-    AutoActions --> RecEngine
-    Journal --> RecEngine
+    Session --> Engine
+    RecEngine --> Projector
+    Projector --> Engine
+    RecEngine --> EventLog
+    Objective --> Model
 
     Hero --> Model
-    Hero --> Sensors
-    LevelB --> Model
-    LevelB --> Sensors
+    Hero --> Session
 
-    Runner --> Engine
+    Runner --> Session
     Runner --> Hero
-    Runner --> RecEngine
-    Shadow --> Engine
-    AutoApply --> AutoActions
     Bindings --> Hero
-    Bindings --> LevelB
-    Bindings --> Journal
+    Bindings --> Runner
+    Fauna --> Bindings
     UI --> Bindings
     Scene --> Bindings
-    Runner --> Context
-    UI --> RecEngine
 ```
 
 **Lecture** : une flèche `A --> B` signifie « A référence / dépend de B ».
 Les flèches descendent toujours vers une couche d'indice strictement
-inférieur. Aucune flèche ne remonte.
+inférieur. Aucune flèche ne remonte — l'invariant est **forcé par les
+asmdef** (la Couche 01 a `noEngineReferences: true` et ne voit aucune
+couche supérieure).
 
 ---
 
@@ -86,71 +83,66 @@ inférieur. Aucune flèche ne remonte.
 
 ### Couche 01 — SimulationCore
 
-**Responsabilité**
-
-Modélisation biophysique pure du bocage. Tient l'état complet de
-l'écosystème simulé et applique les règles de dynamique à chaque tick.
+**Responsabilité** — Modélisation biophysique pure du bocage. Tient l'état
+complet de l'écosystème et applique les règles de dynamique à chaque tick
+(1 tick = 1 jour). Pur C# : aucun `UnityEngine`, aucun I/O, aucun chrono.
 
 **Composants principaux**
 
-- `SimulationEngine` : orchestrateur de tick, gère le temps simulé et la
-  séquence d'application des règles.
-- `EcosystemModel` : conteneur d'état (haies, prairie, bosquet, mare,
-  arbres têtards, faune agrégée, météo, nappe, sol, etc.).
-- `BiophysicalRules` : règles de dynamique (croissance, dégradation,
-  hydrologie, propagation pathogènes, etc.). Implémente `IRule`.
-- `SeededRandom` : générateur d'aléa déterministe avec sous-seeds dérivés
-  par hash.
-- `ScenarioContext` : paramètres scénario en cours (climat, pression
-  agricole, contraintes réglementaires, horizon).
-- `TransitioningParameter<T>` : interpolation des paramètres de scénario
-  sur 7-14 jours simulés.
+- `EcosystemModel` : conteneur d'état (réserve en eau du sol `θ`, nappe,
+  carbone 2 pools jeune/vieux, azote minéral, rendement, densité de haie,
+  biodiversité, pression d'adventices, capital). Invariants (positivité,
+  bornes [0,1]) garantis aux setters.
+- `ScenarioContext` : paramètres scénario — climat (anomalie T°, facteur
+  pluie), 6 leviers de conduite, mois de départ. **Application immédiate**
+  (l'ancienne interpolation `TransitioningParameter` a été retirée au
+  cutover, décision MVP S2).
+- `SimulationEngine` : orchestrateur de tick. Ordre causal d'un jour :
+  `météo → fenêtres chaleur → eau θ → nappe → adventices → rendement →
+  azote → carbone → flore → biodiversité → économie → jour+1`. Les boucles
+  circulaires (carbone↔azote↔rendement) sont résolues par un décalage d'un
+  jour sur les variables lentes.
+- **Règles** (`*Rule`) : `WaterBalanceRule` (seau FAO-56 + ETP Hargreaves),
+  `NappeRule`, `WeedPressureRule`, `YieldRule` (potentiel × stress eau/azote/
+  chaleur/adventices, réponse azotée Mitscherlich saturante), `NitrogenDynamicsRule`
+  (bilan azoté explicite), `CarbonDynamicsRule` (ICBM 2 pools, décomposition
+  sensible au climat Q10), `HedgeFloraRule`, `BiodiversityRule` (3 facteurs),
+  `EconomyRule` (marge + paiements de services).
+- `WeatherGenerator` / `Climatology` : météo stochastique (chaîne de Markov
+  occurrence + AR(1) température + log-normale intensité) calibrée sur les
+  normales Tourouvre-au-Perche.
+- `SeededRandom` : aléa déterministe à sous-flux dérivés par hash (météo,
+  capteurs, faune indépendants).
+- `Logging/SimLogger` : façade de log à 3 niveaux (Debug / Simulation /
+  UserAction), branchée à la console Unity au bootstrap (Couche 05).
 
-**Non-responsabilités**
-
-- Aucun accès Unity (`UnityEngine`, `UnityEditor` interdits).
-- Aucun I/O fichier ou réseau.
-- Aucun rendu, aucun affichage.
-- Aucune dépendance vers les couches supérieures.
-
-**Dépendances** : aucune, hormis BCL .NET Standard 2.1.
+**Dépendances** : aucune, hormis la BCL .NET. `noEngineReferences: true`.
 
 ---
 
 ### Couche 02 — Sensors
 
-**Responsabilité**
-
-Transforme l'état du modèle en mesures bruitées (modèle de capteur
-réaliste) et détecte les événements significatifs.
+**Responsabilité** — Transforme l'état du modèle en **mesures bruitées**
+(modèle de capteur) et détecte les événements significatifs.
 
 **Composants principaux**
 
-- `ISensor` : interface commune.
-- Implémentations dans `Implementations/` (station météo, piézomètre,
-  capteur acoustique, piège photo, tour eddy covariance).
-- `FaunaSensorReader` : synthèse Gaussienne combinant deux capteurs
-  indépendants (acoustique + piège photo) avec σ ∝ 1/√fauna (théorie
-  Poisson : abondances rares → estimations plus bruitées). Sous-flux
-  RNG dédié `"fauna-sensors"` dérivé du seed maître pour la
-  reproductibilité indépendante des autres sous-systèmes. Sa lecture
-  alimente l'`EventDetector` pour l'alerte fauna.
-- `EventDetector` : compare l'état du modèle (et la lecture mesurée
-  fauna, plus les indicateurs économiques fournis par la Couche 04) à
-  des seuils calibrés pour émettre des événements (sécheresse prolongée,
-  anomalie acoustique, carbone sol bas, rentabilité anormalement basse).
-  Seuils : carbone < 45 tC/ha, rentabilité < 50 €/ha. Cooldown par type
-  pour éviter le spam.
-- `Events/` : `IEvent` + classes d'événements concrets
-  (`DroughtProlongedEvent`, `FaunaAcousticAnomalyEvent`,
-  `SoilCarbonLowEvent`, `LowProfitabilityEvent`).
-- `EventLog` : append-only chronologique des événements émis.
+- **Readers** (sans état, simples ajouteurs de bruit gaussien) :
+  `WeatherStationReader` (T° + pluie + humidité du sol), `PiezometerReader`
+  (profondeur de nappe), `EddyTowerReader` (flux net CO₂ + stock carbone
+  *estimé* intégré), `FaunaSensorReader` (indice de faune, canaux acoustique
+  + caméra fusionnés). Chacun utilise un sous-flux `SeededRandom` dédié.
+- `EventDetector` : compare les **mesures** (pas la vérité du modèle —
+  *primauté du capteur*, CLAUDE.md §9) à des seuils calibrés et émet des
+  événements : `HydricStress` (profondeur piézomètre), `SoilCarbonLow`
+  (stock estimé tour Eddy), `FaunaAnomaly` (indice mesuré), `LowProfitability`.
+  Cooldown par type contre le spam.
+- `EventLog` + `EventKind` (enum) + `DetectedEvent` (struct) : journal
+  append-only des événements ; chaque entrée porte la valeur **mesurée** qui
+  a franchi le seuil.
 
-**Non-responsabilités**
-
-- Ne modifie jamais l'état du modèle.
-- Ne prend aucune décision.
-- Ne touche pas à l'UI.
+**Non-responsabilités** — Ne mute jamais le modèle ; ne décide pas ; ne
+touche pas l'UI.
 
 **Dépendances** : Couche 01 uniquement.
 
@@ -158,74 +150,39 @@ réaliste) et détecte les événements significatifs.
 
 ### Couche 03 — Decision
 
-**Responsabilité**
-
-Génère des recommandations à partir des événements détectés, projette
-des issues probables sous incertitude, journalise les décisions.
+**Responsabilité** — Orchestre le run réel + le run fantôme, génère des
+recommandations **dérivées du modèle**, projette leurs issues, et porte le
+cycle de vie des décisions.
 
 **Composants principaux**
 
-- `RecommendationEngine` : produit au plus une recommandation par
-  événement non encore traité, en choisissant le levier qui rapproche le
-  bocage de l'équilibre DEPUIS L'ÉTAT COURANT (dispatch *state-aware*,
-  chantier E9). Sécheresse → irrigation ; anomalie fauna → le levier
-  habitat/intrants disposant de marge, du plus rapide au plus coûteux
-  (baisse d'intrants → arrêt de l'arrachage → plantation, sinon silence) ;
-  carbone bas → couverts puis restitution résidus ; rentabilité basse →
-  contre-recommandations économiques (remonter intrants, éclaircir haies),
-  jamais au détriment d'une biodiversité déjà critique.
-- `Recommendations/` : interface `IRecommendation` + 8 classes concrètes
-  réparties sur 6 leviers : `PlantHedgesRecommendation`,
-  `IrrigationAdviceRecommendation`, `ReduceInputsRecommendation`,
-  `RaiseInputsRecommendation`, `SowCoverCropsRecommendation`,
-  `RestoreResidueRecommendation`, `ReduceHedgeRemovalRecommendation`,
-  `IncreaseHedgeRemovalRecommendation`. `PlantHedgesRecommendation` est
-  désormais produite par le moteur (réponse habitat à une anomalie fauna,
-  une fois le levier intrants épuisé) ET déclenchable manuellement.
-- `OutcomeProjector` : projette des distributions d'issues à 2 horizons
-  (30 j et 365 j) sous forme de 3-points (worst / expected / best) — pas
-  de Monte-Carlo, distributions calibrées en dur (cf `DECISIONS.md`).
-- `RecommendationProvenance` : helper de formatage pur (pas de Unity)
-  qui résout l'`IEvent` source d'une reco depuis l'`EventLog` et
-  renvoie une ligne « Détecté jour N par <capteur> — <event summary> »
-  consommée par le popup décision et la liste historique (sub-étape 10a).
-- `AutoActionPipeline` : applique l'effet mécanique de chaque reco
-  Accepted / AutoAccepted, sur le run réel uniquement (jamais le shadow).
-  Idempotent via `DecisionJournal.MarkApplied/IsApplied`. Deux familles
-  de leviers : les actions de capital (plantation de haies, irrigation)
-  mutent directement l'`EcosystemModel` (`SetHedgerowDensity`,
-  `SetWaterTableDepth`) ; les changements de pratique quotidienne
-  (intensité d'intrants, couverts d'interculture, restitution résidus,
-  taux d'arrachage) déplacent le slider correspondant du `ScenarioContext`
-  sur une transition de 10 jours simulés (`PracticeTransitionDays`,
-  CLAUDE.md §15). La baisse d'intrants n'est plus un *nudge* ponctuel du
-  modèle (l'ancienne triche ADR #43, retirée en E8) mais un déplacement
-  durable du slider `InputIntensityFactor`, planché à l'extensif bio.
-- `RecommendationSurfacing` : classe chaque reco selon le SIGNE de son
-  issue projetée (`OutcomeProjector`) dans `Kind { WinWin,
-  EconomicTradeoff, EcologicalTradeoff, LoseLose }` et décide si elle
-  interrompt l'utilisateur (popup) ou reste en liste passive. Le twin
-  n'interrompt que pour les gains sans perdant et les urgences
-  écologiques (un correctif écologique coûteux escalade en popup quand la
-  biodiversité est critique) ; tout compromis confort ou économie-contre-
-  écologie reste en liste passive avec un marqueur « compromis ». Pure
-  Couche 03, testable en EditMode.
-- `DecisionJournal` : journal append-only des décisions (utilisateur ou
-  algorithmiques) avec horodatage simulé. Verdicts : `Pending`,
-  `Accepted`, `Rejected`, `AutoAccepted`, et `Superseded` (auto-marqué
-  quand un nouveau Pending de même type arrive — au plus 1 Pending par
-  type à un instant donné, cf ADR #44).
-- `DecisionVerdict` : enum des verdicts ci-dessus.
+- `SimulationSession` : **le cerveau orchestrateur.** Possède le
+  `RealModel` et le `ShadowModel` et les ticke **en lockstep** (même graine
+  météo). Le shadow est une **baseline gelée** (`CreateFrozenShadowFrom` :
+  climat/politiques partagés, décisions agriculteur figées au lancement).
+  Expose les mesures (humidité, faune, nappe), le carbone estimé, les flux,
+  les agrégats météo, et la **valeur-techno nette** (`TechValueNetEurosPerHa`
+  = capital réel − capital fantôme − investissements). Porte aussi le cycle
+  de vie des recos (pending, accept, dismiss, defer, cooldown anti-spam).
+- `RecommendationEngine` : pour un événement, construit les leviers
+  faisables, **projette chacun en avant** (le vrai moteur, sur une copie de
+  l'état) et garde celui qui sert le mieux l'objectif. Pas de coefficients
+  figés.
+- `ModelOutcomeProjector` : projette une `OutcomeDistribution` (worst /
+  expected / best) à 2 horizons (30 j, 365 j), le spread venant de plusieurs
+  réalisations météo.
+- `FarmerObjective` : fonction-objectif (marge dominante − pénalité de
+  risque) qui classe les niveaux de levier.
+- `DecisionLever` (enum, 6 leviers : NitrogenDose, Pesticide, Tillage,
+  CoverCrops, HedgeManagement, Grassland), `Recommendation` (struct),
+  `RecommendationSurfacing` : classe la reco en *gagnant-gagnant* (popup
+  proactif) vs *compromis* (liste passive), avec garde-fou biodiversité sur
+  les contre-recommandations économiques.
 
-**Non-responsabilités**
-
-- Ne lit pas l'UI directement (l'UI consomme les recommandations via
-  observable).
-- Ne mute le modèle qu'au travers de l'`AutoActionPipeline`, et seulement
-  pour les recos dont le verdict est Accepted / AutoAccepted : les actions
-  de capital mutent directement l'`EcosystemModel` via ses méthodes
-  `Set*`, les actions de pratique déplacent les sliders du
-  `ScenarioContext`. Aucune interface `IModelAction` n'existe.
+**Invariant clé** — **Reco ⊆ leviers** : tout ce qu'une reco propose est
+aussi actionnable directement au slider. Il n'y a plus de `DecisionJournal`,
+d'`AutoActionPipeline` ni d'`IRecommendation` (refonte) : les décisions
+acceptées sont appliquées par la session via `ApplyDecision`.
 
 **Dépendances** : Couches 01 et 02.
 
@@ -233,45 +190,16 @@ des issues probables sous incertitude, journalise les décisions.
 
 ### Couche 04 — Indicators
 
-**Responsabilité**
+**Responsabilité** — Agrège l'état du modèle et la session en KPIs.
 
-Agrège l'état du modèle et les mesures en KPIs et panneaux. Fournit les
-classes d'indicateurs par KPI consommées par la Couche 05.
+**Composant principal** — `HeroIndicators` : fonctions pures de calcul +
+normalisation des Hero KPIs (marge, rendement, biodiversité, carbone sol,
+réserve en eau %RU) et de la valeur-techno, plus les valeurs des panneaux
+Niveau B. Il n'y a plus de classe par KPI (l'ancien dossier `Hero/` a été
+supprimé) ni d'indicateur de shadow/horizon séparé : la valeur-techno vient
+de `SimulationSession`.
 
-**Composants principaux**
-
-Indicateurs purs (une classe par KPI, fonctions de calcul + normalisation
-pour la jauge), dossier `Hero/` :
-
-- `HedgerowDensityIndicator`, `BiodiversityCompositeIndicator`,
-  `WaterTableIndicator`, `IntegratedProfitabilityIndicator`,
-  `SoilCarbonIndicator` — les 5 Hero KPIs « état » (densité haies,
-  biodiversité composite, nappe phréatique, rentabilité intégrée, carbone
-  sol), plus les indicateurs dérivés `SoilMoistureIndicator` et
-  `HedgerowHealthIndicator` qui alimentent les canaux shaders.
-- `CumulativeTechValueIndicator` : intégrale courante en €/ha de
-  l'avantage de rentabilité du run réel sur le run shadow depuis le jour
-  0 (part GROSSE seulement ; le KPI affiché est le NET, cf §6). Stateful
-  par nature.
-- `InvestmentHorizonIndicator` : latch du « horizon de rentabilité » —
-  premier jour simulé où le NET (intégrale tech moins investissement
-  cumulé `DecisionJournal.TotalInvestmentEurosPerHectare`) atteint le
-  point mort (NET ≥ 0), à condition qu'un investissement existe à
-  amortir. N'a plus d'intégrale propre (refonte E8) : on lui passe le NET
-  même que le Hero KPI affiche.
-
-Note : il n'y a pas de classes `HeroIndicators` / `LevelBPanels`
-agrégatrices ; les panneaux Niveau B sont assemblés côté Couche 05 par
-les bindings d'onglets (`OngletBiodiv/Climat/EconomieBinding`) qui lisent
-ces indicateurs. Le `ShadowSimulationRunner` n'est PAS dans cette couche
-mais dans la Couche 05 (cf ci-dessous et §6). Un reporter de session est
-un item *backlog* (#4), non implémenté.
-
-**Non-responsabilités**
-
-- Ne mute jamais le modèle.
-- Ne décide pas (consomme les sorties de la Couche 03).
-- N'exécute pas elle-même la simulation fantôme (orchestrée en Couche 05).
+**Non-responsabilités** — Ne mute jamais le modèle ; ne décide pas.
 
 **Dépendances** : Couches 01, 02 et 03.
 
@@ -279,49 +207,38 @@ un item *backlog* (#4), non implémenté.
 
 ### Couche 05 — Presentation
 
-**Responsabilité**
-
-MonoBehaviours Unity. Rendu de la scène, UI, bindings vers les
-ScriptableObjects observables, gestion des inputs utilisateur.
+**Responsabilité** — MonoBehaviours Unity. Rendu de la scène, UI Toolkit,
+bindings vers les ScriptableObjects observables, inputs utilisateur.
 
 **Composants principaux**
 
-- `DashboardUI` : Hero KPIs, panneaux Niveau B, popovers Niveau C,
-  scenario panel, decision panel, comparison view, minimap.
-- `SceneRenderer` : organisation des sprites de scène (background,
-  midground, foreground, fauna, sensors), shaders pilotés par
-  observables.
-- `Bindings` : MonoBehaviours qui écoutent les ScriptableObjects
-  observables (`OnChanged`) et mettent à jour les éléments visuels et UI.
-- `SimulationRunner` : orchestrateur du run réel. Possède l'unique
-  `SimulationEngine` réel et le cadence via une coroutine
+- `SimulationRunner` (`[DefaultExecutionOrder(-8000)]`) : possède une
+  `SimulationSession` et la cadence via une coroutine
   (`WaitForSecondsRealtime`, indépendante de `Time.timeScale`). À chaque
-  tick : lit les capteurs, lance détection + recommandations, déclenche
-  les souscripteurs (`TickCompleted`), met à jour les accumulateurs
-  (tech-value GROSSE + latch horizon) puis publie les indicateurs dans
-  les conteneurs `RC_*`. Unique écrivain de ces conteneurs ; les bindings
-  ne font que lire.
-- Les classes `*Binding` de scénario (`ScenarioControlsBinding`,
-  `InitialConditionsBinding`, `MonthSelectorBinding`,
-  `ManualActionsBinding`, etc.) capturent les inputs utilisateur (sliders,
-  clics, vitesses) et les répercutent dans le `ScenarioContext` ou via les
-  méthodes `ApplyManual*` du `SimulationRunner`. Il n'existe pas de classe
-  `InputManager`.
-- `AutoActionApplier` : wrapper MonoBehaviour autour de
-  l'`AutoActionPipeline`. Souscrit à `SimulationRunner.TickCompleted` et
-  applique sur le run réel les recos Accepted / AutoAccepted (le shadow
-  n'est jamais touché).
-- `ShadowSimulationRunner` : run fantôme « agriculteur passif »
-  (cf §6). Vit en Couche 05 car il dépend des MonoBehaviours Unity
-  (`SimulationRunner`), pas en Couche 04.
+  tick : avance la session (réel + fantôme), déclenche les souscripteurs
+  (`TickCompleted`), puis **publie les indicateurs** dans les conteneurs
+  `RC_*`. Unique écrivain ; les bindings ne font que lire. Démarre **en
+  pause** (`autoStart` off) ; un `static bool IsTicking` est lu par la faune.
+- **Bindings de scénario** : `ScenarioControlsBinding` (6 leviers + 2 climat
+  → `Session.ApplyDecision` / `SetClimate`), `ScenarioPresetsBinding` (4
+  stratégies complètes), `MonthSelectorBinding`, `SpeedControlsBinding`
+  (pause / ×1 / ×10 / skip).
+- **Bindings d'affichage** : les labels Hero, les onglets Niveau B
+  (`OngletClimat/Economie/BiodivBinding`), le `SensorInspectorPanelBinding`
+  (inspecteur léger au clic capteur), `DecisionPopupBinding` +
+  `DecisionPanelBinding` (recos), `ConsoleBinding`.
+- **Faune visible** : `FaunaPool` (pooling), `FaunaPoolBinding` (spawn
+  Poisson dérivé de la biodiversité mesurée), `FaunaTraversalMotion`,
+  `FaunaStaticAppearance` (sentinelle héron).
+- **Scène & shaders** : `SceneAssembler`, `SensorVisualPlacer`, les
+  bindings de shaders (`MeadowShaderBinding`, `PondShaderBinding`,
+  `HedgerowShaderBinding`).
 
-**Non-responsabilités**
+Il n'existe plus de `ShadowSimulationRunner`, `AutoActionApplier`,
+`ManualActionsBinding` ni `SimulationTraceRecorder` (supprimés au cutover) :
+le fantôme vit dans `SimulationSession` (Couche 03), pas en Couche 05.
 
-- Ne contient aucune logique biophysique.
-- Ne calcule aucun KPI directement.
-- Ne mute pas l'état du modèle de simulation.
-
-**Dépendances** : toutes les couches inférieures.
+**Dépendances** : toutes les couches inférieures + `Data.RuntimeContainers`.
 
 ---
 
@@ -329,240 +246,126 @@ ScriptableObjects observables, gestion des inputs utilisateur.
 
 À chaque tick :
 
-1. **Inputs utilisateur** captés par les bindings de scénario de la
-   Couche 05 → mis à jour dans le `ScenarioContext` (avec interpolation
-   via `TransitioningParameter<T>`).
-2. **Tick de simulation** : `SimulationEngine.Tick()` applique les règles
-   biophysiques sur l'`EcosystemModel`, en utilisant `SeededRandom` et
-   le `ScenarioContext`.
-3. **Lecture capteurs** : chaque `ISensor` lit l'état du modèle et
-   produit une mesure bruitée. `EventDetector` examine les mesures (plus
-   les indicateurs économiques fournis par la Couche 04) et ajoute les
-   événements détectés à l'`EventLog` (append-only) — pas d'EventBus.
-4. **Décision** : `RecommendationEngine` consomme les événements de
-   l'`EventLog` et produit / met à jour les recommandations dans le
-   `DecisionJournal`. L'`AutoActionApplier` applique sur le run RÉEL les
-   recos Accepted / AutoAccepted (idempotence via
-   `DecisionJournal.IsApplied`) ; le shadow n'est jamais touché.
-5. **Indicateurs** : les indicateurs par KPI (Couche 04) recalculent les
-   valeurs à partir de l'état + mesures. Le `ShadowSimulationRunner` a
-   déjà avancé son propre modèle au même tick ; le `SimulationRunner`
-   intègre l'écart de rentabilité réel − shadow du jour. Le delta est
-   calculé (cf §6).
-6. **Bindings** : les composants `Bindings` écrivent les valeurs dans
-   les ScriptableObjects observables, qui notifient leurs abonnés via
-   `OnChanged`.
-7. **UI et Scene** : les abonnés (UI widgets, shaders pilotés) lisent
-   les nouvelles valeurs et se rafraîchissent.
+1. **Inputs utilisateur** captés par les bindings de scénario (Couche 05) →
+   `Session.ApplyDecision` / `SetClimate` → `ScenarioContext` (application
+   immédiate).
+2. **Tick de session** (`SimulationSession.Tick`) : avance le `SimulationEngine`
+   réel (règles biophysiques sur le `RealModel` dans l'ordre causal §2), lit
+   les capteurs (Couche 02), lance la détection d'événements et la mise à
+   jour des recommandations, **puis avance le run fantôme** d'un tick en
+   lockstep.
+3. **Indicateurs** : `HeroIndicators` (Couche 04) recalcule les KPIs depuis
+   l'état + la session (dont la valeur-techno réel − fantôme).
+4. **Publication** : `SimulationRunner.PublishIndicators` écrit les valeurs
+   dans les ScriptableObjects observables `RC_*`, qui notifient via `OnChanged`.
+5. **UI & Scène** : les bindings abonnés (labels, onglets, shaders, faune)
+   lisent les nouvelles valeurs et se rafraîchissent.
 
-Ce flux est descendant à l'aller (input → modèle → indicateurs) et
-remontant au retour (observables → UI). À aucun moment une couche
-inférieure ne lit une couche supérieure.
+Descendant à l'aller (input → modèle → indicateurs), remontant au retour
+(observables → UI). Aucune couche inférieure ne lit une couche supérieure.
 
 ---
 
 ## 4. Cycle de vie d'une session utilisateur
 
-1. **Bootstrap** : chargement de la scène `Main`. Le `SimulationRunner`
-   construit le `SimulationEngine` réel ; le `ShadowSimulationRunner`
-   construit le run fantôme (même seed maître, scénario gelé dérivé via
-   `CreateFrozenShadowFrom`). Le `ScenarioContext`, les ScriptableObjects
-   observables et les bindings sont initialisés.
-2. **État initial affiché** : KPIs initiaux, scène statique avec sprites
-   en place, recommandations vides, journal vide.
-3. **Lecture utilisateur** : l'utilisateur observe l'état initial,
-   éventuellement règle un preset via le scenario panel.
-4. **Lancement de la simulation** : utilisateur appuie play. Tick rate
-   x1 par défaut.
-5. **Boucle de simulation** : tick après tick, les KPIs évoluent, des
-   événements peuvent être détectés et apparaissent dans le decision
-   panel sous forme de recommandations.
-6. **Arbitrage utilisateur** : l'utilisateur accepte ou rejette les
-   recommandations. Les choix sont journalisés.
-7. **Modification de scénario en cours** : changement de preset →
-   transition interpolée 7-14 jours simulés.
-8. **Skip to end** : l'utilisateur peut sauter à l'horizon configuré.
-9. **État final** : les KPIs finaux restent affichés sur le dashboard ;
-   l'apport de la techno (NET) et l'horizon de rentabilité sont lisibles
-   en direct. Un rapport de session synthétique est un item *backlog*
-   (#4), non implémenté à ce stade.
-10. **Persistance** : `PlayerPrefs` sauvegarde uniquement la dernière
-    configuration de presets et la vitesse choisie.
+1. **Bootstrap** : chargement de `Main`. Le `SimulationRunner` construit sa
+   `SimulationSession` (réel + fantôme gelé, même seed maître). RC et bindings
+   initialisés. **Démarrage en pause.**
+2. **État initial affiché** : KPIs initiaux, scène en place, recos vides.
+3. **Lancement** : l'utilisateur appuie *Lancer*. Tick rate ×1 par défaut.
+4. **Boucle** : tick après tick, les KPIs évoluent ; des événements peuvent
+   être détectés et surfacés en recommandations.
+5. **Arbitrage** : l'utilisateur valide / ignore / reporte les recos.
+6. **Modification de scénario en cours** : leviers et climat appliqués
+   **immédiatement** ; le mois de départ ne prend effet qu'à la réinitialisation.
+7. **Skip to end** : saut à l'horizon configuré (finit en pause).
+8. **Persistance** : `PlayerPrefs` — uniquement dernier preset + vitesse.
+
+Un reporter de session synthétique reste un item *backlog* (cf
+`CLAUDE.md` §5.4), non implémenté.
 
 ---
 
 ## 5. Modèle d'horloges
 
-Trois horloges distinctes :
+- **Temps réel** (`Time.unscaledDeltaTime`) : animations cosmétiques de la
+  Couche 5 uniquement (faune, transitions UI).
+- **Temps simulé** : 1 tick = 1 jour, cadencé par le `SimulationRunner` via
+  une coroutine indépendante de `Time.timeScale`.
+- **Vitesses** : ×1 (1 tick/s), ×10 (10 ticks/s), skip-to-end (boucle au plus
+  vite jusqu'à l'horizon).
 
-- **Temps réel** (`Time.unscaledDeltaTime` Unity) : utilisé uniquement
-  pour les animations cosmétiques de la Couche 5 (interpolations
-  visuelles, transitions UI).
-- **Temps simulé** : avance d'un tick = un jour simulé. Cadencé par le
-  `SimulationRunner` (Couche 05) qui appelle `SimulationEngine.Tick()`
-  via une coroutine indépendante de `Time.timeScale` (la Couche 01 est du
-  C# pur, sans chrono).
-- **Vitesse utilisateur** : x1 (1 tick / seconde temps réel), x10 (10
-  ticks / seconde), skip to end (boucle exécutée au plus vite jusqu'à
-  l'horizon).
-
-Comportement sur **pause** : le temps simulé est gelé, les animations
-Couche 5 continuent à s'exécuter (les sprites de faune en pool restent
-animés visuellement). C'est un choix délibéré pour éviter une scène
-figée disgracieuse.
-
-Le **skip to end** désactive temporairement les bindings vers la Couche
-5 (pas de rafraîchissement intermédiaire de l'UI), exécute les ticks au
-plus vite, puis pousse une mise à jour finale.
+Sur **pause** : le temps simulé gèle, mais les animations Couche 5
+continuent (la faune en pool reste animée) — choix délibéré pour éviter une
+scène figée.
 
 ---
 
-## 6. Gestion de la simulation fantôme
+## 6. La simulation fantôme (apport de la techno)
 
-Il n'y a pas d'interface `ISimulationRun` ni de drapeau
-`applyTechActions`. Deux `SimulationEngine` indépendants sont construits à
-partir du **même seed maître**, chacun avec son propre `EcosystemModel` :
+Pas d'interface `ISimulationRun` ni de drapeau `applyTechActions`. La
+`SimulationSession` (Couche 03) possède **deux `EcosystemModel`** construits
+sur le **même seed maître** :
 
-- **Real run** : possédé par le `SimulationRunner` (Couche 05). Les
-  décisions de l'agriculteur (déplacements de sliders et actions
-  appliquées) le font évoluer.
-- **Shadow run** : possédé par le `ShadowSimulationRunner` (Couche 05),
-  le baseline « agriculteur passif ». Son scénario est dérivé par
-  `ScenarioContext.CreateFrozenShadowFrom` : les paramètres EXOGÈNES
-  (température, précipitations, MAEC, PSE) sont **partagés par référence**
-  avec le run réel — donc climat et politiques suivent en lockstep même
-  si l'utilisateur les change en cours de run — tandis que les paramètres
-  de DÉCISION agriculteur (arrachage de haies, intensité d'intrants,
-  couverts, restitution résidus) sont **gelés** à leur valeur au
-  lancement / reset.
+- **Run réel** : suit les décisions de l'utilisateur.
+- **Run fantôme** : baseline « agriculteur passif », dérivée par
+  `ScenarioContext.CreateFrozenShadowFrom`. Les paramètres **exogènes**
+  (climat, MAEC, PSE) sont partagés ; les paramètres de **décision**
+  (leviers) sont **gelés** à leur valeur de lancement.
 
-Le shadow avance d'un tick chaque fois que le run réel émet son événement
-`TickCompleted`, via `SimulationEngine.TickWithoutAdvancingScenario` : le
-scénario partagé (exogène) a déjà été avancé par le `Tick()` du run réel,
-on ne le double-avance donc pas, et les valeurs agriculteur gelées restent
-constantes.
+Les deux runs avancent en **lockstep** dans `Tick()`, partageant la météo
+générée (même graine) — tout aléa des règles est reproduit à l'identique.
+Tant qu'aucune décision ne diverge, le fantôme égale le réel et la
+valeur-techno lit **0 par construction** (« la techno ne change encore
+rien »).
 
-**Garanties** :
-
-- Même `SeededRandom` (seed maître identique, dérivation par hash
-  identique pour les sous-systèmes) : tout aléa des règles est reproduit
-  à l'identique dans les deux runs.
-- Conditions exogènes partagées (climat, politiques) : seules les
-  décisions agriculteur peuvent écarter les deux trajectoires.
-- Tant qu'aucune décision ne les diverge, `ShadowModel` égale le modèle
-  réel à chaque tick et le KPI lit **0 par construction** — la lecture
-  honnête « la techno ne change encore rien ».
-
-Le Hero KPI « apport de la techno » = intégrale jour-par-jour de l'écart
-de rentabilité intégrée `(réel − shadow)` en €/ha depuis le jour 0
-(part GROSSE, `CumulativeTechValueIndicator`), **NET** de l'investissement
-de capital cumulé des actions (`DecisionJournal.TotalInvestmentEurosPerHectare`,
-soustrait au site de publication ; coûts capteurs exclus). L'**horizon de
-rentabilité** est le premier jour où ce NET atteint le point mort
-(NET ≥ 0), à condition qu'un investissement existe à amortir.
+**Valeur-techno nette** = `capital réel − capital fantôme − investissements`
+(coûts capteurs exclus). Positive si la stratégie informée rapporte plus
+qu'elle ne coûte.
 
 ---
 
 ## 7. Conventions de nommage et d'organisation
 
-### Classes
-
-- `PascalCase` pour les noms de classes, types et méthodes publiques.
-- `_camelCase` pour les champs privés.
-- Suffixes explicites :
-  - `*ScriptableObject` n'est pas nécessaire (le type est implicite par
-    le namespace `Data.RuntimeContainers`).
-  - `*Event` pour les classes d'événements de modèle (Couche 02),
-    consommées via l'`EventLog`.
-  - `*EventBus` (suffixe distinct) réservé aux signaux UI ponctuels de la
-    Couche 05 (ex. `SensorClickedEventBus`).
-  - `*Binding` pour les MonoBehaviours de la Couche 5 qui écoutent un
-    observable.
-  - `*Rule` pour les règles biophysiques de la Couche 1.
-  - `*Sensor` pour les implémentations de capteurs.
-
-### ScriptableObjects observables
-
-- Nom de fichier asset : `RC_<Domain>.asset` (ex.
-  `RC_HedgerowDensity.asset`, `RC_Biodiversity.asset`).
-- Stockés dans `Assets/_Project/Data/RuntimeContainers/`.
-- Pattern : champ privé sérialisé + getter public + méthode `Set(value)`
-  qui invoque `OnChanged`.
-
-### Événements de modèle (Couche 02)
-
-- Classes immutables, suffixe `Event` (ex. `DroughtProlongedEvent`,
-  `FaunaAcousticAnomalyEvent`, `SoilCarbonLowEvent`,
-  `LowProfitabilityEvent`).
-- Stockés dans `Assets/_Project/02_Sensors/Events/`.
-- Consommés via l'`EventLog` append-only (pas d'EventBus) : l'engine
-  réel les ajoute, le `RecommendationEngine` et le panneau décision les
-  lisent.
-
-### Asmdef
-
-- Un asmdef par couche, nommé `Bocage.<Layer>` (ex.
-  `Bocage.SimulationCore`, `Bocage.Sensors`, etc.).
-- Références strictes définies dans le fichier asmdef.
-
-### Scènes et hiérarchie
-
-- Scène unique : `Main.unity` dans `Assets/_Project/`.
-- 7 racines préfixées `_` (cf `CLAUDE.md` §8).
-
-### Logging
-
-- Pas de `Debug.Log` direct. Utiliser `SimLogger.DebugLog`,
-  `SimLogger.SimulationLog`, `SimLogger.UserActionLog`.
-- Format : `[<Layer>] <message> {context: ...}`.
-
-### Tests
-
-- Stockés dans `Assets/_Project/Tests/EditMode/`.
-- Asmdef de tests référence uniquement la Couche 1 (les tests EditMode
-  ne touchent pas Unity runtime).
-- Nommage : `<ClassUnderTest>Tests.cs`.
+- `PascalCase` (types, méthodes publiques), `_camelCase` (champs privés).
+- Suffixes : `*Rule` (règles biophysiques, Couche 01), `*Reader` (capteurs,
+  Couche 02), `*Binding` (MonoBehaviours qui écoutent un observable, Couche
+  05), `*EventBus` (signaux UI ponctuels, ex. `SensorClickedEventBus`).
+- **Événements de modèle** : `EventKind` (enum) + `DetectedEvent` (struct),
+  consommés via l'`EventLog` append-only (pas d'EventBus pour l'état).
+- **ScriptableObjects observables** : `RC_<Domaine>.asset` dans
+  `Assets/_Project/Data/RuntimeContainers/`. Pattern : champ privé sérialisé
+  + getter public + `Set(value)` qui invoque `OnChanged`.
+- **Asmdef** : un par couche, `Bocage.<Layer>`, références strictes (Couche N
+  ne voit que les couches M < N ; Couche 01 `noEngineReferences`).
+- **Scène** : unique (`Main.unity`), 7 racines préfixées `_` (CLAUDE.md §8).
+- **Logging** : pas de `Debug.Log` direct ; passer par `SimLogger`.
+- **Tests** : `Assets/_Project/Tests/EditMode/`, nommage `<Classe>Tests.cs`.
 
 ---
 
-## 8. Inventaire des classes par chantier (E1-E9)
+## 8. Calibration & vérification
 
-Les chantiers E1 à E9 sont livrés. Cette section ne maintient plus de
-liste parallèle « classes prévues par chantier » : c'était précisément ce
-qui dérivait du code. L'inventaire de référence par chantier vit désormais
-dans `docs/BACKLOG.md` (statut des items) et `docs/CALIBRATION.md`
-(constantes et dérivations, avec le détail E8/E9). Les classes réelles par
-couche sont décrites en §2 ci-dessus.
+Le détail des constantes et de leurs sources vit dans
+[`refonte/08_MODELE.md`](refonte/08_MODELE.md) (§8, tableau sourcé) ; la
+vérification mathématique (analyse dimensionnelle, équilibres, stabilité,
+optima intérieurs) dans [`refonte/11_VERIFICATION-MATHS.md`](refonte/11_VERIFICATION-MATHS.md).
+La calibration de la réponse azotée a été refaite sur Arvalis/COMIFER/INRAE
+(08 §5.5), verrouillée par `NitrogenResponseCalibrationTests`.
 
-**Faits de calibration E8 (refonte delta tech)** à retenir, dérivation
-complète dans `CALIBRATION.md` :
-
-- `CropYieldDynamicsRule.ComputeIntensityEffect` est CONCAVE
-  (quadratic-plateau / réponse azotée Mitscherlich, courbure
-  `IntensityCutCurvature = 0.70`) : sous l'intensité de référence (1.0) la
-  pénalité de rendement croît avec le CARRÉ de la profondeur de coupe
-  (−2.8 % à I=0.8, −17.5 % à I=0.5) ; au-dessus, la réponse plafonne.
-- `InputCostDynamicsRule` n'indexe que la part VARIABLE des charges sur
-  l'intensité (`VariableCostShare = 0.30`, soit 70/30 fixe/variable) : la
-  part structurelle fixe ne recule pas quand on extensifie.
-- De ces deux courbures émerge un optimum de profit autour de I* ≈ 0.81
-  (ni l'extensif maximal ni l'intensif maximal ne maximisent la marge),
-  ce qui donne du sens aux contre-recommandations économiques de la
-  Couche 03.
+L'historique des chantiers (pré-refonte E1-E11, puis refonte I1-I6 et cutover
+S5) vit dans [`ROADMAP.md`](ROADMAP.md) ; l'ancien [`CALIBRATION.md`](CALIBRATION.md)
+est conservé comme archive pré-refonte.
 
 ---
 
 ## 9. Récap impact architecture
 
-Les chantiers E1 à E9 **n'ont cassé aucune architecture existante**. Les
-5 couches restent strictement empilées, les boundaries asmdef respectées,
-sans aucun retournement de dépendances. Le boundary Unity / pure C# est
-respecté intégralement (les classes de delta tech et de recommandation
-restent en C# pur Couches 03/04 ; seuls leurs orchestrateurs —
-`SimulationRunner`, `ShadowSimulationRunner`, `AutoActionApplier` — vivent
-en Couche 05).
-
-Le détail des classes ajoutées par chantier n'est plus tenu ici (cf §8) :
-l'inventaire de référence vit dans `docs/BACKLOG.md` et
-`docs/CALIBRATION.md`, et les classes réelles par couche sont décrites
-en §2.
+La refonte **n'a pas cassé l'architecture** : les 5 couches restent
+strictement empilées, les boundaries asmdef respectées, le boundary
+Unity / pur-C# intégral (Couches 01-04 sans `UnityEngine`). Le principal
+déplacement structurel est l'**internalisation du run fantôme** dans
+`SimulationSession` (Couche 03) — il n'y a plus de runner shadow ni de
+pipeline d'actions auto en Couche 05 — et le passage d'un dispatch de
+recommandations à coefficients figés à une **sélection dérivée du modèle**
+(projection forward par levier).
