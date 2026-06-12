@@ -88,7 +88,7 @@ Les recos **gagnant-gagnant** s'affichent en **popup proactif** ; les **compromi
 
 Pour mesurer ce que valent *tes* décisions, une **seconde simulation** tourne en parallèle : le **fantôme**. Même graine aléatoire, même climat, mêmes aides — mais les décisions de l'agriculteur **figées à leur valeur de départ**. Toute divergence entre le réel et le fantôme vient donc *uniquement* de ce que tu as changé.
 
-Le 5ᵉ Hero KPI, **« apport de la techno »**, c'est cet écart, en euros nets cumulés (moins les investissements). Positif si ta stratégie informée rapporte plus qu'elle ne coûte.
+Le Hero KPI **« apport de la techno »**, c'est cet écart, en euros nets cumulés (moins les investissements). Positif si ta stratégie informée rapporte plus qu'elle ne coûte.
 
 **La nuance honnête** (et elle compte) : ce chiffre mesure le **gain marginal de la précision**, pas une preuve qu'il *faut* des capteurs pour bien cultiver. On peut conduire un bocage de façon responsable à l'œil et sans instrumentation. Ce que la donnée achète, c'est l'**optimisation millimétrée** de chaque levier — la couche Industrie 4.0 par-dessus une pratique déjà saine. Le twin est une loupe sur ce gain marginal, pas un argumentaire de vente de capteurs.
 

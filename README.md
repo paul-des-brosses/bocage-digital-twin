@@ -34,7 +34,7 @@ You can manage a bocage responsibly with an agronomist's eye and no instrumentat
 ## What you can do
 
 - **Run the farm.** 6 management levers + 2 climate dials + a starting month, applied live. Four ready-made strategies (*Reference*, *Low-input*, *Intensive*, *RCP4.5 drought*) to start from.
-- **Read the land.** 5 Hero KPIs (hedgerow density, biodiversity index, water-table depth, integrated profitability €/ha·yr, and the instrumentation contribution above) and 3 thematic panels — *Biodiversity*, *Climate & resources*, *Economy* — each number traceable to a model variable.
+- **Read the land.** 5 Hero KPIs (water reserve % RU, soil carbon, biodiversity index, crop yield, margin €/ha·yr) plus the instrumentation contribution above, and 3 thematic panels — *Biodiversity*, *Climate & resources*, *Economy* — each number traceable to a model variable.
 - **Inspect the sensors.** 5 instruments (weather station, eddy-covariance tower, piezometer, acoustic + camera-trap fauna) listed in a side panel and clickable in the scene for their live measured reading and noise model.
 - **Arbitrate the advice.** A model-derived recommendation engine surfaces win-win moves as proactive pop-ups and trade-offs as a passive list — you decide.
 - **See it breathe.** Birds cross the scene and a heron settles in only when the *measured* biodiversity index earns them. No calendar, no scripted ambience — *sensor primacy*: every visual traces back to a measurement.

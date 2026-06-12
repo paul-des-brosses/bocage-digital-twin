@@ -17,7 +17,7 @@ Four starting points, top of the scenario panel:
 - **Intensive** — high inputs, hedgerow removal.
 - **RCP4.5 drought** — a hotter, drier climate, no change in practice.
 
-Switch between them and watch the five **Hero KPIs** (top bar) and the scene react.
+Switch between them and watch the **Hero KPIs** (top bar) and the scene react.
 
 ## 3. Pull the levers yourself
 
@@ -27,7 +27,7 @@ A **starting-month** dropdown sets the season you begin in (it takes effect on t
 
 ## 4. Read the land
 
-- **5 Hero KPIs** along the top — hedgerow density, biodiversity, water-table depth, profitability, and the *instrumentation contribution* (see the honest note in the [README](../README.md)).
+- **5 Hero KPIs** along the top — water reserve (% RU), soil carbon, biodiversity, crop yield, and margin — plus the *instrumentation contribution* (see the honest note in the [README](../README.md)).
 - **3 thematic tabs** (Biodiversity / Climate & resources / Economy) — open one for the breakdown behind a KPI.
 - **Yearly yield**: the crop yield only changes once per simulated year (at harvest), so run at ×10 to watch it swing between good years and droughts.
 

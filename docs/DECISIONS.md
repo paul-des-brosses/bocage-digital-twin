@@ -1932,3 +1932,11 @@ Décisions structurantes de la réécriture du modèle (I1-I6) et du cutover S5.
 **Décision** : les leviers s'appliquent immédiatement ; l'ancien lissage 7-14 jours (`TransitioningParameter`) est retiré.
 
 **Raison** : simplicité MVP ; l'effet reste lisible et le modèle reste déterministe.
+
+### R5. Strip Hero réaligné sur le jeu spec (08 §8), supersède #39
+
+**Contexte** : la Couche 04 (`HeroIndicators`) calculait déjà le jeu spec (Marge, Rendement, Biodiversité, Carbone du sol, Réserve en eau %RU), mais le strip Hero du dashboard affichait encore l'ancien jeu pré-refonte (densité de haies, profondeur de nappe, biodiversité, rentabilité, apport techno) verrouillé par #39 — avec des tooltips citant des formules supprimées (biodiv « 50 % fauna + 30 % haies + 20 % nappe », rentabilité « coûts entretien… champs d'EcosystemModel »).
+
+**Décision** : aligner le strip sur les **6 cartes spec**, ordre cause → effet : Réserve en eau (%RU) → Carbone du sol → Biodiversité → Rendement → Marge → Apport techno. Les cartes Haies et Nappe quittent le strip (leurs RC restent vivants : haies → shader haie, nappe → shader mare + onglet Climat). Ajout de `RC_CropYield` (seul KPI spec encore non publié) + 3 bindings Hero (`CropYieldLabelBinding`, `SoilCarbonLabelBinding`, `WaterReserveLabelBinding`) ; suppression des 2 bindings Hero-only devenus morts (`HedgerowDensityLabelBinding`, `WaterTableLabelBinding`). La carte Marge garde le Label `profitability-value` pour réutiliser `IntegratedProfitabilityLabelBinding` sans recâblage.
+
+**Raison** : les 5 KPI d'état spec sont les variables-phares du modèle refonte (défendables en soutenance) ; l'ancien ordre #39 décrivait un modèle qui n'existe plus. La Réserve en eau ouvre la cascade (carrefour θ), d'où sa tête de strip. Supersède **DECISIONS #39** (ordre Hero pré-refonte).

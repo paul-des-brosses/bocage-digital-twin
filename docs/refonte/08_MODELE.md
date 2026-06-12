@@ -496,14 +496,12 @@ pas fixe. Transitions douces 7-14 j [GARDÉ].
 + **Apport de la techno** (réel vs fantôme) [GARDÉ] — la valeur ajoutée de
 l'instrumentation/décision, NET d'investissement.
 
-**La haie** [DÉCISION #1] : aujourd'hui « densité de haie » est un Hero KPI.
-Or la haie n'est qu'un **proxy visuel de `F`**. Options :
-- (a) remplacer le KPI « densité de haie » par **« santé de la flore /
-  habitat »** (= `F`, plus honnête) ;
-- (b) garder « densité de haie » comme chiffre familier, **dérivé de `F`** ;
-- (c) fondre la flore dans le KPI biodiversité (un Hero KPI de moins).
-Mon avis : **(a)** — nomme la variable réelle, garde la haie comme son
-incarnation à l'écran.
+**La haie** [DÉCISION #1 — tranchée, cf ADR R5] : « densité de haie »
+**n'est pas** un Hero KPI. Le strip surface les 5 variables d'état
+ci-dessus ; la haie reste une **variable du modèle** (proxy de la santé
+de la flore `F`) et son **incarnation visuelle** (shader haie), et son
+rôle d'habitat est déjà porté par le facteur *habitat* de la
+biodiversité. (Revient à fondre la flore dans la biodiversité — option (c).)
 
 ---
 
