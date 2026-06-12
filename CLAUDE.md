@@ -257,8 +257,9 @@ dérivée de l'indice biodiversité mesuré.
   Markov + log-normale sur paramètres mensuels Mortagne-au-Perche).
 - E3 a livré le sprite **EddyTower** branché à un
   `EddyTowerSensorReader` (Couche 02) qui dérive le flux net journalier
-  CO2 du delta `EcosystemModel.SoilCarbonStock` day-over-day (modèle
-  1-pool `dC/dt = inputs − k·C` calibré INRAE 4 pour 1000) avec bruit
+  CO2 du delta du stock carbone du sol day-over-day (modèle ICBM
+  2 pools jeune/vieux calibré INRAE 4 pour 1000 — 1-pool à l'origine,
+  refondu au cutover) avec bruit
   gaussien et une fenêtre glissante 365 j. Convention NEE (positif =
   émission, négatif = séquestration). Sliders « Couverts d'interculture »
   et « Restitution des résidus » exposés en Couche 05.

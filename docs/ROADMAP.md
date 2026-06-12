@@ -228,6 +228,7 @@ température saisonnière pour la minéralisation).
   `EcosystemModel`, default 50.
 - `SoilCarbonDynamicsRule.cs` : modèle 1-pool `dC/dt = inputs − k·C`,
   `k = 1/40 an⁻¹`. Détails calibration dans `docs/CALIBRATION.md`.
+  *(Refonte : remplacé par `CarbonDynamicsRule` ICBM 2 pools — voir `docs/refonte/08_MODELE.md`.)*
 - 2 nouveaux leviers dans `ScenarioContext` :
   `CoverCropsCoveragePercent` (0-100 %),
   `ResidueRestitutionPercent` (0-100 %).
