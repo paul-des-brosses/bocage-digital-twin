@@ -49,6 +49,7 @@ namespace Bocage.Presentation
         [SerializeField] private RC_IntegratedProfitability profitabilityContainer;
         [SerializeField] private RC_BiodiversityComposite biodiversityContainer;
         [SerializeField] private RC_SoilCarbonStock soilCarbonContainer;
+        [SerializeField] private RC_CropYield cropYieldContainer;
         [SerializeField] private RC_HedgerowDensity hedgerowDensityContainer;
         [SerializeField] private RC_WaterTableDepth waterTableContainer;
         [SerializeField] private RC_SoilMoisture soilMoistureContainer;
@@ -217,6 +218,11 @@ namespace Bocage.Presentation
             {
                 double v = HeroIndicators.CarbonTPerHa(m);
                 soilCarbonContainer.Set((float)v, (float)HeroIndicators.CarbonNormalized(v));
+            }
+            if (cropYieldContainer != null)
+            {
+                double v = HeroIndicators.YieldTPerHa(m);
+                cropYieldContainer.Set((float)v, (float)HeroIndicators.YieldNormalized(v));
             }
             if (hedgerowDensityContainer != null)
             {

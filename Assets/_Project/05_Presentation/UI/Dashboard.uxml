@@ -31,29 +31,30 @@
         </ui:VisualElement>
 
         <!--
-        Hero strip — 5 Hero KPI cards in the order locked by DECISIONS.md
-        #39 (pyramide cause → effet): Haies → Nappe → Biodiversité →
-        Rentabilité → Delta tech.
+        Hero strip — 6 Hero KPI cards (jeu spec 08 §8), ordre cause → effet
+        (ADR R5, supersède DECISIONS #39) : Réserve eau → Carbone → Biodiversité
+        → Rendement → Marge → Apport techno. Les anciennes cartes Haies et Nappe
+        ont quitté le strip ; leurs RC restent vivants (shaders + onglet Climat).
         -->
         <ui:VisualElement name="hero-strip" class="hero-strip">
 
-            <ui:VisualElement name="kpi-hedgerow-density" class="kpi-card" tooltip="Densité linéaire de haies par hectare. Source : variable d'état du modèle, lecture directe.">
-                <ui:Label name="hedgerow-density-label" text="Densité de haies" class="kpi-label" />
+            <ui:VisualElement name="kpi-water-reserve" class="kpi-card" tooltip="Réserve en eau utile du sol racinaire, en % de la réserve utile maximale (RU). Bilan hydrique FAO-56 : 100 % = capacité au champ, 0 % = point de flétrissement. C'est le carrefour de la cascade : une sécheresse vide cette réserve, et le stress se propage au rendement, aux résidus, puis au carbone.">
+                <ui:Label name="water-reserve-label" text="Réserve en eau" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
-                    <ui:Label name="hedgerow-density-value" text="—" class="kpi-value" />
-                    <ui:Label name="hedgerow-density-unit" text="m/ha" class="kpi-unit" />
+                    <ui:Label name="water-reserve-value" text="—" class="kpi-value" />
+                    <ui:Label name="water-reserve-unit" text="% RU" class="kpi-unit" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-water-table" class="kpi-card" tooltip="Profondeur du toit de la nappe phréatique sous la surface. Source : variable d'état du modèle, lecture directe. Convention : valeur faible = nappe haute = sain. Valeur élevée = sécheresse.">
-                <ui:Label name="water-table-label" text="Nappe (profondeur)" class="kpi-label" />
+            <ui:VisualElement name="kpi-soil-carbon" class="kpi-card" tooltip="Stock de carbone organique du sol (tonnes de C par hectare, modèle ICBM 2 compartiments). Stock lent : il monte avec les résidus, couverts, haies et prairie ; il descend au chaud et humide. Un sol vivant (≥ 80 tC/ha) retient mieux l'eau et soutient la biodiversité.">
+                <ui:Label name="soil-carbon-label" text="Carbone du sol" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
-                    <ui:Label name="water-table-value" text="—" class="kpi-value" />
-                    <ui:Label name="water-table-unit" text="m sous sol" class="kpi-unit" />
+                    <ui:Label name="soil-carbon-value" text="—" class="kpi-value" />
+                    <ui:Label name="soil-carbon-unit" text="tC/ha" class="kpi-unit" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-biodiversity" class="kpi-card" tooltip="Score composite de biodiversité (en %). Moyenne pondérée 50 % fauna abondance + 30 % densité haies + 20 % nappe (inversée). 100 % = état de référence Perche, 0 % = effondrement.">
+            <ui:VisualElement name="kpi-biodiversity" class="kpi-card" tooltip="Indice composite de biodiversité (en % de l'état de référence Perche). Trois facteurs : habitat (haies + prairie), eau (profondeur de nappe), intrants (pression chimique inversée), plus deux modulateurs faibles (pénalité canicule, bonus sol vivant). C'est lui qui décide quels oiseaux apparaissent en scène.">
                 <ui:Label name="biodiversity-label" text="Biodiversité" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
                     <ui:Label name="biodiversity-value" text="—" class="kpi-value" />
@@ -61,11 +62,19 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="kpi-profitability" class="kpi-card" tooltip="Rentabilité intégrée en euros par hectare et par an. Composite honnête : revenu cultures (CropYield × prix) − coûts intrants − coûts entretien + paiement pour services environnementaux haies. Toutes les variables sont des champs d'état d'EcosystemModel.">
-                <ui:Label name="profitability-label" text="Rentabilité intégrée" class="kpi-label" />
+            <ui:VisualElement name="kpi-crop-yield" class="kpi-card" tooltip="Rendement de la culture (tonnes par hectare). Potentiel atteignable rogné par 4 stress multiplicatifs (eau, azote, chaleur, adventices) intégrés sur la saison de croissance puis figés à la récolte. Réponse à l'azote saturante (Mitscherlich). Calibré Agreste/Arvalis : ~5,5 t/ha représentatif, variabilité interannuelle réaliste selon la météo de l'année.">
+                <ui:Label name="crop-yield-label" text="Rendement" class="kpi-label" />
+                <ui:VisualElement class="kpi-value-row">
+                    <ui:Label name="crop-yield-value" text="—" class="kpi-value" />
+                    <ui:Label name="crop-yield-unit" text="t/ha" class="kpi-unit" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="kpi-margin" class="kpi-card" tooltip="Marge annuelle de l'exploitation (euros par hectare et par an). Somme honnête des postes (EconomyRule) : revenus culture + fourrage − coûts (azote, phyto, travail, charges fixes) + paiements de services écosystémiques (PAC, PSE haies, MAEC, crédit carbone). L'écologie « paie » en euros traçables.">
+                <ui:Label name="margin-label" text="Marge" class="kpi-label" />
                 <ui:VisualElement class="kpi-value-row">
                     <ui:Label name="profitability-value" text="—" class="kpi-value" />
-                    <ui:Label name="profitability-unit" text="€/ha/an" class="kpi-unit" />
+                    <ui:Label name="margin-unit" text="€/ha/an" class="kpi-unit" />
                 </ui:VisualElement>
             </ui:VisualElement>
 

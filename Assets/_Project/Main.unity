@@ -3051,8 +3051,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1463489823}
   - component: {fileID: 1463489825}
-  - component: {fileID: 1463489824}
-  - component: {fileID: 1463489826}
   - component: {fileID: 1463489828}
   - component: {fileID: 1463489827}
   - component: {fileID: 1463489829}
@@ -3073,6 +3071,9 @@ GameObject:
   - component: {fileID: 1463489845}
   - component: {fileID: 1463489846}
   - component: {fileID: 1463489848}
+  - component: {fileID: 1463489851}
+  - component: {fileID: 1463489850}
+  - component: {fileID: 1463489849}
   m_Layer: 0
   m_Name: _UI_Canvas
   m_TagString: Untagged
@@ -3095,20 +3096,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1463489824
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9945e932104e4a459e2a1d2cfc416e9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.HedgerowDensityLabelBinding
-  container: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
-  labelName: hedgerow-density-value
 --- !u!114 &1463489825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3132,20 +3119,6 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &1463489826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1463489822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0aa2b44dfb21c50438fe544c3f4184e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.WaterTableLabelBinding
-  container: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
-  labelName: water-table-value
 --- !u!114 &1463489827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3517,6 +3490,48 @@ MonoBehaviour:
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.ConsoleBinding
   logContainerName: console-log-lines
   maxLines: 8
+--- !u!114 &1463489849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50a1bc46d7f39082d3e1f5041627380, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.WaterReserveLabelBinding
+  container: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
+  labelName: water-reserve-value
+--- !u!114 &1463489850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4f70ab35c6e28971c2d0e4f30516279, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.SoilCarbonLabelBinding
+  container: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
+  labelName: soil-carbon-value
+--- !u!114 &1463489851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1463489822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3e6f9a24b5d17860b1c9d3e2f405168, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.CropYieldLabelBinding
+  container: {fileID: 11400000, guid: a2c5e8b13d4f06759a0b8c2d1e3f4059, type: 2}
+  labelName: crop-yield-value
 --- !u!1 &1504429186
 GameObject:
   m_ObjectHideFlags: 0
@@ -4857,6 +4872,7 @@ MonoBehaviour:
   profitabilityContainer: {fileID: 11400000, guid: 222fc07a189a4ba4b8405ae147cf099f, type: 2}
   biodiversityContainer: {fileID: 11400000, guid: 6f4b6130c9bd9ee4eaefdf7a7aec8afb, type: 2}
   soilCarbonContainer: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
+  cropYieldContainer: {fileID: 11400000, guid: a2c5e8b13d4f06759a0b8c2d1e3f4059, type: 2}
   hedgerowDensityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
   waterTableContainer: {fileID: 11400000, guid: 38ace031933134843b26b9f615032f8d, type: 2}
   soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
