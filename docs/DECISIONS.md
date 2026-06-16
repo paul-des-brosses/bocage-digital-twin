@@ -1940,3 +1940,15 @@ Décisions structurantes de la réécriture du modèle (I1-I6) et du cutover S5.
 **Décision** : aligner le strip sur les **6 cartes spec**, ordre cause → effet : Réserve en eau (%RU) → Carbone du sol → Biodiversité → Rendement → Marge → Apport techno. Les cartes Haies et Nappe quittent le strip (leurs RC restent vivants : haies → shader haie, nappe → shader mare + onglet Climat). Ajout de `RC_CropYield` (seul KPI spec encore non publié) + 3 bindings Hero (`CropYieldLabelBinding`, `SoilCarbonLabelBinding`, `WaterReserveLabelBinding`) ; suppression des 2 bindings Hero-only devenus morts (`HedgerowDensityLabelBinding`, `WaterTableLabelBinding`). La carte Marge garde le Label `profitability-value` pour réutiliser `IntegratedProfitabilityLabelBinding` sans recâblage.
 
 **Raison** : les 5 KPI d'état spec sont les variables-phares du modèle refonte (défendables en soutenance) ; l'ancien ordre #39 décrivait un modèle qui n'existe plus. La Réserve en eau ouvre la cascade (carrefour θ), d'où sa tête de strip. Supersède **DECISIONS #39** (ordre Hero pré-refonte).
+
+### R6. Enrichissements V1 : 4ᵉ facteur biodiv, santé haie visible, orphelins complétés, recos persistantes
+
+**Contexte** : post-publication, lot de finitions sur le modèle vivant et l'UI.
+
+**Décisions** :
+- **4ᵉ facteur biodiversité « paysage »** (`BiodiversityRule.LandscapeFactor`) : évenness de la mosaïque culture/prairie + maillage de haies, distinct de l'habitat (récompense l'hétérogénéité, pas la quantité — une monoculture, même de prairie, est peu diverse). Poids recomposés 0,35/0,20/0,30/0,15. Exposé en 4ᵉ ligne de l'onglet Biodiv via `RC_FaunaFactorLandscape`. *(Benton et al. 2003 ; Efese)*
+- **Santé de haie visible** (`HedgeFloraRule.VisualVigor`) : vigueur [0,1] **sans** le plancher de résilience qui pilote la dynamique de densité, dédiée à la teinte du shader (la haie brunit sous sécheresse / excès d'azote). Découplée exprès pour ne **pas** toucher la dynamique de densité.
+- **2 RC orphelins complétés** (§18.8) : `RC_Nitrogen` (write-only) → ligne azote de l'onglet Climat ; `RC_HedgerowHealth` (writer-less) → écrit depuis `VisualVigor`, consommé par le shader haie (correction du `Spawn Root` qui pointait sur `_Scene_Visual` au lieu de `Composition`).
+- **Recos persistantes** : une reco reste en attente jusqu'à traitement (Valider / Ignorer) ou satisfaction du levier, au lieu d'expirer 45 j après son événement — une reco passive devenait injouable à vitesse rapide. Inbox bornée à 1 par type d'événement.
+
+**Raison** : compléter plutôt que supprimer (§18.8), densifier la biodiversité (défendabilité jury), et rendre les chaînes capteur → visuel / onglet lisibles de bout en bout.

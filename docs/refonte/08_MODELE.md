@@ -401,14 +401,15 @@ F_cible = f_eau(θ_saison) · f_intrants(N) · f_gestion(plantation, arrachage)
 ### 5.7 Biodiversité `D` [CHANGÉ — couplée au climat]
 
 ```
-D_cible = w_h·habitat(F) + w_w·eau(θ, mare) + w_i·intrants(N) + climat(chaleur)
+D_cible = w_h·habitat(F) + w_w·eau(θ, mare) + w_i·intrants(N) + w_l·paysage(g, F) + climat(chaleur)
 D ← D + (1/τ)·(D_cible − D)                         τ ≈ 1 an
 ```
 
 - [CHANGÉ] Le **terme eau suit `θ`** (stress hydrique réel), plus la nappe
   plate. Ajout d'un **terme chaleur** (au-delà du seul plafond canicule).
   Terme intrants piloté par `N` (et/ou proxy pesticides).
-- Poids `w_h, w_w, w_i` *(Hallmann 2017 ; Vigie-Nature/INRAE-OFB ; MNHN 2024)*.
+- Poids `w_h, w_w, w_i, w_l` = 0,35/0,20/0,30/0,15 *(Hallmann 2017 ; Vigie-Nature/INRAE-OFB ; MNHN 2024)*.
+- [B2] **Terme paysage** `w_l·paysage(g, F)` : diversité de la mosaïque (évenness culture/prairie, pic à 50 %) + maillage de haies. Distinct de l'habitat (« plus = mieux ») : une monoculture, même de prairie, est peu diverse. *(Benton et al. 2003 ; Efese)*
 - [MODULE optionnel] décomposition en guildes (oiseaux = habitat ;
   insectes = intrants + chaleur ; aquatique = lessivage N + mare). Réalisme
   élevé, coût moyen. [DÉCISION #5].
@@ -585,7 +586,7 @@ Une reco ne se déclenche que si son `ΔU` est positif et que le levier est
 | prix culture | farm-gate | 250 | €/t | Eure-et-Loir 2022 | ⬤ |
 | PAC base / bonus | paiements | 220 / 20 | €/ha | PAC 2025 | ⬤ |
 | coût intrants base | référence | 1200 | €/ha/an | CIVAM / AFPF | ◐ |
-| seuils biodiv `w_*` | poids habitat/eau/intrants | 0,40/0,25/0,35 | – | Hallmann ; Vigie-Nature | ◐ |
+| seuils biodiv `w_*` | poids habitat/eau/intrants/paysage | 0,35/0,20/0,30/0,15 | – | Hallmann ; Vigie-Nature ; Benton 2003 | ◐ |
 | `λ` risque | aversion au risque | à calibrer | – | litt. agro-éco | ○ |
 | crédit carbone | valeur tCO₂ | ~30–40 | €/tCO₂ | Label Bas-Carbone | ◐ |
 

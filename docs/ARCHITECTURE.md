@@ -106,7 +106,7 @@ complet de l'écosystème et applique les règles de dynamique à chaque tick
   `NappeRule`, `WeedPressureRule`, `YieldRule` (potentiel × stress eau/azote/
   chaleur/adventices, réponse azotée Mitscherlich saturante), `NitrogenDynamicsRule`
   (bilan azoté explicite), `CarbonDynamicsRule` (ICBM 2 pools, décomposition
-  sensible au climat Q10), `HedgeFloraRule`, `BiodiversityRule` (3 facteurs),
+  sensible au climat Q10), `HedgeFloraRule`, `BiodiversityRule` (4 facteurs),
   `EconomyRule` (marge + paiements de services).
 - `WeatherGenerator` / `Climatology` : météo stochastique (chaîne de Markov
   occurrence + AR(1) température + log-normale intensité) calibrée sur les
