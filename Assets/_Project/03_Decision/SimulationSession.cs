@@ -228,10 +228,13 @@ namespace Bocage.Decision
         }
 
         /// <summary>
-        /// Met à jour la liste des recos (chaque tick) : retire les recos satisfaites
-        /// (levier déjà au niveau recommandé) ou périmées (plus d'événement récent),
-        /// puis produit une reco par événement récent sans reco active — la projection
-        /// ne tourne qu'<b>une seule fois</b> par déclenchement d'événement (coûteuse).
+        /// Met à jour la liste des recos (chaque tick) : retire les recos <b>satisfaites</b>
+        /// (levier déjà au niveau recommandé ; Valider/Ignorer les retirent aussi), puis
+        /// produit une reco par événement récent sans reco active — la projection ne
+        /// tourne qu'<b>une seule fois</b> par déclenchement d'événement (coûteuse). Une
+        /// reco non traitée <b>persiste</b> (boîte de réception) : elle n'expire pas sur
+        /// l'ancienneté de l'événement (sinon une reco passive ne vivait que ~45 j,
+        /// injouable à vitesse rapide).
         /// </summary>
         private void UpdateRecommendations()
         {
@@ -240,7 +243,7 @@ namespace Bocage.Decision
             for (int i = _pending.Count - 1; i >= 0; i--)
             {
                 Recommendation r = _pending[i];
-                if (IsSatisfied(r) || IsStale(r.TriggeredBy, day))
+                if (IsSatisfied(r))
                 {
                     _pending.RemoveAt(i);
                     _deferred.Remove(r);
@@ -268,12 +271,6 @@ namespace Bocage.Decision
             (double min, double max) = DecisionLevers.Range(r.Lever);
             double tol = LeverSatisfiedToleranceFraction * (max - min);
             return Math.Abs(current - r.RecommendedLevel) <= tol;
-        }
-
-        private bool IsStale(EventKind kind, int day)
-        {
-            DetectedEvent? latest = _eventLog.LatestOfKind(kind);
-            return latest == null || day - latest.Value.Day > RecoActiveDays;
         }
 
         private bool HasPendingForKind(EventKind kind)

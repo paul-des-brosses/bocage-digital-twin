@@ -93,6 +93,23 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
+        public void Unsatisfied_recommendation_persists_over_a_long_run()
+        {
+            // Une reco non satisfaite (le levier reste à sa valeur basse) et non
+            // traitée reste en boîte de réception bien au-delà de RecoActiveDays
+            // (45 j) : on ne purge plus sur l'ancienneté de l'événement.
+            var s = DeficientSession();
+            s.Run(15);
+            Recommendation reco = NitrogenReco(s);
+            Assert.IsNotNull(reco);
+            s.Run(200); // >> 45 j, sans toucher le levier ni Valider/Ignorer
+            Assert.IsNotNull(NitrogenReco(s),
+                "une reco non traitée persiste (boîte de réception), elle n'expire pas seule");
+            Assert.AreEqual(1, s.PendingRecommendations.Count(r => r.TriggeredBy == EventKind.NitrogenDeficiency),
+                "toujours une seule, jamais de doublon malgré les re-fires");
+        }
+
+        [Test]
         public void ShouldAutoPopup_gates_on_class_and_biodiversity()
         {
             Recommendation winWin = MakeReco(RecommendationClass.WinWin);
