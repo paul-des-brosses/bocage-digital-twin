@@ -66,6 +66,17 @@ namespace Bocage.Tests.EditMode
             Assert.Less(removed.HedgerowDensityMPerHa, 85.0);
         }
 
+        [Test]
+        public void Visual_vigor_spans_full_range_unlike_the_density_floor()
+        {
+            Assert.That(HedgeFloraRule.VisualVigor(90.0, 40.0), Is.EqualTo(1.0).Within(1e-9),
+                "à la référence, la haie est en pleine vigueur visible");
+            double severe = HedgeFloraRule.VisualVigor(10.0, 240.0);
+            Assert.Less(severe, 0.2, "sous stress sévère eau+azote, la vigueur visible s'effondre vers 0");
+            Assert.Greater(HedgeFloraRule.WaterHealth(10.0), 0.49,
+                "… alors que la santé qui pilote la densité garde son plancher de résilience 0.5");
+        }
+
         // ---------------- Biodiversité ----------------
 
         [Test]
@@ -77,7 +88,7 @@ namespace Bocage.Tests.EditMode
             double target = BiodiversityRule.Target(model, scenario);
             RunBiodiversity(model, scenario, EightYears);
             Assert.AreEqual(target, model.Biodiversity, 0.01);
-            Assert.That(model.Biodiversity, Is.InRange(0.70, 0.78));
+            Assert.That(model.Biodiversity, Is.InRange(0.65, 0.71)); // 4 facteurs : le paysage pénalise la monoculture g=0
         }
 
         [Test]
@@ -133,6 +144,34 @@ namespace Bocage.Tests.EditMode
             }
             Assert.Less(dry.Biodiversity, wet.Biodiversity,
                 "la sécheresse abaisse la biodiversité par l'eau ET l'habitat (densité↓)");
+        }
+
+        // ---------------- Diversité du paysage (B2) ----------------
+
+        [Test]
+        public void Landscape_factor_peaks_at_balanced_mosaic()
+        {
+            double mono = BiodiversityRule.LandscapeFactor(0.0, 90.0);
+            double allGrass = BiodiversityRule.LandscapeFactor(1.0, 90.0);
+            double balanced = BiodiversityRule.LandscapeFactor(0.5, 90.0);
+            Assert.Greater(balanced, mono, "une mosaïque équilibrée est plus diverse qu'une monoculture de culture");
+            Assert.Greater(balanced, allGrass, "… et qu'une monoculture de prairie");
+        }
+
+        [Test]
+        public void Landscape_factor_rises_with_hedge_network()
+        {
+            double sparse = BiodiversityRule.LandscapeFactor(0.3, 30.0);
+            double dense = BiodiversityRule.LandscapeFactor(0.3, 130.0);
+            Assert.Greater(dense, sparse, "un maillage de haies plus dense augmente la diversité du paysage");
+        }
+
+        [Test]
+        public void Biodiversity_weights_sum_to_one()
+        {
+            Assert.AreEqual(1.0,
+                BiodiversityRule.HabitatWeight + BiodiversityRule.WaterWeight
+                + BiodiversityRule.InputsWeight + BiodiversityRule.LandscapeWeight, 1e-9);
         }
     }
 }

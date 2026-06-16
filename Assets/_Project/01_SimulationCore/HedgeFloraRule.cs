@@ -41,6 +41,27 @@ namespace Bocage.SimulationCore
             return h;
         }
 
+        /// <summary>
+        /// Vigueur <b>visible</b> de la haie ∈ [0,1] — purement pour l'affichage
+        /// (teinte du shader), n'entre dans aucun flux du modèle. Même stress
+        /// eau×intrants que <see cref="WaterHealth"/>/<see cref="InputsHealth"/>,
+        /// mais <b>sans le plancher de résilience</b> <see cref="HealthFloor"/> : un
+        /// stress sévère la mène jusqu'à 0 (haie franchement brunie), là où la santé
+        /// qui pilote la <see cref="CarryingCapacity"/> garde son plancher (la haie
+        /// ne disparaît pas). Découplé exprès pour rendre la santé lisible à l'écran
+        /// sans modifier la dynamique de densité.
+        /// </summary>
+        public static double VisualVigor(double soilWaterMm, double mineralNitrogenKgPerHa)
+        {
+            double water = soilWaterMm / WaterHealthOptimalMm;
+            if (water < 0.0) water = 0.0; else if (water > 1.0) water = 1.0;
+            double excess = (mineralNitrogenKgPerHa - NitrogenReferenceKgPerHa) / NitrogenReferenceKgPerHa;
+            if (excess < 0.0) excess = 0.0;
+            double inputs = 1.0 - InputsHealthPenalty * excess;
+            if (inputs < 0.0) inputs = 0.0; else if (inputs > 1.0) inputs = 1.0;
+            return water * inputs;
+        }
+
         /// <summary>Capacité d'accueil de la flore (m/ha) selon l'eau et les intrants.</summary>
         public static double CarryingCapacity(EcosystemModel model)
             => ReferenceDensityMPerHa * WaterHealth(model.SoilWaterMm)

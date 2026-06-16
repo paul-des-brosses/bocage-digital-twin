@@ -6,7 +6,7 @@ namespace Bocage.SimulationCore
     /// « vit » réellement. La <see cref="Target"/> instantanée (la « pression »)
     /// est exposée pour affichage à côté de l'état laggé (doc 10 §B.4).
     /// <code>
-    ///   cible = (w_h·habitat(densité) + w_w·eau(θ) + w_i·intrants(N,IFT)) · climat(canicule)
+    ///   cible = (w_h·habitat + w_w·eau + w_i·intrants + w_l·paysage) · climat(canicule)
     /// </code>
     /// La sécheresse frappe par l'eau ET l'habitat (densité↓) ; l'intensification
     /// (N, IFT) frappe par les intrants ; les canicules par le climat. Couplée au
@@ -15,9 +15,10 @@ namespace Bocage.SimulationCore
     /// </summary>
     public sealed class BiodiversityRule
     {
-        public const double HabitatWeight = 0.40;
-        public const double WaterWeight = 0.25;
-        public const double InputsWeight = 0.35;
+        public const double HabitatWeight = 0.35;
+        public const double WaterWeight = 0.20;
+        public const double InputsWeight = 0.30;
+        public const double LandscapeWeight = 0.15;
         public const double HabitatReferenceMPerHa = 130.0;
         public const double WaterBiodivOptimalMm = 80.0;
         public const double InputsNitrogenPenalty = 0.3;    // par 100 kgN
@@ -52,6 +53,21 @@ namespace Bocage.SimulationCore
                                               + InputsPesticidePenalty * pesticideIntensity));
         }
 
+        /// <summary>
+        /// Diversité du paysage : hétérogénéité de la mosaïque, distincte de
+        /// l'habitat (« plus = mieux »). Récompense un mélange équilibré
+        /// culture/prairie (évenness, pic à g=0,5 ; nul aux extrêmes — une
+        /// monoculture, même de prairie, est peu diverse) ET le maillage de
+        /// haies (structure / lisières). Sources : Benton et al. 2003, Efese.
+        /// </summary>
+        public static double LandscapeFactor(double grasslandFraction, double hedgerowDensityMPerHa)
+        {
+            double g = Clamp01(grasslandFraction);
+            double mosaicEvenness = 4.0 * g * (1.0 - g);               // 0 aux extrêmes, 1 à g=0,5
+            double hedgeNetwork = Clamp01(hedgerowDensityMPerHa / HabitatReferenceMPerHa);
+            return Clamp01(0.5 * mosaicEvenness + 0.5 * hedgeNetwork);
+        }
+
         public static double ClimateFactor(int recentCanicularDayCount)
         {
             double penalty = CanicularPenaltyPerDay * recentCanicularDayCount;
@@ -65,7 +81,8 @@ namespace Bocage.SimulationCore
             double g = scenario.GrasslandFraction;
             double composite = HabitatWeight * HabitatFactor(model.HedgerowDensityMPerHa, g)
                 + WaterWeight * WaterFactor(model.SoilWaterMm)
-                + InputsWeight * InputsFactor(model.MineralNitrogenKgPerHa, scenario.PesticideIntensity, g);
+                + InputsWeight * InputsFactor(model.MineralNitrogenKgPerHa, scenario.PesticideIntensity, g)
+                + LandscapeWeight * LandscapeFactor(g, model.HedgerowDensityMPerHa);
             return Clamp01(composite * ClimateFactor(model.RecentCanicularDayCount));
         }
 
