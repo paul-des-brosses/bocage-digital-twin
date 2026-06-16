@@ -55,11 +55,13 @@ namespace Bocage.Presentation
         [SerializeField] private RC_SoilMoisture soilMoistureContainer;
         [SerializeField] private RC_TechDelta techDeltaContainer;
         [SerializeField] private RC_Nitrogen nitrogenContainer;
+        [SerializeField] private RC_HedgerowHealth hedgerowHealthContainer;
 
-        [Header("Biodiversité 3 facteurs")]
+        [Header("Biodiversité 4 facteurs")]
         [SerializeField] private RC_FaunaFactorHabitat faunaFactorHabitatContainer;
         [SerializeField] private RC_FaunaFactorWater faunaFactorWaterContainer;
         [SerializeField] private RC_FaunaFactorInputs faunaFactorInputsContainer;
+        [SerializeField] private RC_FaunaFactorLandscape faunaFactorLandscapeContainer;
 
         private SimulationSession _session;
         private Coroutine _tickRoutine;
@@ -249,6 +251,11 @@ namespace Bocage.Presentation
                 double v = m.MineralNitrogenKgPerHa;
                 nitrogenContainer.Set((float)v, Mathf.Clamp01((float)v / 200f));
             }
+            if (hedgerowHealthContainer != null)
+            {
+                float v = (float)HedgeFloraRule.VisualVigor(m.SoilWaterMm, m.MineralNitrogenKgPerHa);
+                hedgerowHealthContainer.Set(v, v);
+            }
 
             if (faunaFactorHabitatContainer != null)
             {
@@ -264,6 +271,11 @@ namespace Bocage.Presentation
             {
                 float v = (float)BiodiversityRule.InputsFactor(m.MineralNitrogenKgPerHa, s.PesticideIntensity, s.GrasslandFraction);
                 faunaFactorInputsContainer.Set(v, v);
+            }
+            if (faunaFactorLandscapeContainer != null)
+            {
+                float v = (float)BiodiversityRule.LandscapeFactor(s.GrasslandFraction, m.HedgerowDensityMPerHa);
+                faunaFactorLandscapeContainer.Set(v, v);
             }
         }
 

@@ -9,14 +9,13 @@ using UnityEngine.UIElements;
 namespace Bocage.Presentation.Bindings
 {
     /// <summary>
-    /// Fills the five rows of the "Biodiversité" Niveau B panel (chantier E6
-    /// / ADR #54): the composite index plus its three exposed factors
-    /// (habitat / eau / intrants), all driven by their RCs' <c>OnChanged</c>,
-    /// and a live count of the fauna species currently visible on screen,
-    /// derived from <see cref="FaunaPool"/>.
+    /// Fills the six rows of the "Biodiversité" Niveau B panel: the composite
+    /// index plus its four exposed factors (habitat / eau / intrants / paysage),
+    /// all driven by their RCs' <c>OnChanged</c>, and a live count of the fauna
+    /// species currently visible on screen, derived from <see cref="FaunaPool"/>.
     /// <para>
     /// The composite is displayed exactly like the Hero KPI
-    /// (<c>round(Score × 100)</c> %); the three factors use their normalized
+    /// (<c>round(Score × 100)</c> %); the four factors use their normalized
     /// 0-1 channel mapped to a percentage so the breakdown reads on the same
     /// scale. The species count is the one row not backed by an RC — it
     /// observes the actual pooled sprites, which are themselves gated by the
@@ -35,6 +34,8 @@ namespace Bocage.Presentation.Bindings
         private RC_FaunaFactorWater water;
         [SerializeField, Tooltip("Inputs factor (derived from input intensity).")]
         private RC_FaunaFactorInputs inputs;
+        [SerializeField, Tooltip("Landscape factor (mosaic evenness + hedge network).")]
+        private RC_FaunaFactorLandscape landscape;
         [SerializeField, Tooltip("Fauna pool the visible-species count is read from.")]
         private FaunaPool faunaPool;
 
@@ -42,10 +43,11 @@ namespace Bocage.Presentation.Bindings
         [SerializeField] private string habitatLabelName = "biodiv-habitat-value";
         [SerializeField] private string waterLabelName = "biodiv-water-value";
         [SerializeField] private string inputsLabelName = "biodiv-inputs-value";
+        [SerializeField] private string landscapeLabelName = "biodiv-landscape-value";
         [SerializeField] private string speciesCountLabelName = "biodiv-species-count-value";
 
         private UIDocument _document;
-        private Label _compositeLabel, _habitatLabel, _waterLabel, _inputsLabel, _speciesCountLabel;
+        private Label _compositeLabel, _habitatLabel, _waterLabel, _inputsLabel, _landscapeLabel, _speciesCountLabel;
 
         // Reused so the per-frame visible-species count never allocates (CLAUDE.md §6).
         private readonly List<FaunaSpeciesDefinition> _visibleBuffer = new List<FaunaSpeciesDefinition>(8);
@@ -61,8 +63,9 @@ namespace Bocage.Presentation.Bindings
             if (habitat != null) { habitat.OnChanged += HandleHabitatChanged; HandleHabitatChanged(0f); }
             if (water != null) { water.OnChanged += HandleWaterChanged; HandleWaterChanged(0f); }
             if (inputs != null) { inputs.OnChanged += HandleInputsChanged; HandleInputsChanged(0f); }
+            if (landscape != null) { landscape.OnChanged += HandleLandscapeChanged; HandleLandscapeChanged(0f); }
 
-            if (biodivComposite == null || habitat == null || water == null || inputs == null)
+            if (biodivComposite == null || habitat == null || water == null || inputs == null || landscape == null)
                 SimLogger.DebugLog("[OngletBiodivBinding] one or more containers not assigned on " + name);
             if (faunaPool == null)
                 SimLogger.DebugLog("[OngletBiodivBinding] fauna pool not assigned on " + name);
@@ -74,6 +77,7 @@ namespace Bocage.Presentation.Bindings
             if (habitat != null) habitat.OnChanged -= HandleHabitatChanged;
             if (water != null) water.OnChanged -= HandleWaterChanged;
             if (inputs != null) inputs.OnChanged -= HandleInputsChanged;
+            if (landscape != null) landscape.OnChanged -= HandleLandscapeChanged;
         }
 
         private void Update()
@@ -95,13 +99,14 @@ namespace Bocage.Presentation.Bindings
             _habitatLabel = root.Q<Label>(habitatLabelName);
             _waterLabel = root.Q<Label>(waterLabelName);
             _inputsLabel = root.Q<Label>(inputsLabelName);
+            _landscapeLabel = root.Q<Label>(landscapeLabelName);
             _speciesCountLabel = root.Q<Label>(speciesCountLabelName);
         }
 
         private void EnsureResolved()
         {
             if (_compositeLabel == null || _habitatLabel == null || _waterLabel == null
-                || _inputsLabel == null || _speciesCountLabel == null)
+                || _inputsLabel == null || _landscapeLabel == null || _speciesCountLabel == null)
             {
                 ResolveLabels();
             }
@@ -133,6 +138,13 @@ namespace Bocage.Presentation.Bindings
             EnsureResolved();
             if (_inputsLabel != null && inputs != null)
                 _inputsLabel.text = Mathf.RoundToInt(inputs.Normalized01 * 100f).ToString(CultureInfo.InvariantCulture);
+        }
+
+        private void HandleLandscapeChanged(float _)
+        {
+            EnsureResolved();
+            if (_landscapeLabel != null && landscape != null)
+                _landscapeLabel.text = Mathf.RoundToInt(landscape.Normalized01 * 100f).ToString(CultureInfo.InvariantCulture);
         }
 
         private int CountVisibleSpeciesRuntime()

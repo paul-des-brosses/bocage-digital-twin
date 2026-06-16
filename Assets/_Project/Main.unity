@@ -2669,7 +2669,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.HedgerowShaderBinding
   densityContainer: {fileID: 11400000, guid: 250061f6c9d394b49bf44f6850c1625c, type: 2}
   healthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
-  spawnRoot: {fileID: 1335269289}
+  spawnRoot: {fileID: 1324521048}
   hedgeNamePrefixes:
   - hedge_
   - pollard_
@@ -3404,10 +3404,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Bocage.Presentation::Bocage.Presentation.Bindings.OngletClimatBinding
   runner: {fileID: 2115294099}
   soilCarbon: {fileID: 11400000, guid: 6931dd91cfa29a34c8f749085adcf36e, type: 2}
+  nitrogen: {fileID: 11400000, guid: 52e933bea7813214fac4fd346a3a4657, type: 2}
   temperatureMeanLabelName: climat-temp-mean-value
   precipitationCumulativeLabelName: climat-precip-cumul-value
   soilCarbonLabelName: climat-soil-carbon-value
   netCo2FluxLabelName: climat-co2-flux-value
+  nitrogenLabelName: climat-nitrogen-value
 --- !u!114 &1463489844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3424,11 +3426,13 @@ MonoBehaviour:
   habitat: {fileID: 11400000, guid: eb4348d0290d2294e87a06c9d5799cf4, type: 2}
   water: {fileID: 11400000, guid: 4956b208ed4df5e4aa9b625d88179fc2, type: 2}
   inputs: {fileID: 11400000, guid: be322440217f58345b5231cbc6d85e79, type: 2}
+  landscape: {fileID: 11400000, guid: a9b8c7d6e5f40312a9b8c7d6e5f40321, type: 2}
   faunaPool: {fileID: 1332578071}
   compositeLabelName: biodiv-composite-value
   habitatLabelName: biodiv-habitat-value
   waterLabelName: biodiv-water-value
   inputsLabelName: biodiv-inputs-value
+  landscapeLabelName: biodiv-landscape-value
   speciesCountLabelName: biodiv-species-count-value
 --- !u!114 &1463489845
 MonoBehaviour:
@@ -4878,9 +4882,11 @@ MonoBehaviour:
   soilMoistureContainer: {fileID: 11400000, guid: 8b4e2c9a0f5d3b7e1c4a6f9d8e2b3c5a, type: 2}
   techDeltaContainer: {fileID: 11400000, guid: 2e944f3c245e3f142bf6f74d8fb3c38f, type: 2}
   nitrogenContainer: {fileID: 11400000, guid: 52e933bea7813214fac4fd346a3a4657, type: 2}
+  hedgerowHealthContainer: {fileID: 11400000, guid: 0d6a4e2f1b7f5d9a3e6c8b2d0f4c5e7a, type: 2}
   faunaFactorHabitatContainer: {fileID: 11400000, guid: eb4348d0290d2294e87a06c9d5799cf4, type: 2}
   faunaFactorWaterContainer: {fileID: 11400000, guid: 4956b208ed4df5e4aa9b625d88179fc2, type: 2}
   faunaFactorInputsContainer: {fileID: 11400000, guid: be322440217f58345b5231cbc6d85e79, type: 2}
+  faunaFactorLandscapeContainer: {fileID: 11400000, guid: a9b8c7d6e5f40312a9b8c7d6e5f40321, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

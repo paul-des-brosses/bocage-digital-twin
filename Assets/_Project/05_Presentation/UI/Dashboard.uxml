@@ -337,6 +337,13 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
+                    <ui:Label text="Composante paysage" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="biodiv-landscape-value" text="—" class="panel-row-value" />
+                        <ui:Label text="%" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
                     <ui:Label text="Espèces visibles" class="panel-row-label" />
                     <ui:VisualElement class="panel-row-value-group">
                         <ui:Label name="biodiv-species-count-value" text="—" class="panel-row-value" />
@@ -378,6 +385,13 @@
                     <ui:VisualElement class="panel-row-value-group">
                         <ui:Label name="climat-soil-carbon-value" text="—" class="panel-row-value" />
                         <ui:Label text="tC/ha" class="panel-row-unit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="panel-row">
+                    <ui:Label text="Azote minéral disponible" class="panel-row-label" />
+                    <ui:VisualElement class="panel-row-value-group">
+                        <ui:Label name="climat-nitrogen-value" text="—" class="panel-row-value" />
+                        <ui:Label text="kgN/ha" class="panel-row-unit" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement class="panel-row">
