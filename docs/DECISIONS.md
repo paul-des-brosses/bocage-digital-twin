@@ -1952,3 +1952,37 @@ Décisions structurantes de la réécriture du modèle (I1-I6) et du cutover S5.
 - **Recos persistantes** : une reco reste en attente jusqu'à traitement (Valider / Ignorer) ou satisfaction du levier, au lieu d'expirer 45 j après son événement — une reco passive devenait injouable à vitesse rapide. Inbox bornée à 1 par type d'événement.
 
 **Raison** : compléter plutôt que supprimer (§18.8), densifier la biodiversité (défendabilité jury), et rendre les chaînes capteur → visuel / onglet lisibles de bout en bout.
+
+### R7. Report « apport techno négatif en RCP4.5 » : transitoire assumé + 2 correctifs
+
+**Contexte** : en RCP4.5, valider les recos faisait passer l'apport techno (Hero
+KPI) sous zéro. Investigation headless (sonde jetable, 8 seeds × 3 mois de
+départ, climatologie saisonnière de Tourouvre) : **ce n'est pas un bug de calcul
+des recos**. Chaque reco surfacée a une Δmarge espérée projetée strictement
+positive (garde `Utility > 0` ⇒ `E[Δmarge] > 0`), et les 24 cas finissent
+fortement positifs (+970 à +2060 €/ha). Le négatif est un **transitoire d'un KPI
+cumulatif** (`capital_réel − capital_fantôme − investissements`) : valider une
+bonne adaptation (couper l'azote, passer en prairie) fait plonger le cumul le
+temps que la prairie fraîchement implantée dépasse la culture encore debout en
+début d'année de sécheresse, puis il rattrape largement le fantôme gelé qui
+continue de cramer ses intrants.
+
+**Décisions** :
+- **Transitoire laissé tel quel** (choix utilisateur) : c'est le coût réel d'une
+  transition, et le montrer est cohérent avec la thèse du modèle honnête (§1).
+  Pas de lissage du KPI, pas de note UI.
+- **MAEC gatée sur l'IFT effectif** (`EconomyRule`, Couche 01) : elle se
+  débloquait sur le slider phyto brut, donc une ferme 100 % prairie (aucune
+  culture à traiter, `part_cultivée = 0`) perdait les 90 €/ha si le slider
+  restait à sa valeur de référence. Désormais gatée sur `part_cultivée ×
+  intensité` : une prairie permanente ne pulvérise rien et reste éligible.
+  Inchangé pour une ferme tout-culture (g=0). Effet de bord bienvenu : raccourcit
+  le transitoire ci-dessus.
+- **Projection à 9 réalisations météo** (`ModelOutcomeProjector`, Couche 03,
+  était 3) : le min sur 3 tirages était un estimateur trop bruité du pire cas →
+  recos parfois mal classées. 9 stabilise l'espérance et le downside, au prix de
+  ~3× le temps de projection par reco (ne tourne qu'une fois par événement).
+
+**Raison** : ne pas maquiller un comportement honnête en bug, mais corriger au
+passage une inéligibilité MAEC injustifiée et fiabiliser la bande d'incertitude
+des recos. Tests headless 129 → 132 (2 MAEC + 1 projection), tous verts.

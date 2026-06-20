@@ -754,7 +754,7 @@ projetés à 365 j) :
 **Projections (`ModelOutcomeProjector`, dérivées du modèle)** : pour chaque
 levier, un run « avec » contre une baseline « sans » (même graine, même météo),
 ΔKPI réel à 30 j et 365 j ; la bande pire/attendu/meilleur est le spread sur
-**3 réalisations météo** (favorable / médiane / défavorable), pas un facteur
+**9 réalisations météo seedées** du générateur (ADR R7, était 3), pas un facteur
 arbitraire. Les signes affichés dépendent donc de l'état courant — la projection
 ne ment plus. L'incohérence Priority-1 de l'audit interne (« +0,10 promis vs
 ~+0,014 réel à −20 % d'intrants ») est **résolue** : on affiche le ΔKPI que le
