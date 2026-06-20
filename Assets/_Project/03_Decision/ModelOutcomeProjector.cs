@@ -14,7 +14,9 @@ namespace Bocage.Decision
     public sealed class ModelOutcomeProjector
     {
         public const int HorizonDays = 1095;          // 3 ans (horizon de décision agriculteur)
-        public const int WeatherRealisations = 3;
+        // 9 réalisations météo : assez d'échantillons pour stabiliser l'espérance ET le downside
+        // (le min sur 3 tirages était un estimateur trop bruité du pire cas → recos instables).
+        public const int WeatherRealisations = 9;
         private const ulong RealisationSeedStride = 1000003UL;
 
         private readonly Climatology _climatology;

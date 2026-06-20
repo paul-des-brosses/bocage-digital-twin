@@ -78,6 +78,20 @@ namespace Bocage.Tests.EditMode
                 "ajouter de l'azote quand la culture est carencée doit améliorer la marge");
         }
 
+        [Test]
+        public void Projection_uses_enough_realisations_to_stabilise_the_band()
+        {
+            // Fix bruit de projection : assez de tirages météo pour une espérance/downside stables.
+            Assert.That(ModelOutcomeProjector.WeatherRealisations, Is.GreaterThanOrEqualTo(8),
+                "la projection doit échantillonner assez de réalisations météo");
+            // Et la bande reste bien ordonnée worst ≤ expected ≤ best sur un levier sensible à la météo.
+            var projector = new ModelOutcomeProjector(UniformClimatology());
+            LeverOutcome o = projector.Project(new EcosystemModel(), new ScenarioContext(), 3UL,
+                s => s.GrasslandFraction = 1.0);
+            Assert.LessOrEqual(o.DeltaMarginEurosPerHa.Worst, o.DeltaMarginEurosPerHa.Expected);
+            Assert.LessOrEqual(o.DeltaMarginEurosPerHa.Expected, o.DeltaMarginEurosPerHa.Best);
+        }
+
         // ---------------- Objectif ----------------
 
         [Test]
