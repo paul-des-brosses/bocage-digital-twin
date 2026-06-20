@@ -69,7 +69,13 @@ namespace Bocage.SimulationCore
             double costGrassland = g * GrasslandUpkeepEurosPerHa;
 
             double pse = model.HedgerowDensityMPerHa * PseRateEurosPerMeter;
-            double maec = scenario.PesticideIntensity <= MaecIftThreshold ? MaecPaymentEurosPerHa : 0.0;
+            // MAEC : gatée sur l'IFT EFFECTIF de la ferme = intensité × part cultivée. Le phyto ne
+            // s'applique qu'aux (1−g) ha en culture ; une prairie permanente ne pulvérise rien et
+            // reste intrinsèquement bas-intrants. Une ferme 100 % prairie est donc éligible même si
+            // le slider phyto est resté à sa valeur de référence. À g=0, l'IFT effectif = intensité
+            // (comportement inchangé pour une ferme tout-culture).
+            double effectiveIft = cropShare * scenario.PesticideIntensity;
+            double maec = effectiveIft <= MaecIftThreshold ? MaecPaymentEurosPerHa : 0.0;
             double carbonAbove = model.SoilCarbonTotalTPerHa - CarbonReferenceTPerHa;
             double carbonCredit = carbonAbove > 0.0 ? carbonAbove * CarbonPaymentEurosPerTonneAboveBaseline : 0.0;
 

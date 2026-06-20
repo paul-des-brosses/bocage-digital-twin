@@ -54,6 +54,27 @@ namespace Bocage.Tests.EditMode
         }
 
         [Test]
+        public void Full_grassland_qualifies_for_maec_even_with_stale_pesticide()
+        {
+            // 100 % prairie : aucune culture à traiter → IFT effectif 0 → MAEC due, même si le
+            // slider phyto est resté à 1 (le fix : la MAEC se gate sur l'usage effectif, pas sur le slider).
+            MarginBreakdown bd = EconomyRule.Breakdown(ReferenceModel(),
+                new ScenarioContext { GrasslandFraction = 1.0, PesticideIntensity = 1.0 });
+            Assert.AreEqual(EconomyRule.MaecPaymentEurosPerHa, bd.MaecEurosPerHa, 1e-9,
+                "une ferme 100 % prairie ne pulvérise rien → MAEC due malgré le slider phyto");
+            Assert.AreEqual(0.0, bd.PesticideCostEurosPerHa, 1e-9, "pas de culture → pas de coût phyto");
+        }
+
+        [Test]
+        public void Pure_crop_at_reference_pesticide_still_gets_no_maec()
+        {
+            // Régression : sans prairie, IFT effectif = intensité → au-dessus du seuil, pas de MAEC.
+            MarginBreakdown bd = EconomyRule.Breakdown(ReferenceModel(),
+                new ScenarioContext { GrasslandFraction = 0.0, PesticideIntensity = 1.0 });
+            Assert.AreEqual(0.0, bd.MaecEurosPerHa, 1e-9, "ferme tout-culture à l'IFT de référence : pas de MAEC");
+        }
+
+        [Test]
         public void Carbon_above_baseline_is_paid()
         {
             var rich = new EcosystemModel(initialCarbonYoungTPerHa: 3.0, initialCarbonOldTPerHa: 67.0); // 70 tC/ha
