@@ -221,7 +221,7 @@ mensonge visuel.
 ## B.5 Panneaux Niveau B (rappel)
 
 Sous les Hero, 3 panneaux détaillent (lecture seule) : **Biodiversité**
-(3 facteurs habitat/eau/intrants + comptage faune visible), **Climat &
+(4 facteurs habitat/eau/intrants/paysage + comptage faune visible), **Climat &
 ressources** (T° moyenne, pluie cumulée, carbone, flux CO₂, `θ`, nappe),
 **Économie** (rendement, coûts détaillés, PSE, PAC, crédit carbone, capital,
 horizon de rentabilité). Tous dérivés des mêmes états/capteurs.
@@ -328,10 +328,10 @@ fonction DoseOptimale(levier, état, scénario, horizon):
 
 ```
 fonction Projeter(levier @ niveau, état, scénario, horizon):
-    pour r dans 1..R(=3 réalisations météo):
+    pour r dans 1..R(=9 réalisations météo):
         copie_base   = Snapshot(état, scénario)           # baseline : on ne fait rien
         copie_levier = Snapshot(état, scénario) ; Appliquer(levier @ niveau)
-        météo_r = ÉchantillonnerAnnée(CSV, seed + r)       # vraie année historique
+        météo_r = GénérerMétéo(climatologie, seed + r)     # tirage stochastique seedé
         simuler(copie_base, copie_levier, horizon, météo_r)
         Δmarge_r   = KPI_marge(copie_levier) − KPI_marge(copie_base)
         Δbiodiv_r  = KPI_biodiv(copie_levier) − KPI_biodiv(copie_base)
@@ -340,9 +340,9 @@ fonction Projeter(levier @ niveau, état, scénario, horizon):
 ```
 
 - **Horizons** : court (30 j) + long (365 j / horizon).
-- **`R` réalisations = R vraies années météo** tirées du CSV → la bande
-  d'incertitude (worst/expected/best) reflète la **variabilité
-  inter-annuelle réelle**, pas un bruit inventé.
+- **`R` réalisations = R tirages stochastiques seedés** du générateur météo
+  (climatologie de Tourouvre) → la bande d'incertitude (worst/expected/best)
+  reflète la **variabilité inter-annuelle** simulée, pas un bruit inventé.
 - **Coût maîtrisé** (WebGL) : la projection ne tourne **que quand un
   événement se déclenche** (pas chaque tick), via **coroutine** étalée sur
   quelques frames (règle « coroutines, pas async »). `K·R·horizon` borné ;
@@ -438,7 +438,7 @@ La bande `[worst/best]` vient des R années météo (C.5) — l'incertitude est
 >    **structurelles**) : Couverts d'interculture, Travail du sol réduit.
 > 3. Dose optimale par candidat (recherche C.4) :
 >    Couverts → 70 % ; Travail du sol → passer en TCS.
-> 4-5. Projection (3 réalisations météo) — *l'année en cours est déjà
+> 4-5. Projection (9 réalisations météo) — *l'année en cours est déjà
 >    perdue ; le gain est sur l'exposition future* :
 >    | Candidat @ dose opt. | NPV Δmarge (365 j) | Δσ marge (− = +résilient) | Δbiodiv |
 >    |---|---|---|---|

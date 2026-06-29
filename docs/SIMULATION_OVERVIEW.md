@@ -117,7 +117,7 @@ Deux garde-fous structurels :
 Assumées, pour éviter toute survalorisation :
 
 - **Mono-culture représentative** : le « champ » est une culture annuelle calibrée sur le blé (rotation blé/colza assumée dans la narration et via le levier prairie), pas une rotation simulée explicitement.
-- **Biodiversité = 3 facteurs** ; un 4ᵉ (diversité du paysage) est au backlog.
+- **Biodiversité = indice composite** (4 facteurs : habitat / eau / intrants / paysage, + 2 modulateurs faibles) — un proxy agrégé, pas un inventaire d'espèces ni une dynamique de populations.
 - **Phénologie simplifiée** : pas de semis/récolte explicites au-delà de la fenêtre de croissance.
 - **Pas de santé végétale** (pathogènes, ravageurs) ni d'aléa de mortalité des plantations.
 - **Hydrologie schématique**, non validée hydrologiquement.

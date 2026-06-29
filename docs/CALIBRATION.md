@@ -723,13 +723,13 @@ avec un **garde-fou de cohérence** (§17). Direction « écolo » (↑ biodiv) 
 signal, le moteur construit les leviers **faisables** (garde-fous de marge,
 §17), **projette chacun en avant** sur une copie de l'état
 (`ModelOutcomeProjector`) et garde celui qui maximise l'objectif
-`U = w_eco · (Δprofit / 150) + w_bio · Δbiodiv` avec **w_eco = 0,80** et
-**w_bio = 0,20** (`FarmerObjective`). Poids d'**agriculteur** : économie
-dominante, biodiversité directe faible mais qui entre fortement par l'économie
-(le Δprofit projeté embarque déjà brise-vent, fertilité du sol, aides PSE/MAEC
-et résilience du rendement). Échelle 150 €/ha ≈ un demi-revenu net neutre → met
-le profit sur le même pied [-1, +1] que l'indice biodiv. Poids internes (pas de
-curseur, §17), sourcés (Edwards-Jones 2006 ; Reimer et al. 2012).
+`U = E[Δmarge] − λ·(E[Δmarge] − Δmarge_pire)` — **marge ajustée du risque**
+(λ=0,5). L'écologie est **déjà monétisée dans la marge** (PSE/MAEC/crédit
+carbone), donc l'utilité est purement économique + une aversion au risque
+baissier ; pas de poids biodiversité arbitraire (`FarmerObjective`). La bande
+pire/attendu/meilleur vient des **9 réalisations météo seedées** (cf ADR R7).
+Critère interne (pas de curseur, §17), sourcé (Edwards-Jones 2006 ; Reimer
+et al. 2012).
 - Anomalie faune → meilleur ΔU parmi {baisser intrants, réduire l'arrachage,
   planter} ; silence si aucun faisable (§17).
 - Carbone bas → couverts ou résidus, selon ΔU.

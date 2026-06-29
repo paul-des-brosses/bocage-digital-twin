@@ -1846,6 +1846,13 @@ le modèle.
   les aides PSE/MAEC et la résilience du rendement). Poids internes (pas de
   nouveau curseur, §17), sourcés sur la littérature de décision agricole
   (Edwards-Jones 2006 ; Reimer et al. 2012).
+
+  > **Mise à jour (post-R7)** : la pondération `w_eco/w_bio 0,80/0,20` décrite
+  > ci-dessus a depuis été remplacée — `FarmerObjective` calcule une **marge
+  > ajustée du risque** `U = E[Δmarge] − λ·(E[Δmarge] − Δmarge_pire)` (λ=0,5),
+  > sans poids biodiversité (l'écologie est déjà monétisée dans la marge).
+  > Réf. à jour : `docs/refonte/08_MODELE.md` §9.1 + `FarmerObjective.cs`. Et la
+  > projection échantillonne désormais **9 réalisations** seedées (cf ADR R7), pas 3.
 - **Sélection par ΔU** : pour chaque événement, le moteur construit les
   leviers **faisables** (garde-fous de marge conservés, §17), projette
   chacun, et garde celui qui améliore le mieux `U`.
