@@ -39,7 +39,7 @@ Formats acceptés (détection insensible à la casse) :
 Séparateur ';' ou ',' auto-détecté. Bibliothèque standard uniquement.
 
 Usage :
-    python tools/extract_weather_normals.py Meteo_Tourouvre.csv \\
+    python tools/extract_weather_normals.py data/Meteo_Tourouvre.csv \\
         --output data/normales_tourouvre.json
     # --station, --start-year, --end-year sont optionnels (défaut : tout le fichier)
 """

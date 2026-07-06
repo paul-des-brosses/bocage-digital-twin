@@ -50,6 +50,6 @@ ici.
 
 La météo est **générée** par un générateur stochastique seedé (chaîne de
 Markov occurrence + AR(1) température) **calibré** sur le relevé Météo-France
-de Tourouvre-au-Perche (`Meteo_Tourouvre.csv`, racine du repo), via
+de Tourouvre-au-Perche (`data/Meteo_Tourouvre.csv`), via
 `tools/extract_weather_normals.py` — à étendre pour produire les transitions
 de Markov, l'amplitude diurne (`TN/TX`) et les paramètres de température.

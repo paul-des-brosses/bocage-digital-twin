@@ -51,8 +51,9 @@ desktop.ini
 .vscode/
 .idea/
 
-# Claude Code (local agent state)
-.claude/
+# Claude Code (local agent state — but the tracked project spec is re-included)
+.claude/*
+!.claude/CLAUDE.md
 
 # Project specific
 /Builds/
