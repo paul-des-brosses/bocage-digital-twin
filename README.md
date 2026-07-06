@@ -1,6 +1,6 @@
 # Bocage Digital Twin
 
-*A digital twin of a Norman bocage — built to test, honestly, whether data can reconcile ecology and economy.*
+*A digital twin of a Norman bocage, built to test whether data can reconcile ecology and economy.*
 
 **[▶ Explore the live twin](https://paul-des-brosses.github.io/bocage-digital-twin/)** — runs in the browser (WebGL, desktop ≥ 1280 px).
 
@@ -10,9 +10,9 @@
 
 ## Why I built it
 
-I wanted an ambitious Unity project to sharpen my skills — so I picked something I actually care about: **the landscapes of my Normandy**, and a conviction worth testing. Ecology and economy get endlessly cast as opposites; I think **access to data is what lets you reconcile them** rather than forever trading one against the other — the promise of Industry 4.0, a field that genuinely excites me, brought down to a single field of crops.
+I wanted an ambitious Unity project to sharpen my skills, so I picked something I actually care about: the landscapes of my Normandy, and a conviction worth testing. Ecology and economy are endlessly cast as opposites; I think access to data lets you reconcile them rather than forever trading one against the other. That's the promise of Industry 4.0, a field that excites me, brought down to a single field of crops.
 
-So instead of just *asserting* it, I built a model that **tests** it — honestly. The simulation never assumes the answer: manage badly and ecology *and* economy both suffer, and the twin says so. And I made it a real **digital twin, not a video game** — every pixel traces back to a measured variable, never to the calendar or a scripted mood.
+So instead of just asserting it, I built a model that tests it. The simulation never assumes the answer: manage badly and ecology and economy both suffer, and the twin reflects that. I made it a real digital twin, not a video game: every pixel traces back to a measured variable, never to the calendar or a scripted mood.
 
 ## What it is
 
@@ -20,11 +20,11 @@ A real-time simulation of a fictional but plausible **instrumented bocage site i
 
 ## An honest note on what the sensors are *for*
 
-One of the five headline indicators measures the **contribution of instrumentation** — the gap between steering the land on the model's measured data versus leaving the starting decisions untouched. Read it for what it is:
+One of the five headline indicators measures the contribution of instrumentation: the gap between steering the land on the model's measured data versus leaving the starting decisions untouched. Read it for what it is:
 
 > **the marginal gain of *precision*, not proof that good farming needs sensors.**
 
-You can manage a bocage responsibly with an agronomist's eye and no instrumentation at all. What the data buys is *millimetre optimisation* of each decision lever — the **Industry-4.0 layer on top of already-sound practice**. This twin is a lens on that marginal gain, not a sales pitch for buying sensors. Keeping that honest is the point.
+You can manage a bocage responsibly with an agronomist's eye and no instrumentation at all. What the data buys is millimetre optimisation of each decision lever: the Industry 4.0 layer on top of already-sound practice. This twin is a lens on that marginal gain, not a sales pitch for buying sensors. Keeping that honest is the point.
 
 ![The eddy-covariance tower inspector — alerts threshold the measurement, not the model's ground truth](docs/media/sensor-eddy-tower.png)
 
@@ -43,16 +43,16 @@ You can manage a bocage responsibly with an agronomist's eye and no instrumentat
 
 ## How it works, in one paragraph
 
-Two simulations tick in lockstep on the same seeds: the **real run** follows your decisions; a **frozen-baseline shadow run** keeps the starting decisions untouched. The difference between them, in euros, *is* the instrumentation contribution — measured, not assumed. One tick is one simulated day; run at ×1, ×10, or skip to the end. Levers apply immediately. The whole thing is deterministic: same seed and inputs → same run. *(The full causal model — water bucket → yield → residues → carbon → water capacity, and the nitrogen / biodiversity / economy couplings — is laid out in the [model overview](docs/SIMULATION_OVERVIEW.md).)*
+Two simulations tick in lockstep on the same seeds: the real run follows your decisions, while a frozen-baseline shadow run keeps the starting decisions untouched. The difference between them, in euros, is the instrumentation contribution, measured rather than assumed. One tick is one simulated day; run at ×1, ×10, or skip to the end. Levers apply immediately. The whole thing is deterministic: same seed and inputs yield the same run. (The full causal model runs water bucket → yield → residues → carbon → water capacity, plus the nitrogen, biodiversity and economy couplings, and is laid out in the [model overview](docs/SIMULATION_OVERVIEW.md).)
 
 ![A model-derived recommendation with its projected worst / expected / best outcomes](docs/media/recommendation-popup.png)
 
 ## Tech stack
 
 - **Engine**: Unity 6 LTS, URP 2D Renderer · **Language**: C# · **Rendering**: flat-colour 2D with custom Shader Graph shaders (sky, prairie, hedgerows, pond).
-- **Architecture**: strict 5-layer separation (Simulation Core / Sensors / Decision / Indicators / Presentation), enforced by Assembly Definitions — the simulation core is pure C# with zero `UnityEngine` dependency and is unit-tested headless.
-- **Data flow**: observable ScriptableObject containers (single-writer, many-readers) + a static EventBus for punctual events.
-- **Build & deploy**: WebGL (Brotli, IL2CPP, high stripping) → GitHub Pages via GitHub Actions (Buildalon Unity build).
+- **Architecture**: strict 5-layer separation (Simulation Core / Sensors / Decision / Indicators / Presentation), enforced by Assembly Definitions. The simulation core is pure C# with zero `UnityEngine` dependency and is unit-tested headless.
+- **Data flow**: observable ScriptableObject containers (single-writer, many-readers) plus a static EventBus for punctual events.
+- **Build & deploy**: WebGL (Brotli, IL2CPP, high stripping) to GitHub Pages via GitHub Actions (Buildalon Unity build).
 - **Testing**: Unity Test Framework (EditMode) on the simulation core, plus a headless `dotnet test` harness for fast iteration.
 
 ## Getting started
@@ -65,19 +65,19 @@ Two simulations tick in lockstep on the same seeds: the **real run** follows you
 
 Orders of magnitude are anchored on public sources — not validated for operational use, but defensible and recognisable to a Perche agronomist:
 
-- **[INRAE](https://www.inrae.fr)** · **[Solagro](https://solagro.org)** — bocage carbon, agroecological parameters
-- **Arvalis / COMIFER / [Agreste](https://agreste.agriculture.gouv.fr)** — yield, nitrogen response, regional crop statistics
-- **[Efese](https://www.ecologie.gouv.fr/evaluation-francaise-des-ecosystemes-et-des-services-ecosystemiques-efese)** — ecosystem-services monetisation · **MAEC** — agri-environmental policy
-- **[PNR du Perche](https://www.parc-naturel-perche.fr)** — site context, species, hedgerow densities · **Météo-France** (Tourouvre-au-Perche normals) — weather generator
+- **[INRAE](https://www.inrae.fr)** · **[Solagro](https://solagro.org)**: bocage carbon, agroecological parameters
+- **Arvalis / COMIFER / [Agreste](https://agreste.agriculture.gouv.fr)**: yield, nitrogen response, regional crop statistics
+- **[Efese](https://www.ecologie.gouv.fr/evaluation-francaise-des-ecosystemes-et-des-services-ecosystemiques-efese)**: ecosystem-services monetisation · **MAEC**: agri-environmental policy
+- **[PNR du Perche](https://www.parc-naturel-perche.fr)**: site context, species, hedgerow densities · **Météo-France** (Tourouvre-au-Perche normals): weather generator
 
 Every constant and its source is documented in the [model spec](docs/refonte/08_MODELE.md).
 
 ## Going further
 
-- [**Plain-language model overview**](docs/SIMULATION_OVERVIEW.md) — what is simulated and why (the recommended next read).
-- [**Software architecture**](docs/ARCHITECTURE.md) — the 5 layers, asmdef graph, data flow.
-- [**Model & engine specs**](docs/refonte/) — biophysical model, KPI/decision engine, and the mathematical verification, with every number sourced *(in French)*.
-- [**Design decisions**](docs/DECISIONS.md) — the rationale log (ADRs).
+- [**Plain-language model overview**](docs/SIMULATION_OVERVIEW.md): what is simulated and why (the recommended next read).
+- [**Software architecture**](docs/ARCHITECTURE.md): the 5 layers, asmdef graph, data flow.
+- [**Model & engine specs**](docs/refonte/): biophysical model, KPI/decision engine, and the mathematical verification, with every number sourced *(in French)*.
+- [**Design decisions**](docs/DECISIONS.md): the rationale log (ADRs).
 
 ---
 
