@@ -2,14 +2,9 @@
 
 *A digital twin of a Norman bocage — built to test, honestly, whether data can reconcile ecology and economy.*
 
-**▶ [Open the live demo](https://paul-des-brosses.github.io/bocage-digital-twin/)** — runs in the browser (WebGL, desktop ≥ 1280 px).
+**[▶ Explore the live twin](https://paul-des-brosses.github.io/bocage-digital-twin/)** — runs in the browser (WebGL, desktop ≥ 1280 px).
 
-<!--
-  HERO MEDIA — insert a 10-15s GIF (or MP4) of the running demo showing the
-  scene + dashboard + one preset change. Drop the file under docs/media/ and
-  reference it here, e.g.:
-  ![Bocage Digital Twin — live demo](docs/media/hero.gif)
--->
+![Bocage Digital Twin — the living scene](docs/media/hero.gif)
 
 ---
 
@@ -31,6 +26,8 @@ One of the five headline indicators measures the **contribution of instrumentati
 
 You can manage a bocage responsibly with an agronomist's eye and no instrumentation at all. What the data buys is *millimetre optimisation* of each decision lever — the **Industry-4.0 layer on top of already-sound practice**. This twin is a lens on that marginal gain, not a sales pitch for buying sensors. Keeping that honest is the point.
 
+![The eddy-covariance tower inspector — alerts threshold the measurement, not the model's ground truth](docs/media/sensor-eddy-tower.png)
+
 ## What you can do
 
 - **Run the farm.** 6 management levers + 2 climate dials + a starting month, applied live. Four ready-made strategies (*Reference*, *Low-input*, *Intensive*, *RCP4.5 drought*) to start from.
@@ -39,12 +36,16 @@ You can manage a bocage responsibly with an agronomist's eye and no instrumentat
 - **Arbitrate the advice.** A model-derived recommendation engine surfaces win-win moves as proactive pop-ups and trade-offs as a passive list — you decide.
 - **See it breathe.** Birds cross the scene and a heron settles in only when the *measured* biodiversity index earns them. No calendar, no scripted ambience — *sensor primacy*: every visual traces back to a measurement.
 
+![Hero KPIs and the Climate & resources panel](docs/media/tab-climate-resources.png)
+
 → **New here? [How to drive the demo in 2 minutes](docs/GUIDE.md).**
 → **Curious about the science? [Plain-language model overview](docs/SIMULATION_OVERVIEW.md)** (then the sourced technical specs it links to).
 
 ## How it works, in one paragraph
 
 Two simulations tick in lockstep on the same seeds: the **real run** follows your decisions; a **frozen-baseline shadow run** keeps the starting decisions untouched. The difference between them, in euros, *is* the instrumentation contribution — measured, not assumed. One tick is one simulated day; run at ×1, ×10, or skip to the end. Levers apply immediately. The whole thing is deterministic: same seed and inputs → same run. *(The full causal model — water bucket → yield → residues → carbon → water capacity, and the nitrogen / biodiversity / economy couplings — is laid out in the [model overview](docs/SIMULATION_OVERVIEW.md).)*
+
+![A model-derived recommendation with its projected worst / expected / best outcomes](docs/media/recommendation-popup.png)
 
 ## Tech stack
 
@@ -75,9 +76,20 @@ Every constant and its source is documented in the [model spec](docs/refonte/08_
 
 - [**Plain-language model overview**](docs/SIMULATION_OVERVIEW.md) — what is simulated and why (the recommended next read).
 - [**Software architecture**](docs/ARCHITECTURE.md) — the 5 layers, asmdef graph, data flow.
-- [**Model & engine specs**](docs/refonte/) — biophysical model, KPI/decision engine, and the mathematical verification, with every number sourced.
+- [**Model & engine specs**](docs/refonte/) — biophysical model, KPI/decision engine, and the mathematical verification, with every number sourced *(in French)*.
 - [**Design decisions**](docs/DECISIONS.md) — the rationale log (ADRs).
 
 ---
 
 *A student R&D portfolio project (M1 ESILV, Creative Technology). Built to be read at whatever depth you want — skim the demo, or follow the links down to the sourced equations.*
+
+## Author
+
+Paul Des Brosses — M1 Creative Technology student, ESILV (Paris)
+GitHub: https://github.com/paul-des-brosses · LinkedIn: https://www.linkedin.com/in/paul-des-brosses/
+
+This repository is part of a public portfolio at the intersection of hardware, software and applied AI. Other projects:
+
+- [Forest of Senses](https://github.com/paul-des-brosses/forest-of-senses) — zero-instruction motor adaptation environment for post-stroke rehabilitation research
+- [Applied Fox](https://github.com/paul-des-brosses/applied-fox) — local multi-agent AI system for R&D technology watch
+- [Lightning TDOA Simulator](https://github.com/paul-des-brosses/lightning-tdoa-simulator) — simulation of a 3-station VLF lightning detection network
