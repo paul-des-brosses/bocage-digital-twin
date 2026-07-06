@@ -1,1496 +1,1450 @@
-# DECISIONS.md — Journal des décisions
+# DECISIONS.md — Decision log
 
-Log des décisions de design prises pendant la phase d'exploration. Format
-ADR (Architecture Decision Record) light. Une entrée = une décision
-tranchée. À mettre à jour au fil du projet si une décision est révisée.
-
----
-
-### 1. Sujet du projet : digital twin du bocage normand percheron
-
-**Contexte** : choix d'un biome ou d'un objet de simulation cohérent avec
-le profil portfolio (Creative Technology, R&D Ardanti) et accessible en
-documentation.
-
-**Décision** : digital twin d'un bocage normand percheron instrumenté.
-
-**Raison** : sujet riche en services écosystémiques mesurables, ancrage
-territorial fort (PNR du Perche), données publiques disponibles
-(Solagro, INRAE, Efese, MAEC), pertinence agroécologique actuelle.
-
-**Alternative écartée** : récif corallien instrumenté — trop éloigné du
-contexte français, données moins accessibles, signal portfolio moins
-distinctif.
+Log of design decisions made during the exploration phase. Light ADR
+(Architecture Decision Record) format. One entry = one settled decision.
+To be updated as the project progresses if a decision is revised.
 
 ---
 
-### 2. Format visuel : 2D plan fixe minimaliste
+### 1. Project subject: digital twin of the Norman Perche bocage
 
-**Contexte** : choisir un format compatible WebGL portfolio, lisible et
-réalisable en temps contraint.
+**Context**: choosing a biome or simulation object consistent with the
+portfolio profile (Creative Technology, Ardanti R&D) and accessible in
+terms of documentation.
 
-**Décision** : 2D plan fixe minimaliste, caméra strictement immobile.
+**Decision**: digital twin of an instrumented Norman Perche bocage.
 
-**Raison** : maximise la lisibilité des indicateurs, évite la dérive
-ludique, scope tenable, cohérent avec une UI de tableau de bord.
+**Rationale**: subject rich in measurable ecosystem services, strong
+territorial anchoring (PNR du Perche), publicly available data
+(Solagro, INRAE, Efese, MAEC), current agroecological relevance.
 
-**Alternative écartée** : 3D top-down ou 2.5D — coût de production des
-assets et complexité shader/perf disproportionnés pour un portfolio.
-
----
-
-### 3. Style visuel : Charles Harper + A Short Hike + colombages percherons
-
-**Contexte** : positionner le projet entre rigueur scientifique et
-chaleur visuelle pour éviter le rendu "tableau de bord froid".
-
-**Décision** : esprit Charles Harper (formes plates géométriques, palette
-maîtrisée), chaleur de A Short Hike (douceur d'éclairage, ambiance
-chaleureuse), inspiration architecture à colombages du Perche (palette
-ocre-brun-vert sourd).
-
-**Raison** : crédibilité naturaliste sans austérité, signature visuelle
-distinctive en portfolio, ancrage territorial fort.
-
-**Alternative écartée** : style high-tech propre (trop générique), pixel
-art (trop ludique), photoréalisme (hors scope production).
+**Rejected alternative**: instrumented coral reef — too far from the
+French context, less accessible data, less distinctive portfolio signal.
 
 ---
 
-### 4. Mode UI : dark mode éditorial scientifique
+### 2. Visual format: minimalist fixed 2D plan
 
-**Contexte** : choisir un mode d'interface cohérent avec l'identité
-visuelle et le confort de lecture longue.
+**Context**: choose a format compatible with a WebGL portfolio, legible
+and achievable within a constrained timeframe.
 
-**Décision** : dark mode éditorial scientifique, validé après génération
-d'image de référence.
+**Decision**: minimalist fixed 2D plan, strictly immobile camera.
 
-**Raison** : cohérent avec l'esthétique d'observatoire / station de
-recherche, contraste élevé pour la lisibilité des chiffres, distinctif en
+**Rationale**: maximizes indicator legibility, avoids drift toward game
+territory, sustainable scope, consistent with a dashboard UI.
+
+**Rejected alternative**: 3D top-down or 2.5D — asset production cost and
+shader/perf complexity disproportionate for a portfolio.
+
+---
+
+### 3. Visual style: Charles Harper + A Short Hike + Perche half-timbering
+
+**Context**: position the project between scientific rigor and visual
+warmth to avoid the "cold dashboard" rendering.
+
+**Decision**: Charles Harper spirit (flat geometric shapes, controlled
+palette), A Short Hike warmth (soft lighting, cozy atmosphere),
+inspiration from the half-timbered architecture of the Perche
+(muted ochre-brown-green palette).
+
+**Rationale**: naturalist credibility without austerity, distinctive
+visual signature for a portfolio, strong territorial anchoring.
+
+**Rejected alternative**: clean high-tech style (too generic), pixel
+art (too playful), photorealism (out of production scope).
+
+---
+
+### 4. UI mode: scientific editorial dark mode
+
+**Context**: choose an interface mode consistent with the visual identity
+and comfortable for long reading.
+
+**Decision**: scientific editorial dark mode, validated after generating
+a reference image.
+
+**Rationale**: consistent with the observatory / research station
+aesthetic, high contrast for legibility of figures, distinctive in a
 portfolio.
 
-**Alternative écartée** : light mode papier — moins distinctif, contraste
-moindre sur les visualisations colorées.
+**Rejected alternative**: paper light mode — less distinctive, lower
+contrast on colored visualizations.
 
 ---
 
-### 5. Typographie : EB Garamond + JetBrains Mono
+### 5. Typography: EB Garamond + JetBrains Mono
 
-**Contexte** : asseoir l'identité éditoriale et garantir la lisibilité
-chiffrée.
+**Context**: establish the editorial identity and ensure legibility of
+figures.
 
-**Décision** : EB Garamond pour titres et labels, JetBrains Mono (ou IBM
-Plex Mono) pour valeurs chiffrées.
+**Decision**: EB Garamond for titles and labels, JetBrains Mono (or IBM
+Plex Mono) for numeric values.
 
-**Raison** : Garamond évoque le scientifique éditorial sérieux ; mono
-moderne pour la précision numérique. Couple lisible et distinctif.
+**Rationale**: Garamond evokes serious editorial science; modern mono for
+numeric precision. A legible and distinctive pairing.
 
-**Alternative écartée** : sans-serif moderne uniforme — visuellement
-banal, pas de hiérarchie typographique.
-
----
-
-### 6. Cadre idéologique : techno-optimisme modéré + réalisme agroécologique
-
-**Contexte** : éviter le piège politique d'un projet polarisant tout en
-défendant une thèse claire.
-
-**Décision** : techno-optimisme modéré combiné à un réalisme
-agroécologique. Pas de "croissance verte" ni de "décroissance" assumés.
-
-**Raison** : thèse défendable scientifiquement, audience portfolio large,
-neutralité politique sans être tiède.
-
-**Alternative écartée** : posture militante (pro ou anti) — clive
-inutilement l'audience portfolio.
+**Rejected alternative**: uniform modern sans-serif — visually
+mundane, no typographic hierarchy.
 
 ---
 
-### 7. Niveau de calibration : moyen, chiffres réels Solagro/INRAE/Efese/MAEC
+### 6. Ideological framing: moderate techno-optimism + agroecological realism
 
-**Contexte** : équilibrer rigueur scientifique et faisabilité de
-production.
+**Context**: avoid the political trap of a polarizing project while
+defending a clear thesis.
 
-**Décision** : calibration de niveau moyen, basée sur chiffres publics
-réels. Pas de forçage de l'issue.
+**Decision**: moderate techno-optimism combined with agroecological
+realism. No overt "green growth" or "degrowth" stance.
 
-**Raison** : crédibilité auprès d'un agroécologue ou d'un agent PNR sans
-viser une publication scientifique.
+**Rationale**: scientifically defensible thesis, broad portfolio audience,
+political neutrality without being lukewarm.
 
-**Alternative écartée** : calibration ultra-rigoureuse type modèle
-INRAE — hors scope ; calibration purement inventée — perte de crédibilité.
-
----
-
-### 8. Indicateurs éco et écolo en parallèle, jamais opposés
-
-**Contexte** : risque pédagogique d'opposer économie et écologie de
-manière manichéenne.
-
-**Décision** : indicateurs éco et écolo affichés en parallèle. Rentabilité
-intégrée comme KPI central (€/ha/an incluant services écosystémiques
-monétisés).
-
-**Raison** : reflète la thèse de convergence possible, évite la
-caricature, pédagogiquement plus juste.
-
-**Alternative écartée** : afficher un seul axe "performance globale" —
-masque les arbitrages.
+**Rejected alternative**: militant stance (pro or anti) — needlessly
+splits the portfolio audience.
 
 ---
 
-### 9. Onglet comparatif avec/sans tech : simulation fantôme parallèle
+### 7. Calibration level: medium, real Solagro/INRAE/Efese/MAEC figures
 
-**Contexte** : comment démontrer l'apport de l'instrumentation sans le
-postuler.
+**Context**: balance scientific rigor and production feasibility.
 
-**Décision** : simulation fantôme parallèle, mêmes seeds et mêmes inputs,
-sans application des actions tech.
+**Decision**: medium-level calibration, based on real public figures.
+No forcing of the outcome.
 
-**Raison** : démonstration honnête (différence due exclusivement aux
-actions), reproductibilité, alignement avec la thèse du projet.
+**Rationale**: credibility with an agroecologist or a PNR officer without
+aiming for a scientific publication.
 
-**Alternative écartée** : comparaison avec valeurs codées en dur — non
-crédible.
-
-**Précisé par ADR #58 (chantier E8, 2026-06-04)** : le cadrage « mêmes
-inputs » est affiné en contrefactuel à baseline gelée — les paramètres
-exogènes (climat, MAEC, PSE) sont partagés, mais les quatre leviers de
-décision agriculteur sont gelés à leur valeur de lancement.
+**Rejected alternative**: ultra-rigorous calibration like an INRAE model —
+out of scope; purely invented calibration — loss of credibility.
 
 ---
 
-### 10. Hiérarchie KPIs en 3 niveaux
+### 8. Economic and ecological indicators in parallel, never opposed
 
-**Contexte** : densité d'information à organiser sans noyer l'utilisateur.
+**Context**: pedagogical risk of opposing economy and ecology in a
+Manichean way.
 
-**Décision** : 5 Hero KPIs (densité haies, biodiversité composite, nappe
-phréatique, rentabilité intégrée, delta tech), 3 panneaux Niveau B
-(Biodiversité, Climat & ressources, Économie), popovers Niveau C sur
-clic capteur.
+**Decision**: economic and ecological indicators displayed in parallel.
+Profitability integrated as a central KPI (€/ha/year including monetized
+ecosystem services).
 
-**Raison** : structure progressive de l'information, lecture rapide
-possible, profondeur disponible à la demande.
+**Rationale**: reflects the thesis of possible convergence, avoids the
+caricature, pedagogically more accurate.
 
-**Alternative écartée** : tableau plat exhaustif — illisible.
-
----
-
-### 11. Temporalité : simulation continue, x1/x10/skip, pas de cycle jour/nuit
-
-**Contexte** : choisir un modèle de temps cohérent avec les phénomènes
-observés.
-
-**Décision** : simulation continue, play/pause, vitesses x1 et x10, skip
-to end au-delà. Pause maintient les animations de scène. Pas de cycle
-jour/nuit. Saisons gérées via shaders pilotés par la météo simulée, pas
-par calendrier.
-
-**Raison** : phénomènes observés (croissance haies, dynamique nappe) à
-échelle pluriannuelle ; cycle jour/nuit hors scope et inutile.
-
-**Alternative écartée** : tick discret par mois — perte de granularité
-sur les événements rapides.
+**Rejected alternative**: display a single "overall performance" axis —
+masks the trade-offs.
 
 ---
 
-### 12. Modification des presets : transition interpolée 7-14 jours
+### 9. Comparative with/without tech tab: parallel shadow simulation
 
-**Contexte** : éviter les sauts visuels brutaux quand l'utilisateur
-modifie un preset.
+**Context**: how to demonstrate the contribution of instrumentation
+without postulating it.
 
-**Décision** : transition interpolée sur 7-14 jours simulés via
+**Decision**: parallel shadow simulation, same seeds and same inputs,
+without applying the tech actions.
+
+**Rationale**: honest demonstration (difference due exclusively to the
+actions), reproducibility, alignment with the project thesis.
+
+**Rejected alternative**: comparison with hard-coded values — not
+credible.
+
+**Refined by ADR #58 (workstream E8, 2026-06-04)**: the "same inputs"
+framing is refined into a frozen-baseline counterfactual — the exogenous
+parameters (climate, MAEC, PSE) are shared, but the four farmer decision
+levers are frozen at their launch value.
+
+---
+
+### 10. 3-tier KPI hierarchy
+
+**Context**: information density to organize without overwhelming the user.
+
+**Decision**: 5 Hero KPIs (hedge density, composite biodiversity, water
+table, integrated profitability, tech delta), 3 Tier B panels
+(Biodiversity, Climate & resources, Economy), Tier C popovers on sensor
+click.
+
+**Rationale**: progressive information structure, quick reading possible,
+depth available on demand.
+
+**Rejected alternative**: flat exhaustive table — illegible.
+
+---
+
+### 11. Temporality: continuous simulation, x1/x10/skip, no day/night cycle
+
+**Context**: choose a time model consistent with the observed phenomena.
+
+**Decision**: continuous simulation, play/pause, x1 and x10 speeds, skip
+to end beyond that. Pause maintains scene animations. No day/night
+cycle. Seasons handled via shaders driven by the simulated weather, not
+by calendar.
+
+**Rationale**: observed phenomena (hedge growth, water table dynamics) at
+a multi-year scale; day/night cycle out of scope and pointless.
+
+**Rejected alternative**: discrete monthly tick — loss of granularity on
+fast events.
+
+---
+
+### 12. Preset modification: interpolated 7-14 day transition
+
+**Context**: avoid abrupt visual jumps when the user modifies a preset.
+
+**Decision**: interpolated transition over 7-14 simulated days via
 `TransitioningParameter<T>`.
 
-**Raison** : crédibilité physique (les paramètres écosystémiques ne
-sautent pas), confort visuel.
+**Rationale**: physical credibility (ecosystem parameters do not jump),
+visual comfort.
 
-**Alternative écartée** : application immédiate — peu crédible et
-visuellement abrupt.
-
----
-
-### 13. Primauté du capteur : aucun visuel piloté par le calendrier
-
-**Contexte** : tentation de scénariser des effets (feuilles d'automne,
-neige) pour ambiancer.
-
-**Décision** : aucun élément visuel piloté par le calendrier. Tout dérive
-d'une mesure ou d'une variable du modèle, traçable jusqu'à un capteur ou
-un calcul.
-
-**Raison** : c'est ce qui distingue un digital twin d'un jeu vidéo.
-Garantie d'honnêteté du démonstrateur.
-
-**Alternative écartée** : effets décoratifs scriptés — perte de crédibilité
-projet.
+**Rejected alternative**: immediate application — not very credible and
+visually abrupt.
 
 ---
 
-### 14. Contrat utilisateur double casquette : Scénario + Décisions
+### 13. Sensor primacy: no visual driven by the calendar
 
-**Contexte** : clarifier ce que fait l'utilisateur.
+**Context**: temptation to script effects (autumn leaves, snow) to set
+the mood.
 
-**Décision** : casquette **Scénario** (curseurs presets, permanente) +
-casquette **Décisions de gestion** (recommandations à arbitrer, apparaît
-sur événements détectés).
+**Decision**: no visual element driven by the calendar. Everything derives
+from a measurement or a model variable, traceable to a sensor or a
+computation.
 
-**Raison** : sépare clairement le réglage de contexte (passif) et l'acte
-de gestion (actif). Pédagogiquement net.
+**Rationale**: this is what distinguishes a digital twin from a video game.
+Guarantee of the demonstrator's honesty.
 
-**Alternative écartée** : tout en un seul panneau — confond paramétrage
-et action.
-
----
-
-### 15. Module de décision : implémentation riche
-
-**Contexte** : niveau d'ambition sur le moteur de décision.
-
-**Décision** : implémentation riche, avec incertitudes (distributions),
-horizons multiples (court / moyen / long terme), contraste choix
-utilisateur vs choix optimisé.
-
-**Raison** : signal portfolio fort, démontre une vraie modélisation de
-décision en environnement incertain.
-
-**Alternative écartée** : règles simples si/alors — banal, peu
-distinctif.
+**Rejected alternative**: scripted decorative effects — loss of project
+credibility.
 
 ---
 
-### 16. Caméra : plan strictement fixe
+### 14. Dual-hat user contract: Scenario + Decisions
 
-**Contexte** : tentation d'ajouter du parallax ou un léger zoom.
+**Context**: clarify what the user does.
 
-**Décision** : plan strictement fixe, aucun parallax, aucun zoom.
+**Decision**: **Scenario** hat (preset sliders, permanent) + **Management
+decisions** hat (recommendations to arbitrate, appears on detected
+events).
 
-**Raison** : cohérent avec un format de tableau de bord, simplifie la
-production, lisibilité maximale des positions de capteurs.
+**Rationale**: cleanly separates context setting (passive) and the act of
+management (active). Pedagogically clear.
 
-**Alternative écartée** : parallax léger — gain visuel marginal, coût en
-complexité d'organisation des sprites.
-
----
-
-### 17. Plateforme : desktop-only assumé
-
-**Contexte** : viser ou non le mobile.
-
-**Décision** : desktop only. Pas de responsive mobile, pas de tactile.
-Bandeau d'avertissement si fenêtre < 1280 px.
-
-**Raison** : densité d'information incompatible avec le mobile, scope
-tenable, cible portfolio (recruteurs sur desktop).
-
-**Alternative écartée** : responsive mobile — coût production triple
-sans gain portfolio.
+**Rejected alternative**: everything in a single panel — conflates
+parameterization and action.
 
 ---
 
-### 18. Lien scène ↔ data : hover synchronisé minimap/scène
+### 15. Decision module: rich implementation
 
-**Contexte** : comment relier les capteurs visibles dans la scène à leur
-représentation sur la minimap.
+**Context**: level of ambition for the decision engine.
 
-**Décision** : hover synchronisé minimap ↔ scène. Pas de clic depuis la
-scène (pour préserver la lecture immersive).
+**Decision**: rich implementation, with uncertainties (distributions),
+multiple horizons (short / medium / long term), contrast between user
+choice and optimized choice.
 
-**Raison** : interaction lisible et non intrusive ; la minimap reste le
-point d'entrée actif.
+**Rationale**: strong portfolio signal, demonstrates real decision
+modeling in an uncertain environment.
 
-**Alternative écartée** : clic direct sur sprite scène — bruit
-interactif, ambiguïté avec animations de faune.
-
----
-
-### 19. Onboarding : tooltips contextuels, pas d'intro textuelle
-
-**Contexte** : comment expliquer l'interface sans intro intrusive.
-
-**Décision** : tooltips contextuels en Garamond italique sur hover, pas
-d'intro textuelle au lancement. Noms de panneaux extrêmement explicites.
-
-**Raison** : démarrage instantané, exploration guidée par survol, pas de
-modal bloquant.
-
-**Alternative écartée** : tutoriel pas-à-pas — coût de production élevé,
-intrusif pour l'audience portfolio.
+**Rejected alternative**: simple if/then rules — mundane, not very
+distinctive.
 
 ---
 
-### 20. Architecture en 5 couches
+### 16. Camera: strictly fixed plan
 
-**Contexte** : structure du code pour un projet Unity testable et
-maintenable.
+**Context**: temptation to add parallax or a slight zoom.
 
-**Décision** : 5 couches (SimulationCore / Sensors / Decision /
-Indicators / Presentation). Asmdef par couche, références strictes vers
-les couches inférieures uniquement.
+**Decision**: strictly fixed plan, no parallax, no zoom.
 
-**Raison** : testabilité de la Couche 1 en pure C#, séparation Unity /
-métier nette, signal portfolio fort sur l'architecture logicielle.
+**Rationale**: consistent with a dashboard format, simplifies production,
+maximum legibility of sensor positions.
 
-**Alternative écartée** : architecture monolithique MonoBehaviour —
-intestable, signal portfolio faible.
+**Rejected alternative**: light parallax — marginal visual gain, cost in
+sprite organization complexity.
 
 ---
 
-### 21. Pattern de communication : ScriptableObjects observables + EventBus
+### 17. Platform: desktop-only assumed
 
-**Contexte** : choisir un pattern Unity pour la communication entre
-couches.
+**Context**: whether or not to target mobile.
 
-**Décision** : ScriptableObjects observables (event `OnChanged`) pour
-indicateurs et état persistant ; EventBus statique pour événements
-ponctuels (chalara détecté, sécheresse déclenchée, etc.).
+**Decision**: desktop only. No mobile responsive, no touch. Warning banner
+if window < 1280 px.
 
-**Raison** : découplage fort, inspectable dans l'éditeur, testable, idiom
-Unity reconnaissable.
+**Rationale**: information density incompatible with mobile, sustainable
+scope, portfolio target (recruiters on desktop).
 
-**Alternative écartée** : injection de dépendances (Zenject/VContainer) —
-sur-ingéniérie pour ce scope.
+**Rejected alternative**: mobile responsive — triple production cost with
+no portfolio gain.
 
 ---
 
-### 22. Tick rate : 1 tick = 1 jour simulé
+### 18. Scene ↔ data link: synchronized minimap/scene hover
 
-**Contexte** : granularité temporelle de la simulation.
+**Context**: how to link the sensors visible in the scene to their
+representation on the minimap.
 
-**Décision** : 1 tick = 1 jour simulé.
+**Decision**: synchronized minimap ↔ scene hover. No click from the scene
+(to preserve immersive reading).
 
-**Raison** : compromis entre granularité (suffisante pour événements
-quotidiens : pluies, sondages capteurs) et coût computationnel.
+**Rationale**: legible and non-intrusive interaction; the minimap remains
+the active entry point.
 
-**Alternative écartée** : tick horaire — coût élevé sans gain pour les
-phénomènes observés.
-
----
-
-### 23. Seed déterministe avec sous-seeds dérivés par hash
-
-**Contexte** : garantir la reproductibilité et la cohérence simulation
-fantôme.
-
-**Décision** : seed maître au démarrage, sous-seeds dérivés par hash pour
-chaque sous-système (météo, faune, capteurs, événements).
-
-**Raison** : reproductibilité totale, isolation des sources d'aléa,
-nécessaire pour la comparaison real run / shadow run.
-
-**Alternative écartée** : un seul `Random` global — impossibilité de
-comparer real et shadow run.
+**Rejected alternative**: direct click on a scene sprite — interactive
+noise, ambiguity with fauna animations.
 
 ---
 
-### 24. Simulation fantôme : interface ISimulationRun, deux instances
+### 19. Onboarding: contextual tooltips, no text intro
 
-**Contexte** : implémentation technique de la comparaison
-avec/sans tech.
+**Context**: how to explain the interface without an intrusive intro.
 
-**Décision** : interface `ISimulationRun`, deux instances avec flag
-`applyTechActions` (true / false). Mêmes seeds, mêmes inputs.
+**Decision**: contextual tooltips in Garamond italic on hover, no text
+intro at launch. Extremely explicit panel names.
 
-**Raison** : implémentation propre, divergence garantie uniquement par
-les actions tech.
+**Rationale**: instant startup, exploration guided by hover, no blocking
+modal.
 
-**Alternative écartée** : duplication de logique — fragile, source de
-bugs.
+**Rejected alternative**: step-by-step tutorial — high production cost,
+intrusive for the portfolio audience.
 
-**Remplacé par ADR #58 (chantier E8, 2026-06-04)** : `ISimulationRun` /
-`applyTechActions` n'ont jamais été construits ; le shadow utilise un
-second `SimulationEngine` concret + un `ScenarioContext` frozen-baseline
+---
+
+### 20. 5-layer architecture
+
+**Context**: code structure for a testable and maintainable Unity project.
+
+**Decision**: 5 layers (SimulationCore / Sensors / Decision /
+Indicators / Presentation). Asmdef per layer, strict references toward
+lower layers only.
+
+**Rationale**: testability of Layer 1 in pure C#, clean Unity / domain
+separation, strong portfolio signal on software architecture.
+
+**Rejected alternative**: monolithic MonoBehaviour architecture —
+untestable, weak portfolio signal.
+
+---
+
+### 21. Communication pattern: observable ScriptableObjects + EventBus
+
+**Context**: choose a Unity pattern for inter-layer communication.
+
+**Decision**: observable ScriptableObjects (event `OnChanged`) for
+indicators and persistent state; static EventBus for one-off events
+(chalara detected, drought triggered, etc.).
+
+**Rationale**: strong decoupling, inspectable in the editor, testable,
+recognizable Unity idiom.
+
+**Rejected alternative**: dependency injection (Zenject/VContainer) —
+over-engineering for this scope.
+
+---
+
+### 22. Tick rate: 1 tick = 1 simulated day
+
+**Context**: temporal granularity of the simulation.
+
+**Decision**: 1 tick = 1 simulated day.
+
+**Rationale**: trade-off between granularity (sufficient for daily events:
+rain, sensor polling) and computational cost.
+
+**Rejected alternative**: hourly tick — high cost with no gain for the
+observed phenomena.
+
+---
+
+### 23. Deterministic seed with hash-derived sub-seeds
+
+**Context**: guarantee reproducibility and shadow-simulation consistency.
+
+**Decision**: master seed at startup, hash-derived sub-seeds for each
+subsystem (weather, fauna, sensors, events).
+
+**Rationale**: total reproducibility, isolation of randomness sources,
+required for the real run / shadow run comparison.
+
+**Rejected alternative**: a single global `Random` — impossible to
+compare real and shadow run.
+
+---
+
+### 24. Shadow simulation: ISimulationRun interface, two instances
+
+**Context**: technical implementation of the with/without tech comparison.
+
+**Decision**: `ISimulationRun` interface, two instances with an
+`applyTechActions` flag (true / false). Same seeds, same inputs.
+
+**Rationale**: clean implementation, divergence guaranteed only by the
+tech actions.
+
+**Rejected alternative**: logic duplication — fragile, source of bugs.
+
+**Superseded by ADR #58 (workstream E8, 2026-06-04)**: `ISimulationRun` /
+`applyTechActions` were never built; the shadow uses a second concrete
+`SimulationEngine` + a frozen-baseline `ScenarioContext`
 (`TickWithoutAdvancingScenario`).
 
 ---
 
-### 25. Une seule scène Unity (Main), 7 racines préfixées `_`
+### 25. A single Unity scene (Main), 7 roots prefixed `_`
 
-**Contexte** : organisation de la hiérarchie Unity.
+**Context**: organization of the Unity hierarchy.
 
-**Décision** : scène unique `Main`, 7 racines préfixées `_` (`_Bootstrap`,
+**Decision**: single `Main` scene, 7 roots prefixed `_` (`_Bootstrap`,
 `_Camera`, `_Scene_Visual`, `_Scene_Overlays`, `_UI_Canvas`, `_Audio`,
 `_Debug`).
 
-**Raison** : simplicité, hiérarchie lisible, isolation visuelle des
-domaines dans l'éditeur.
+**Rationale**: simplicity, legible hierarchy, visual isolation of domains
+in the editor.
 
-**Alternative écartée** : multi-scène additif — sur-ingéniérie pour ce
+**Rejected alternative**: additive multi-scene — over-engineering for this
 scope.
 
 ---
 
-### 26. Persistance : PlayerPrefs minimal
+### 26. Persistence: minimal PlayerPrefs
 
-**Contexte** : que sauvegarder entre sessions.
+**Context**: what to save between sessions.
 
-**Décision** : PlayerPrefs minimal — dernière configuration de presets
-et vitesse choisie. Rien d'autre.
+**Decision**: minimal PlayerPrefs — last preset configuration and chosen
+speed. Nothing else.
 
-**Raison** : démonstrateur portfolio, pas de profil utilisateur, pas de
-sauvegarde de session.
+**Rationale**: portfolio demonstrator, no user profile, no session save.
 
-**Alternative écartée** : sauvegarde JSON de session — hors scope.
-
----
-
-### 27. Logging : SimLogger 3 niveaux, pas de Debug.Log direct
-
-**Contexte** : maîtriser le bruit de log et le coût en runtime WebGL.
-
-**Décision** : `SimLogger` à 3 niveaux (`DebugLog`, `SimulationLog`,
-`UserActionLog`). Pas de `Debug.Log` direct dans le code applicatif.
-
-**Raison** : filtrage centralisé, désactivation possible en build, signal
-portfolio sur la rigueur d'instrumentation.
-
-**Alternative écartée** : `Debug.Log` partout — bruit, coût runtime,
-incontrôlable.
+**Rejected alternative**: JSON session save — out of scope.
 
 ---
 
-### 28. Audio : aucun
+### 27. Logging: SimLogger 3 levels, no direct Debug.Log
 
-**Contexte** : faut-il intégrer du son.
+**Context**: control log noise and WebGL runtime cost.
 
-**Décision** : aucun audio. Aucune musique, aucun bruitage, aucun son
-d'ambiance, aucun feedback UI sonore.
+**Decision**: `SimLogger` with 3 levels (`DebugLog`, `SimulationLog`,
+`UserActionLog`). No direct `Debug.Log` in application code.
 
-**Raison** : le projet est une station d'observation silencieuse ; éviter
-le coût production audio ; éviter les pièges WebGL audio.
+**Rationale**: centralized filtering, disable-able in the build, portfolio
+signal on instrumentation rigor.
 
-**Alternative écartée** : ambiance sonore légère — coût production +
-risques WebGL (autoplay policies) sans gain portfolio.
-
----
-
-### 29. Pipeline assets : Nanobanana + ip-adapter + post-traitement Python
-
-**Contexte** : produire 15 sprites uniques cohérents en style.
-
-**Décision** : Nanobanana avec ip-adapter style reference (image de
-référence stylistique générée en premier), post-traitement Python
-(palette quantization, alpha cleanup, normalisation).
-
-**Raison** : cohérence stylistique inter-sprites, contrôle de la palette,
-itération rapide.
-
-**Alternative écartée** : achat asset pack — perte d'identité visuelle ;
-dessin manuel — hors scope temps.
+**Rejected alternative**: `Debug.Log` everywhere — noise, runtime cost,
+uncontrollable.
 
 ---
 
-### 30. Stratégie portfolio Position C : usage IA assumé sobrement
+### 28. Audio: none
 
-**Contexte** : comment positionner l'usage des outils IA en portfolio.
+**Context**: whether to integrate sound.
 
-**Décision** : usage assumé sobrement dans le README (section "Method"),
-en distinguant ce qui est IA-assisté (code, sprites) et ce qui est
-décision humaine (architecture, calibration scientifique, design).
+**Decision**: no audio. No music, no sound effects, no ambient sound, no
+UI sound feedback.
 
-**Raison** : honnêteté professionnelle, signal de maturité, pas de cache
-ni de survalorisation.
+**Rationale**: the project is a silent observation station; avoid the
+audio production cost; avoid WebGL audio pitfalls.
 
-**Alternative écartée** : ne pas mentionner — malhonnête et facilement
-détectable.
-
----
-
-### 31. README en anglais
-
-**Contexte** : langue du README.
-
-**Décision** : anglais.
-
-**Raison** : audience portfolio internationale (recruteurs, github
-trending, équipes anglophones).
-
-**Alternative écartée** : français — limite l'audience portfolio.
+**Rejected alternative**: light ambient sound — production cost + WebGL
+risks (autoplay policies) with no portfolio gain.
 
 ---
 
-### 32. Pas de mention publique du temps de réalisation
+### 29. Asset pipeline: Nanobanana + ip-adapter + Python post-processing
 
-**Contexte** : faut-il indiquer "réalisé en X semaines" en portfolio.
+**Context**: produce 15 unique style-consistent sprites.
 
-**Décision** : pas de mention du temps de réalisation publique.
+**Decision**: Nanobanana with ip-adapter style reference (stylistic
+reference image generated first), Python post-processing (palette
+quantization, alpha cleanup, normalization).
 
-**Raison** : la valeur portfolio est dans le résultat, pas dans le
-temps ; le temps est trompeur (IA-assisté vs solo) et invite à des
-comparaisons hors-sujet.
+**Rationale**: inter-sprite stylistic consistency, palette control, rapid
+iteration.
 
-**Alternative écartée** : mention explicite — biaise la lecture.
-
----
-
-### 33. Workflow Git : Claude Code exécute (révisé)
-
-**Contexte** : qui exécute les commandes Git.
-
-**Décision (révisée le 2026-04-25)** : Claude Code exécute lui-même
-`git add`, `git commit`, `git push` au format Conventional Commits,
-aux moments opportuns. L'utilisateur garde un pouvoir d'intervention
-permanent (stop, amend, revert, no-push). Les opérations risquées
-(force push, `reset --hard`, rewrite d'historique poussé) restent à
-valider explicitement.
-
-**Décision initiale (rejetée le 2026-04-25)** : l'utilisateur exécute
-toutes les commandes Git, Claude Code propose seulement les messages.
-Constat à l'usage : friction conversationnelle élevée, chaque palier
-nécessitait un copier-coller manuel.
-
-**Raison** : fluidité de la session de production. L'historique
-reste propre tant que les messages restent rigoureux et que les
-moments de commit sont bien choisis. Le pouvoir d'intervention
-permanent suffit pour rattraper toute dérive.
-
-**Alternative écartée** : revenir à la décision initiale au cas par
-cas — incohérent et inutilement coûteux.
+**Rejected alternative**: buying an asset pack — loss of visual identity;
+manual drawing — out of time scope.
 
 ---
 
-### 34. Roadmap en 10 étapes verticales avec livrable démontrable
+### 30. Portfolio strategy Position C: AI usage soberly acknowledged
 
-**Contexte** : découpage du projet pour piloter la production.
+**Context**: how to position the use of AI tools in a portfolio.
 
-**Décision** : 10 étapes verticales, chacune avec un livrable démontrable
-(slice de bout en bout, pas de couche horizontale isolée).
+**Decision**: usage soberly acknowledged in the README ("Method" section),
+distinguishing what is AI-assisted (code, sprites) from what is human
+decision (architecture, scientific calibration, design).
 
-**Raison** : permet de couper proprement à n'importe quelle étape,
-chaque palier est une "version montrable", motivant.
+**Rationale**: professional honesty, signal of maturity, no concealment
+or over-valuation.
 
-**Alternative écartée** : découpage horizontal par couche — risque de
-livrer 80 % de couches sans démo fonctionnelle.
-
----
-
-### 36. Composition de scène data-driven via ScriptableObject
-
-**Contexte** : à l'Étape 4, choix entre composer la scène à la main dans
-l'éditeur Unity (drag & drop des sprites) ou la générer depuis un
-ScriptableObject lu au boot.
-
-**Décision** : composition data-driven. `SceneCompositionDefinition`
-(ScriptableObject) liste les `ScenicElement` (sprite, position, scale,
-sorting layer, ordre). `SceneAssembler` (MonoBehaviour) instancie tout
-sous `_Scene_Visual` au Awake.
-
-**Raison** : signal portfolio fort (séparation data/présentation,
-reproductibilité), permet plus tard des variantes de composition
-(preset été/hiver/sécheresse) sans toucher la scène, aligné avec la
-thèse digital twin (la scène est une lecture de données, pas une mise
-en scène). Coût supplémentaire ~2× le code, jugé raisonnable pour une
-dizaine d'éléments de décor.
-
-**Alternative écartée** : composition manuelle dans la scène Unity —
-plus rapide mais sans valeur architecturale, et impose de modifier la
-scène à chaque variation.
+**Rejected alternative**: not mentioning it — dishonest and easily
+detectable.
 
 ---
 
-### 37. Shaders : Shader Graph pour tous les shaders runtime
+### 31. README in English
 
-**Contexte** : choix entre HLSL pur (`.shader`) et Shader Graph
-(`.shadergraph`) pour les shaders du projet (ciel, prairie, haies,
-mare).
+**Context**: language of the README.
 
-**Décision** : Shader Graph pour l'ensemble des shaders runtime
-(`SG_Sky`, `SG_Hedgerow`, `SG_Pond`, `SG_Meadow` à venir).
+**Decision**: English.
 
-**Raison** : preview live dans l'éditeur (itération visuelle x10 plus
-rapide quand l'effet n'est pas trivial), maintenabilité par un
-non-spécialiste graphique sur la durée du portfolio, absorption de la
-plomberie URP 2D version-spécifique. Pour le ciel seul l'argument est
-marginal, mais l'uniformité du pipeline shaders vaut mieux que
-l'optimum local.
+**Rationale**: international portfolio audience (recruiters, github
+trending, English-speaking teams).
 
-**Conséquence opérationnelle** : Claude Code scaffolde les Shader
-Graphs en spécifiant le contrat (nom des propriétés exposées,
-structure du graphe). L'utilisateur câble les nœuds dans l'éditeur
-Unity à partir des instructions pas-à-pas — un fichier
-`.shadergraph` étant du YAML auto-généré avec GUIDs, son authoring
-hors-éditeur n'est pas fiable.
-
-**Alternative écartée** : HLSL pur — gain négligeable sur les shaders
-simples, perte sur les shaders complexes.
+**Rejected alternative**: French — limits the portfolio audience.
 
 ---
 
-### 38. Sorting layers de la scène 2D
+### 32. No public mention of the completion time
 
-**Contexte** : ordre de rendu des sprites dans la scène 2D.
+**Context**: whether to indicate "completed in X weeks" in the portfolio.
 
-**Décision** : 7 sorting layers déclarés dans `ProjectSettings/TagManager.asset`,
-du fond vers l'avant : `Sky`, `Background`, `Midground`, `Foreground`,
-`Sensors`, `Fauna`, `FX`. Le layer `Default` est conservé pour les
-objets non visuels.
+**Decision**: no public mention of the completion time.
 
-**Raison** : alignement direct sur la sémantique de la scène
-(catégories Charles Harper / A Short Hike), élimine les conflits d'ordre
-Z intra-catégorie, simplifie l'authoring des `ScenicElement` dans le
+**Rationale**: the portfolio value is in the result, not the time; time is
+misleading (AI-assisted vs solo) and invites off-topic comparisons.
+
+**Rejected alternative**: explicit mention — biases the reading.
+
+---
+
+### 33. Git workflow: Claude Code executes (revised)
+
+**Context**: who executes the Git commands.
+
+**Decision (revised on 2026-04-25)**: Claude Code itself executes
+`git add`, `git commit`, `git push` in Conventional Commits format, at
+appropriate moments. The user retains a permanent power of intervention
+(stop, amend, revert, no-push). Risky operations (force push,
+`reset --hard`, rewriting pushed history) still require explicit
+validation.
+
+**Initial decision (rejected on 2026-04-25)**: the user executes all Git
+commands, Claude Code only proposes the messages. Observation in use: high
+conversational friction, each milestone required a manual copy-paste.
+
+**Rationale**: fluidity of the production session. The history stays clean
+as long as the messages remain rigorous and the commit moments are
+well chosen. The permanent power of intervention is enough to catch any
+drift.
+
+**Rejected alternative**: reverting to the initial decision on a
+case-by-case basis — inconsistent and needlessly costly.
+
+---
+
+### 34. Roadmap in 10 vertical steps with a demonstrable deliverable
+
+**Context**: breaking down the project to drive production.
+
+**Decision**: 10 vertical steps, each with a demonstrable deliverable
+(end-to-end slice, not an isolated horizontal layer).
+
+**Rationale**: allows clean cutting at any step, each milestone is a
+"showable version", motivating.
+
+**Rejected alternative**: horizontal breakdown by layer — risk of
+delivering 80% of layers with no functional demo.
+
+---
+
+### 36. Data-driven scene composition via ScriptableObject
+
+**Context**: at Step 4, choice between composing the scene by hand in the
+Unity editor (drag & drop of sprites) or generating it from a
+ScriptableObject read at boot.
+
+**Decision**: data-driven composition. `SceneCompositionDefinition`
+(ScriptableObject) lists the `ScenicElement`s (sprite, position, scale,
+sorting layer, order). `SceneAssembler` (MonoBehaviour) instantiates
+everything under `_Scene_Visual` at Awake.
+
+**Rationale**: strong portfolio signal (data/presentation separation,
+reproducibility), enables later composition variants
+(summer/winter/drought preset) without touching the scene, aligned with
+the digital twin thesis (the scene is a reading of data, not a staged
+scene). Additional cost ~2× the code, deemed reasonable for a dozen
+scenery elements.
+
+**Rejected alternative**: manual composition in the Unity scene —
+faster but with no architectural value, and forces modifying the scene
+for each variation.
+
+---
+
+### 37. Shaders: Shader Graph for all runtime shaders
+
+**Context**: choice between pure HLSL (`.shader`) and Shader Graph
+(`.shadergraph`) for the project's shaders (sky, meadow, hedges, pond).
+
+**Decision**: Shader Graph for all runtime shaders
+(`SG_Sky`, `SG_Hedgerow`, `SG_Pond`, `SG_Meadow` upcoming).
+
+**Rationale**: live preview in the editor (visual iteration 10× faster
+when the effect is not trivial), maintainability by a non-graphics
+specialist over the portfolio's lifetime, absorption of the
+version-specific URP 2D plumbing. For the sky alone the argument is
+marginal, but the uniformity of the shader pipeline is worth more than
+the local optimum.
+
+**Operational consequence**: Claude Code scaffolds the Shader Graphs by
+specifying the contract (exposed property names, graph structure). The
+user wires the nodes in the Unity editor from the step-by-step
+instructions — a `.shadergraph` file being auto-generated YAML with
+GUIDs, its out-of-editor authoring is not reliable.
+
+**Rejected alternative**: pure HLSL — negligible gain on simple shaders,
+loss on complex shaders.
+
+---
+
+### 38. Sorting layers of the 2D scene
+
+**Context**: rendering order of the sprites in the 2D scene.
+
+**Decision**: 7 sorting layers declared in `ProjectSettings/TagManager.asset`,
+from back to front: `Sky`, `Background`, `Midground`, `Foreground`,
+`Sensors`, `Fauna`, `FX`. The `Default` layer is kept for non-visual
+objects.
+
+**Rationale**: direct alignment with the scene semantics
+(Charles Harper / A Short Hike categories), eliminates intra-category Z
+order conflicts, simplifies authoring the `ScenicElement`s in the
 `SceneCompositionDefinition`.
 
-**Alternative écartée** : un seul layer `Default` avec gestion fine
-par `sortingOrder` int — fragile et illisible.
+**Rejected alternative**: a single `Default` layer with fine management
+via `sortingOrder` int — fragile and illegible.
 
 ---
 
-### 35. Pas d'audio, pas de mobile, pas de modal intrusif
+### 35. No audio, no mobile, no intrusive modal
 
-**Contexte** : éléments à exclure explicitement du scope.
+**Context**: elements to explicitly exclude from scope.
 
-**Décision** : pas d'audio (cf #28), pas de support mobile (cf #17), pas
-de modal intrusif (intro, tutoriel, dialogue bloquant).
+**Decision**: no audio (cf #28), no mobile support (cf #17), no intrusive
+modal (intro, tutorial, blocking dialog).
 
-**Raison** : focus, scope tenable, cohérence avec une station
-d'observation silencieuse.
+**Rationale**: focus, sustainable scope, consistency with a silent
+observation station.
 
-**Alternative écartée** : "on verra plus tard" — amène scope creep.
+**Rejected alternative**: "we'll see later" — leads to scope creep.
 
 ---
 
-### 39. Ordre des Hero KPIs dans le hero strip (pyramide cause → effet)
+### 39. Order of the Hero KPIs in the hero strip (cause → effect pyramid)
 
-**Contexte** : 5 Hero KPIs sont prévus dans le dashboard
+**Context**: 5 Hero KPIs are planned in the dashboard
 (`HedgerowDensity`, `WaterTable`, `BiodiversityComposite`,
-`IntegratedProfitability`, `TechDelta`). L'ordre d'affichage de
-gauche à droite raconte une histoire au lecteur.
+`IntegratedProfitability`, `TechDelta`). The display order from left to
+right tells the reader a story.
 
-**Décision** : ordre adopté `Haies → Nappe → Biodiversité →
-Rentabilité → Delta tech`. Substrat physique (haies, eau) à gauche,
-intégrateur écologique au centre, valorisation économique à droite,
-arbitrage méta tout à droite.
+**Decision**: adopted order `Hedges → Water table → Biodiversity →
+Profitability → Tech delta`. Physical substrate (hedges, water) on the
+left, ecological integrator in the center, economic valuation on the
+right, meta trade-off on the far right.
 
-**Raison** : lecture pédagogique d'un digital twin agro-écologique.
-On lit la chaîne causale du concret au méta : structure du paysage →
-ressource physique → effet écosystémique → effet économique →
-"est-ce que la tech aide ?". Cohérent avec la thèse du projet
-(test honnête de la convergence éco/écolo, cf §1 CLAUDE.md).
+**Rationale**: pedagogical reading of an agro-ecological digital twin.
+The causal chain is read from concrete to meta: landscape structure →
+physical resource → ecosystem effect → economic effect →
+"does the tech help?". Consistent with the project thesis (honest test
+of the eco/eco convergence, cf §1 CLAUDE.md).
 
-**Alternatives écartées** :
-- *Honnêtes à gauche, stubs à droite* (Haies / Nappe / Rentabilité /
-  Biodiv / Delta tech) : sépare arbitrairement biodiv et nappe qui
-  sont conceptuellement liées.
-- *Par poids dans le récit* (Delta tech en premier) : afficher en
-  pole position un KPI qui vaut 0 jusqu'à l'Étape 8 est un mauvais
-  signal visuel pour le portfolio.
-
----
-
-### 40. Refus des Hero KPIs en stub — différer jusqu'à existence des variables d'état
-
-**Contexte** : à la sous-étape 6a, 3 des 5 Hero KPIs prévus
-(`Biodiversity`, `Profitability`, `TechDelta`) n'ont pas de variable
-d'état correspondante dans `EcosystemModel`. Tentation initiale :
-les implémenter comme formules dérivées des 2 variables existantes
-(`HedgerowDensity`, `WaterTableDepth`) pour "câbler le pattern".
-
-**Décision** : refus des stubs dérivés. Les 3 indicateurs et leurs
-containers `RC_*` ne sont **pas** créés tant que les variables
-sous-jacentes n'existent pas. À 6b les 3 cartouches correspondantes
-afficheront un placeholder visuel "à venir" avec un libellé qui
-indique l'étape où le KPI sera branché honnêtement.
-
-**Raison** : le principe de primauté du capteur (CLAUDE.md §9) exige
-que toute valeur affichée soit traçable jusqu'à une variable du
-modèle. Une formule arbitraire `0.65 × hedgerowNorm + 0.35 ×
-waterNorm` qu'on appellerait "biodiversité composite" *est* de la
-donnée inventée, même si elle est déterministe. Un portfolio sur la
-thèse "test honnête de la convergence éco/écolo" ne peut pas
-afficher des chiffres de biodiversité, rentabilité et delta tech qui
-ne reposent sur rien.
-
-**Conséquence sur la roadmap** :
-- `BiodiversityComposite` → arrive à l'Étape 8 (faune & shadow run :
-  l'ajout de `FaunaPopulation` au modèle débloque un agrégat
-  honnête).
-- `IntegratedProfitability` → arrive à l'Étape 7 (économie : ajout
-  de `CropYield`, `InputCost`, `MaintenanceCost`).
-- `TechDelta` → arrive à l'Étape 8 (shadow run câblée, l'agrégat
-  est calculable sur (real − shadow)). **Précisé par ADR #59
-  (chantier E8)** : le KPI est une valeur NET cumulée en €/ha, pas
-  instantanée.
-
-**Alternatives écartées** :
-- *Stubs câblés mais signalés visuellement* : compromis tentant
-  mais on aurait quand même affiché des chiffres faux. Le badge
-  "stub" sur la cartouche aurait été un cache-misère.
-- *Étendre EcosystemModel maintenant* : gonfle l'Étape 6 de
-  ~30-50 % et empiète sur les Étapes 7-8 prévues pour ce travail.
+**Rejected alternatives**:
+- *Honest ones on the left, stubs on the right* (Hedges / Water table /
+  Profitability / Biodiv / Tech delta): arbitrarily separates biodiv and
+  water table, which are conceptually linked.
+- *By weight in the narrative* (Tech delta first): displaying in pole
+  position a KPI that is worth 0 until Step 8 is a bad visual signal for
+  the portfolio.
 
 ---
 
-### 41. Shaders mare et prairie en HLSL plutôt que Shader Graph (révision partielle du #37)
+### 40. Rejection of stub Hero KPIs — defer until state variables exist
 
-**Contexte** : à la sub-étape 9α (livrable #4 de l'Étape 9), il fallait
-livrer deux nouveaux shaders runtime : `SG_Pond` (mare pilotée par la
-nappe) et `SG_Meadow` (prairie pilotée par l'humidité). La décision
-#37 disait Shader Graph pour tous les shaders runtime.
+**Context**: at sub-step 6a, 3 of the 5 planned Hero KPIs
+(`Biodiversity`, `Profitability`, `TechDelta`) have no corresponding
+state variable in `EcosystemModel`. Initial temptation: implement them
+as formulas derived from the 2 existing variables
+(`HedgerowDensity`, `WaterTableDepth`) to "wire the pattern".
 
-**Décision** : déviation locale du #37 — `S_Pond.shader` et
-`S_Meadow.shader` sont écrits en HLSL pur (`.shader`). `SG_Sky` et
-`SG_Hedgerow` restent en Shader Graph et ne sont pas re-générés.
+**Decision**: rejection of derived stubs. The 3 indicators and their
+`RC_*` containers are **not** created as long as the underlying variables
+do not exist. At 6b the 3 corresponding cards will display a visual
+« à venir » (coming soon) placeholder with a label indicating the step
+where the KPI will be honestly wired.
 
-**Raison** :
-- Les deux shaders en question sont simples (un lerp de couleur piloté
-  par un float `[0,1]`). Le bénéfice "preview live" du SG est marginal
-  ici.
-- Authorer un `.shadergraph` à la main est impraticable (1500 lignes
-  de YAML avec GUIDs internes), et c'est précisément ce que CLAUDE.md
-  §2 demande à Claude Code de faire. Un `.shader` HLSL équivalent fait
-  60–80 lignes lisibles, versionables, modifiables sans ouvrir Unity.
-- Conséquence pour la suite : la couche binding consomme la même
-  interface (`MaterialPropertyBlock` sur un float), donc passer
-  ultérieurement à un Shader Graph est non bloquant (item backlog).
+**Rationale**: the sensor primacy principle (CLAUDE.md §9) requires that
+every displayed value be traceable to a model variable. An arbitrary
+formula `0.65 × hedgerowNorm + 0.35 × waterNorm` that we would call
+"composite biodiversity" *is* invented data, even if it is
+deterministic. A portfolio on the thesis "honest test of the eco/eco
+convergence" cannot display figures for biodiversity, profitability and
+tech delta that rest on nothing.
 
-**Conséquence opérationnelle** :
-- L'utilisateur ne crée plus le shader graph dans Unity pour la mare
-  et la prairie ; les `.shader` sont importés tels quels.
-- Si on veut un effet plus avancé plus tard (rides sur la mare,
-  variation florale sur la prairie), on peut soit étendre les
-  `.shader` en HLSL, soit refactoriser vers un `.shadergraph` en
-  reprenant la même interface de propriétés. Documenté dans
-  `BACKLOG.md`.
+**Consequence on the roadmap**:
+- `BiodiversityComposite` → arrives at Step 8 (fauna & shadow run: the
+  addition of `FaunaPopulation` to the model unlocks an honest
+  aggregate).
+- `IntegratedProfitability` → arrives at Step 7 (economy: addition of
+  `CropYield`, `InputCost`, `MaintenanceCost`).
+- `TechDelta` → arrives at Step 8 (shadow run wired, the aggregate is
+  computable on (real − shadow)). **Refined by ADR #59 (workstream E8)**:
+  the KPI is a cumulative NET value in €/ha, not instantaneous.
 
-**Alternative écartée** : tenir le #37 strictement et demander à
-l'utilisateur de créer manuellement les deux Shader Graphs depuis
-zéro — ralentit la livraison de l'Étape 9 pour un gain visuel nul
-au format actuel.
-
----
-
-### 42. Hedgerow health proxy dérivé en Couche 4, pas variable d'état
-
-**Contexte** : à la sub-étape 9β, on voulait moduler les sprites de
-haies par un canal `_HealthT` représentant la "santé" du linéaire.
-Tentation initiale : ajouter une propriété `HedgerowHealth` à
-`EcosystemModel` avec des règles biophysiques de mise à jour
-(chalara, sécheresse, recovery saisonnier, etc.).
-
-**Décision** : `HedgerowHealth` n'est PAS une variable d'état. Elle
-est calculée à la volée par `HedgerowHealthIndicator` (Couche 4) en
-agrégeant la densité courante et les événements actifs de l'EventLog
-(chalara récent, sécheresse récente) dans une fenêtre glissante de
-60 jours.
-
-**Raison** :
-- Le principe de primauté du capteur (CLAUDE.md §9) n'exige pas qu'un
-  visuel soit dérivé d'une variable d'état dédiée — il exige qu'il
-  soit dérivé d'une mesure ou d'un calcul du modèle traçable. Une
-  agrégation déterministe d'EventLog + state existant remplit ce
-  contrat.
-- Ajouter une variable d'état force des règles de dynamique
-  artificielles (taux de récupération, couplage croisé) sans
-  bénéfice pour le moteur de décision : la santé est une lecture, pas
-  un levier.
-- Garder la surface du modèle minimale facilite les tests et la
-  reprise du projet pour ajouter de meilleurs effets visuels en
-  backlog.
-
-**Conséquence opérationnelle** :
-- Le shader haies (`SG_Hedgerow`) doit lire `_HealthT` quand il sera
-  étendu — entrée backlog "SG_Hedgerow healthT node". En attendant,
-  le binding pousse silencieusement la valeur ; Unity ignore les
-  propriétés non déclarées par le shader.
-- Si une analyse plus fine s'impose un jour (saisons sèches
-  cumulatives, fragmentation du linéaire), on pourra promouvoir
-  `HedgerowHealth` en variable d'état sans casser l'API du binding.
-
-**Alternative écartée** : variable d'état `HedgerowHealth` mise à
-jour par une `HedgeHealthDynamicsRule` — surdimensionné pour le
-besoin actuel, alourdit le modèle.
+**Rejected alternatives**:
+- *Wired stubs but visually flagged*: a tempting compromise but we would
+  still have displayed false figures. The "stub" badge on the card would
+  have been a cover-up.
+- *Extend EcosystemModel now*: inflates Step 6 by ~30-50% and encroaches
+  on Steps 7-8 planned for this work.
 
 ---
 
-### 43. AutoAction `ReduceInputs` applique son effet directement sur le modèle réel, pas via le scénario partagé
+### 41. Pond and meadow shaders in HLSL rather than Shader Graph (partial revision of #37)
 
-**Remplacé par ADR #58 (chantier E8, 2026-06-04)** : la prémisse du
-scénario partagé ne tient plus (shadow frozen-baseline) ; `ReduceInputs`
-abaisse désormais `ScenarioContext.InputIntensityFactor` (changement de
-pratique, transition §15). Les nudges +0.05 `FaunaPopulation` / −200
-`InputCost` et le canal `RealRunTechAdjustment` proposé sont abandonnés.
+**Context**: at sub-step 9α (deliverable #4 of Step 9), two new runtime
+shaders had to be delivered: `SG_Pond` (pond driven by the water table)
+and `SG_Meadow` (meadow driven by humidity). Decision #37 said Shader
+Graph for all runtime shaders.
 
-**Contexte** : à la sub-étape 8c.3, l'auto-action `ReduceInputs`
-(consommée par la recommandation du même nom + le bouton manuel
-homonyme) doit traduire un arbitrage agriculteur « réduire les
-intrants ponctuellement » en effet mécanique sur l'état simulé. La
-voie naturelle serait de **baisser
-`ScenarioContext.InputIntensityFactor`** : c'est le canal scénario
-prévu pour modeler l'intensité des pratiques agricoles, et tout
-l'aval (CropYieldDynamicsRule, InputCostDynamicsRule,
-FaunaDynamicsRule) le consomme déjà.
+**Decision**: local deviation from #37 — `S_Pond.shader` and
+`S_Meadow.shader` are written in pure HLSL (`.shader`). `SG_Sky` and
+`SG_Hedgerow` remain in Shader Graph and are not re-generated.
 
-**Tension architecturale** : le `ScenarioContext` est **partagé par
-référence entre la run réelle et la shadow run**
-(cf. `ShadowSimulationRunner` qui passe la même instance pour
-garantir la non-divergence due au scénario). Si l'auto-action
-modifiait `InputIntensityFactor`, la shadow run subirait
-mécaniquement le même changement, et le KPI TechDelta — défini
-comme « écart de rentabilité entre real et shadow » — s'annulerait
-de fait. Le shadow run cesserait alors d'être le « scénario sans
-décisions tech » que la thèse du DT prétend mesurer.
+**Rationale**:
+- The two shaders in question are simple (a color lerp driven by a float
+  `[0,1]`). The SG "live preview" benefit is marginal here.
+- Authoring a `.shadergraph` by hand is impractical (1500 lines of YAML
+  with internal GUIDs), and that is precisely what CLAUDE.md §2 asks
+  Claude Code to do. An equivalent HLSL `.shader` is 60-80 legible lines,
+  versionable, modifiable without opening Unity.
+- Consequence for what follows: the binding layer consumes the same
+  interface (`MaterialPropertyBlock` on a float), so switching later to a
+  Shader Graph is non-blocking (backlog item).
 
-**Décision** : `AutoActionPipeline.ApplyOne` pour `ReduceInputs`
-n'altère **pas** le `ScenarioContext`. Elle injecte ses effets
-directement sur les variables d'état d'`EcosystemModel` du run
-réel :
-- `+0.05 × ratio` sur `FaunaPopulation` (boost ponctuel insectes)
-- `−200 × ratio €/ha/an` sur `InputCost` (économie immédiate
-  intrants évités)
+**Operational consequence**:
+- The user no longer creates the shader graph in Unity for the pond and
+  the meadow; the `.shader` files are imported as is.
+- If we want a more advanced effect later (ripples on the pond, floral
+  variation on the meadow), we can either extend the `.shader` files in
+  HLSL, or refactor toward a `.shadergraph` reusing the same property
+  interface. Documented in `BACKLOG.md`.
 
-Le `ratio` étant la magnitude utilisateur divisée par la valeur
-de référence (`ReduceInputsRecommendation.IntensityCutPerStep`).
-La shadow run, qui partage le scénario mais a son propre
-`EcosystemModel`, n'est pas touchée → la divergence est capturée
-par TechDelta.
-
-**Raison** :
-- Conserver la sémantique du shadow run comme « jumeau sans
-  décisions tech » est non négociable pour la crédibilité du KPI
-  central de l'étape 8.
-- L'effet visé (boost faune + baisse coût) est sourcé : IPBES 2019
-  (rebound faune après cessation pesticides), CIVAM grandes
-  cultures (économies d'intrants conventionnels).
-- L'alternative « cloner le ScenarioContext et baisser
-  l'`InputIntensityFactor` sur la copie réelle uniquement » casse
-  l'invariant d'unicité du scénario partagé documenté en
-  ARCHITECTURE.md et impose une dérive de signatures à travers
-  toute la pile.
-
-**Conséquence opérationnelle** :
-- L'effet sur la rentabilité passe par `InputCost` plutôt que par
-  l'enchaînement scénarique. C'est une approximation : le vrai
-  effet « réduction intensité » se propagerait aussi via
-  `CropYieldDynamicsRule` (rendement légèrement abaissé) et via
-  les coûts récurrents des années suivantes. Ici la baisse est
-  one-shot ponctuelle sur la variable d'état.
-- Limitation assumée : si l'utilisateur empile plusieurs auto-actions
-  `ReduceInputs`, l'`InputCost` peut descendre arbitrairement bas
-  (clamp à 0). La règle économique le rattrape sur les ticks
-  suivants en tirant vers la cible scénario, mais le pic transitoire
-  est un artéfact connu.
-- Documenté dans le XML doc d'`AutoActionPipeline.ApplyOne` et
-  rappelé dans le commentaire de classe.
-
-**Chemin de sortie (post-MVP)** : introduire un canal d'ajustement
-spécifique au run réel, du type
-`EcosystemModel.RealRunTechAdjustment` (vecteur structuré, par
-exemple `{ inputIntensityDelta, hedgeDensityDelta, … }`), que les
-règles biophysiques consultent en plus du scénario partagé. La
-shadow run l'ignore. `ReduceInputs` modifie alors un delta
-sémantiquement clair (`inputIntensityDelta -= 0.2`) qui propage
-proprement via les règles existantes. Estimation : 0.5–1 jour de
-refactor, à arbitrer post-publication ; couvre aussi l'item
-BACKLOG #9 (capital d'investissement) qui souffre d'une tension
-similaire.
-
-**Alternatives écartées** :
-- *Modifier `InputIntensityFactor` du scénario partagé* : casse
-  TechDelta (la shadow voit la même baisse).
-- *Cloner `ScenarioContext` pour donner à chaque run le sien et
-  ne baisser l'intensité que sur le clone réel* : viole l'invariant
-  d'unicité du scénario (ARCHITECTURE.md §3 — un seul `ScenarioContext`
-  par session, source de vérité unique pour les leviers
-  agriculteur/cadre). Pollue les signatures de la chaîne sensor
-  → recommendation → outcome avec une notion de « scenario contexte
-  appartenant à qui ».
-- *Repousser `ReduceInputs` au backlog jusqu'à ce que le canal
-  `RealRunTechAdjustment` existe* : prive l'Étape 8 d'une des trois
-  recos honnêtes qui démontrent la chaîne capteur → reco → impact,
-  et donc d'un quart de sa valeur démonstrative.
+**Rejected alternative**: hold #37 strictly and ask the user to manually
+create the two Shader Graphs from scratch — slows down the delivery of
+Step 9 for zero visual gain in the current format.
 
 ---
 
-### 44. Sémantique d'arbitrage des recommandations : Valider / Voir plus tard / Ignorer + verdict Superseded
+### 42. Hedgerow health proxy derived in Layer 4, not a state variable
 
-**Contexte** : à la sub-étape 10a, l'audit a identifié deux frictions
-sur la popup décision. (1) Cliquer **Ignorer** sur une reco
-récurrente ne suffisait pas — l'`EventDetector` rebatissait la même
-détection 30 jours plus tard et la popup repopait en boucle.
-(2) Inversement, **Voir plus tard** sur N occurrences successives
-d'un même type accumulait N entrées dans l'historique, le bouton
-« Recommandations en cours (12) » devenant rapidement bruyant.
+**Context**: at sub-step 9β, we wanted to modulate the hedge sprites by a
+`_HealthT` channel representing the "health" of the linear feature.
+Initial temptation: add a `HedgerowHealth` property to `EcosystemModel`
+with biophysical update rules (chalara, drought, seasonal recovery,
+etc.).
 
-**Décision** : trois verbes utilisateur, trois sémantiques claires,
-un quatrième verdict système pour borner l'historique.
+**Decision**: `HedgerowHealth` is NOT a state variable. It is computed on
+the fly by `HedgerowHealthIndicator` (Layer 4) by aggregating the current
+density and the active events of the EventLog (recent chalara, recent
+drought) within a 60-day sliding window.
 
-**Verdicts utilisateur (trois boutons popup)** :
+**Rationale**:
+- The sensor primacy principle (CLAUDE.md §9) does not require a visual to
+  be derived from a dedicated state variable — it requires it to be
+  derived from a traceable model measurement or computation. A
+  deterministic aggregation of EventLog + existing state fulfills this
+  contract.
+- Adding a state variable forces artificial dynamics rules (recovery
+  rate, cross-coupling) with no benefit for the decision engine: health
+  is a reading, not a lever.
+- Keeping the model surface minimal makes testing and picking the project
+  back up to add better visual effects in the backlog easier.
 
-- **`Valider`** → verdict `Accepted`. L'auto-action est appliquée
-  sur le modèle réel (pas sur le shadow). Le type de la reco est
-  **retiré** du set d'ignore session — la prochaine occurrence du
-  même type fera popup à nouveau, parce que l'utilisateur a montré
-  qu'il s'engageait activement sur cette catégorie de décision.
-- **`Voir plus tard`** → verdict reste `Pending`. La reco est
-  ajoutée à un set `_skippedRecommendationIds` (clé : id
-  d'instance) côté `DecisionPopupBinding` qui empêche son
-  auto-popup pour la session. L'utilisateur peut la ré-ouvrir
-  depuis le bouton historique. Une **nouvelle** instance du même
-  type (event id différent) ne sera pas affectée — son propre
-  auto-popup déclenchera normalement.
-- **`Ignorer`** → verdict `Rejected`. **Le TYPE entier** de la reco
-  est ajouté à `_ignoredRecommendationTypes` pour la session. Toute
-  nouvelle reco dont l'id commence par le même préfixe (avant le
-  `#`) est silencieusement skippée à l'auto-popup. Elle reste
-  visible dans l'historique pour revisit, mais n'interrompt plus la
-  simulation.
+**Operational consequence**:
+- The hedge shader (`SG_Hedgerow`) must read `_HealthT` when it is
+  extended — backlog entry "SG_Hedgerow healthT node". In the meantime,
+  the binding silently pushes the value; Unity ignores properties not
+  declared by the shader.
+- If a finer analysis becomes necessary one day (cumulative dry seasons,
+  fragmentation of the linear feature), we will be able to promote
+  `HedgerowHealth` to a state variable without breaking the binding API.
 
-**Verdict système (auto-marqué dans le journal)** :
-
-- **`Superseded`** → marqué automatiquement par `DecisionJournal.Append`
-  quand une **nouvelle** reco arrive et qu'une `Pending` du même
-  type est déjà dans le journal. L'ancienne devient `Superseded`,
-  la nouvelle prend sa place comme seule `Pending` de ce type.
-  Audit conservé (les entrées Superseded restent dans `Entries`),
-  mais `PendingEntries` n'expose que la dernière → la liste
-  historique est bornée à 1 entrée Pending par type.
-
-**Conséquences** :
-
-- Au plus **1 Pending par type** à un instant donné, quelle que
-  soit la durée du run.
-- Les `Accepted` et `Rejected` ne sont JAMAIS touchés par la
-  supersession — le trail d'arbitrage utilisateur est intact pour
-  un futur `SessionReporter` (jamais construit — BACKLOG #4).
-- Les manipulations de set côté `DecisionPopupBinding` sont
-  in-memory, perdues à la fin de la session — pas de persistance
-  PlayerPrefs (CLAUDE.md §16). Une nouvelle session repart avec une
-  liste vierge des types ignorés / différés.
-
-**Raison de la double couche (journal + binding)** :
-
-Le journal est l'autorité **modèle** (verdicts persistants pour
-audit) ; les sets binding sont la couche **UX** (skipping
-d'auto-popup pour ne pas saouler). Les deux sont indépendants :
-- Tu peux ignorer une reco via Ignorer → le journal sait qu'elle
-  est Rejected, l'auto-popup la skip via le set type.
-- Tu peux revisiter via Examiner dans l'historique → la popup
-  apparaît même si le type est dans le set ignore (override
-  explicite par action utilisateur).
-- Tu peux la re-Valider → journal passe à Accepted, set ignore
-  vidé pour ce type, prochain event fera popup.
-
-**Alternatives écartées** :
-- *Pas de supersession, on accepte que l'historique grossisse* :
-  bouton « Recommandations en cours (47) » illisible à un mois de
-  run sim continu. Rejette aussi l'esprit MVP.
-- *Marquer la nouvelle reco directement `Rejected` à l'arrivée si
-  son type est dans `_ignoredRecommendationTypes`* : casse la
-  capacité utilisateur à changer d'avis depuis l'historique (rien
-  d'utile à examiner si tout est déjà Rejected). On préfère garder
-  la nouvelle `Pending` et bloquer juste l'auto-popup.
-- *Supersession dans `EventDetector` au lieu du journal (ne pas
-  réémettre l'event si type récent suppressé)* : viole §9 (le
-  détecteur doit refléter ce que les capteurs voient, pas
-  l'historique des décisions). On suppress à l'étage présentation,
-  pas à l'étage mesure.
+**Rejected alternative**: a `HedgerowHealth` state variable updated by a
+`HedgeHealthDynamicsRule` — oversized for the current need, weighs down
+the model.
 
 ---
 
-### 45. Verrouillage du scope MVP par principe de complétude fonctionnelle
+### 43. AutoAction `ReduceInputs` applies its effect directly on the real model, not via the shared scenario
 
-**Contexte** : projet en finition Étape 10 (sub-étape 10b-perf). Audit
-interne identifie plusieurs chantiers ouverts hétérogènes (chalara
-dormant, EddyTower visuel sans réalité, WeatherStation sans Reader,
-3 onglets Niveau B vides, faune en backlog, capital absent, biodiv
-scalaire). Risque réel de scope creep ou son inverse (livrer un MVP au
-goût d'inachevé). Audience portfolio cible : recruteurs tech + jury
-M1, qui ont des exigences cohérentes mais distinctes.
+**Superseded by ADR #58 (workstream E8, 2026-06-04)**: the premise of the
+shared scenario no longer holds (frozen-baseline shadow); `ReduceInputs`
+now lowers `ScenarioContext.InputIntensityFactor` (practice change,
+transition §15). The +0.05 `FaunaPopulation` / −200 `InputCost` nudges and
+the proposed `RealRunTechAdjustment` channel are abandoned.
 
-**Décision** : verrouiller le scope MVP par principe de complétude
-fonctionnelle. Audience prioritaire = recruteurs tech (Unity/WebGL/
-archi logicielle) et jury M1 (rigueur scientifique). Budget = 15-20h/
-semaine sur 3 mois max, cible 150 h. Principe directeur : « rien en
-scène ou en code ne donne le goût d'inachevé ». Corollaire :
-« compléter ou supprimer (jamais laisser en l'état) ». Détaillé dans
-`CLAUDE.md` §17 et §18.
+**Context**: at sub-step 8c.3, the `ReduceInputs` auto-action (consumed by
+the recommendation of the same name + the eponymous manual button) must
+translate a farmer's trade-off "reduce inputs occasionally" into a
+mechanical effect on the simulated state. The natural path would be to
+**lower `ScenarioContext.InputIntensityFactor`**: it is the scenario
+channel intended to model the intensity of farming practices, and all
+downstream (CropYieldDynamicsRule, InputCostDynamicsRule,
+FaunaDynamicsRule) already consumes it.
 
-**Raison** : un portfolio honnête et un jury M1 exigent un MVP cohérent
-end-to-end, pas une accumulation de features partielles. La complétude
-fonctionnelle est ce qui crée l'effet « production-ready » recherché
-par les recruteurs et défendable scientifiquement par un jury.
+**Architectural tension**: the `ScenarioContext` is **shared by reference
+between the real run and the shadow run**
+(cf. `ShadowSimulationRunner` which passes the same instance to guarantee
+non-divergence due to the scenario). If the auto-action modified
+`InputIntensityFactor`, the shadow run would mechanically undergo the
+same change, and the TechDelta KPI — defined as "profitability gap
+between real and shadow" — would effectively cancel out. The shadow run
+would then cease to be the "scenario without tech decisions" that the DT
+thesis claims to measure.
 
-**Conséquence opérationnelle** : ouvre 5 chantiers fermants (ADRs #46
-à #54) déroulés sur les étapes E1-E7 de la nouvelle `ROADMAP.md`.
-Suppression de la stratégie de coupe pré-décidée (cf ADR #56).
+**Decision**: `AutoActionPipeline.ApplyOne` for `ReduceInputs` does **not**
+alter the `ScenarioContext`. It injects its effects directly on the state
+variables of the real run's `EcosystemModel`:
+- `+0.05 × ratio` on `FaunaPopulation` (one-off insect boost)
+- `−200 × ratio €/ha/year` on `InputCost` (immediate savings from avoided
+  inputs)
 
-**Alternative écartée** : continuer en mode « feature après feature
-avec backlog grossissant » — résultat : MVP au goût d'inachevé,
-défendable ni en recrutement ni en soutenance.
+The `ratio` being the user magnitude divided by the reference value
+(`ReduceInputsRecommendation.IntensityCutPerStep`). The shadow run,
+which shares the scenario but has its own `EcosystemModel`, is not
+touched → the divergence is captured by TechDelta.
+
+**Rationale**:
+- Preserving the shadow run's semantics as a "twin without tech
+  decisions" is non-negotiable for the credibility of the central KPI of
+  step 8.
+- The intended effect (fauna boost + cost drop) is sourced: IPBES 2019
+  (fauna rebound after pesticide cessation), CIVAM field crops
+  (conventional input savings).
+- The alternative "clone the ScenarioContext and lower
+  `InputIntensityFactor` on the real copy only" breaks the shared
+  scenario's uniqueness invariant documented in ARCHITECTURE.md and
+  imposes signature drift across the whole stack.
+
+**Operational consequence**:
+- The effect on profitability goes through `InputCost` rather than through
+  the scenario chain. This is an approximation: the true "intensity
+  reduction" effect would also propagate via `CropYieldDynamicsRule`
+  (slightly lowered yield) and via the recurring costs of subsequent
+  years. Here the drop is a one-shot occasional change on the state
+  variable.
+- Assumed limitation: if the user stacks several `ReduceInputs`
+  auto-actions, `InputCost` can go arbitrarily low (clamped at 0). The
+  economic rule catches it on the subsequent ticks by pulling toward the
+  scenario target, but the transient peak is a known artifact.
+- Documented in the XML doc of `AutoActionPipeline.ApplyOne` and recalled
+  in the class comment.
+
+**Exit path (post-MVP)**: introduce an adjustment channel specific to the
+real run, of the type `EcosystemModel.RealRunTechAdjustment` (structured
+vector, e.g. `{ inputIntensityDelta, hedgeDensityDelta, … }`), that the
+biophysical rules consult in addition to the shared scenario. The shadow
+run ignores it. `ReduceInputs` then modifies a semantically clear delta
+(`inputIntensityDelta -= 0.2`) that propagates cleanly via the existing
+rules. Estimate: 0.5-1 day of refactor, to be arbitrated post-publication;
+also covers BACKLOG item #9 (investment capital) which suffers from a
+similar tension.
+
+**Rejected alternatives**:
+- *Modify the shared scenario's `InputIntensityFactor`*: breaks TechDelta
+  (the shadow sees the same drop).
+- *Clone `ScenarioContext` to give each run its own and lower the
+  intensity only on the real clone*: violates the scenario uniqueness
+  invariant (ARCHITECTURE.md §3 — a single `ScenarioContext` per session,
+  single source of truth for the farmer/framework levers). Pollutes the
+  signatures of the sensor → recommendation → outcome chain with a notion
+  of "scenario context belonging to whom".
+- *Defer `ReduceInputs` to the backlog until the `RealRunTechAdjustment`
+  channel exists*: deprives Step 8 of one of the three honest recos that
+  demonstrate the sensor → reco → impact chain, and thus of a quarter of
+  its demonstrative value.
 
 ---
 
-### 46. Purge totale du code chalara
+### 44. Recommendation arbitration semantics: « Valider » (Accept) / « Voir plus tard » (See later) / « Ignorer » (Ignore) + Superseded verdict
 
-**Contexte** : la détection chalara a été désactivée en sub-étape 10b
-polish capteur (le piège photo IR ne détecte pas un champignon,
-sémantiquement faux). Les classes `HedgeChalaraEvent` et
-`PlantHedgesRecommendation` ont été conservées dormantes en attente
-d'un capteur adapté (cf ancien BACKLOG #16). À l'audit de recadrage :
-avoir une seule maladie isolée (chalara, sur frêne uniquement) dans
-un modèle sans autre pathogène (rouille blé, septoriose, sclérotinia
-colza, processionnaire chêne) donne l'impression d'un modèle santé
-végétale ébauché puis abandonné.
+**Context**: at sub-step 10a, the audit identified two frictions on the
+decision popup. (1) Clicking **Ignore** on a recurring reco was not
+enough — the `EventDetector` rebuilt the same detection 30 days later and
+the popup popped up again in a loop. (2) Conversely, **See later** on N
+successive occurrences of the same type accumulated N entries in the
+history, the « Recommandations en cours (12) » (Ongoing recommendations)
+button quickly becoming noisy.
 
-**Décision** : suppression totale du code lié à chalara. Pas de
-réintroduction en MVP.
+**Decision**: three user verbs, three clear semantics, a fourth system
+verdict to bound the history.
 
-Implications mécaniques :
+**User verdicts (three popup buttons)**:
 
-- Suppression de `Assets/_Project/02_Sensors/Events/HedgeChalaraEvent.cs`.
-- Suppression de la branche pénalité chalara dans
-  `HedgerowHealthIndicator.Compute()` + constante `ChalaraPenalty`.
-- Suppression de la branche `case HedgeChalaraEvent` dans
+- **`Valider`** (Accept) → verdict `Accepted`. The auto-action is applied on the
+  real model (not on the shadow). The reco type is **removed** from the
+  session ignore set — the next occurrence of the same type will pop up
+  again, because the user showed that they were actively engaging with
+  this category of decision.
+- **`Voir plus tard`** (See later) → verdict stays `Pending`. The reco is added to a
+  `_skippedRecommendationIds` set (key: instance id) on the
+  `DecisionPopupBinding` side which prevents its auto-popup for the
+  session. The user can re-open it from the history button. A **new**
+  instance of the same type (different event id) will not be affected —
+  its own auto-popup will trigger normally.
+- **`Ignorer`** (Ignore) → verdict `Rejected`. **The entire TYPE** of the reco is
+  added to `_ignoredRecommendationTypes` for the session. Any new reco
+  whose id starts with the same prefix (before the `#`) is silently
+  skipped at auto-popup. It remains visible in the history for revisit,
+  but no longer interrupts the simulation.
+
+**System verdict (auto-marked in the journal)**:
+
+- **`Superseded`** → automatically marked by `DecisionJournal.Append`
+  when a **new** reco arrives and a `Pending` one of the same type is
+  already in the journal. The old one becomes `Superseded`, the new one
+  takes its place as the only `Pending` of this type. Audit preserved
+  (the Superseded entries remain in `Entries`), but `PendingEntries` only
+  exposes the latest → the history list is bounded to 1 Pending entry per
+  type.
+
+**Consequences**:
+
+- At most **1 Pending per type** at a given moment, regardless of the run
+  duration.
+- The `Accepted` and `Rejected` are NEVER touched by supersession — the
+  user arbitration trail is intact for a future `SessionReporter` (never
+  built — BACKLOG #4).
+- The set manipulations on the `DecisionPopupBinding` side are in-memory,
+  lost at the end of the session — no PlayerPrefs persistence
+  (CLAUDE.md §16). A new session starts with a blank list of
+  ignored / deferred types.
+
+**Rationale for the double layer (journal + binding)**:
+
+The journal is the **model** authority (persistent verdicts for audit);
+the binding sets are the **UX** layer (auto-popup skipping so as not to
+be tiresome). The two are independent:
+- You can ignore a reco via Ignore → the journal knows it is Rejected,
+  the auto-popup skips it via the type set.
+- You can revisit via « Examiner » (Examine) in the history → the popup appears even if
+  the type is in the ignore set (explicit override by user action).
+- You can re-Accept it → journal moves to Accepted, ignore set cleared for
+  this type, the next event will pop up.
+
+**Rejected alternatives**:
+- *No supersession, we accept that the history grows*:
+  « Recommandations en cours (47) » (Ongoing recommendations) button
+  illegible after a month of continuous sim run. Also rejects the MVP
+  spirit.
+- *Mark the new reco directly `Rejected` on arrival if its type is in
+  `_ignoredRecommendationTypes`*: breaks the user's ability to change
+  their mind from the history (nothing useful to examine if everything is
+  already Rejected). We prefer to keep the new one `Pending` and just
+  block the auto-popup.
+- *Supersession in `EventDetector` instead of the journal (do not re-emit
+  the event if the type was recently suppressed)*: violates §9 (the
+  detector must reflect what the sensors see, not the history of
+  decisions). We suppress at the presentation stage, not at the
+  measurement stage.
+
+---
+
+### 45. Locking of the MVP scope by the functional-completeness principle
+
+**Context**: project in Step 10 finishing (sub-step 10b-perf). Internal
+audit identifies several heterogeneous open workstreams (dormant chalara,
+EddyTower visual with no reality, WeatherStation with no Reader, 3 empty
+Tier B tabs, fauna in backlog, absent capital, scalar biodiv). Real risk
+of scope creep or its inverse (delivering an MVP with a taste of
+unfinished). Target portfolio audience: tech recruiters + M1 jury, who
+have consistent but distinct requirements.
+
+**Decision**: lock the MVP scope by the functional-completeness principle.
+Priority audience = tech recruiters (Unity/WebGL/software architecture)
+and M1 jury (scientific rigor). Budget = 15-20h/week over 3 months max,
+target 150 h. Guiding principle: "nothing in the scene or the code gives
+a taste of unfinished". Corollary: "complete or remove (never leave as
+is)". Detailed in `CLAUDE.md` §17 and §18.
+
+**Rationale**: an honest portfolio and an M1 jury require a coherent
+end-to-end MVP, not an accumulation of partial features. Functional
+completeness is what creates the "production-ready" effect sought by
+recruiters and defensible scientifically by a jury.
+
+**Operational consequence**: opens 5 closing workstreams (ADRs #46 to
+#54) rolled out over steps E1-E7 of the new `ROADMAP.md`. Removal of the
+pre-decided cutting strategy (cf ADR #56).
+
+**Rejected alternative**: continue in "feature after feature with a
+growing backlog" mode — result: MVP with a taste of unfinished,
+defensible neither in recruitment nor at the defense.
+
+---
+
+### 46. Total purge of the chalara code
+
+**Context**: chalara detection was disabled at sub-step 10b sensor polish
+(the IR camera trap does not detect a fungus, semantically false). The
+`HedgeChalaraEvent` and `PlantHedgesRecommendation` classes were kept
+dormant pending a suitable sensor (cf old BACKLOG #16). At the reframing
+audit: having a single isolated disease (chalara, on ash only) in a model
+with no other pathogen (wheat rust, septoria, rapeseed sclerotinia, oak
+processionary) gives the impression of a plant-health model sketched out
+then abandoned.
+
+**Decision**: total removal of the chalara-related code. No
+reintroduction in the MVP.
+
+Mechanical implications:
+
+- Removal of `Assets/_Project/02_Sensors/Events/HedgeChalaraEvent.cs`.
+- Removal of the chalara penalty branch in
+  `HedgerowHealthIndicator.Compute()` + `ChalaraPenalty` constant.
+- Removal of the `case HedgeChalaraEvent` branch in
   `RecommendationProvenance.SensorDisplayFor()`.
-- 6 tests EditMode utilisant `HedgeChalaraEvent` → réécriture en
-  remplaçant les références `hedge-chalara#NN` par `drought-prolonged#NN`
-  et `PlantHedgesRecommendation` par `IrrigationAdviceRecommendation`
-  comme fixture (préserve la couverture sur supersession et dedup).
-- `docs/BACKLOG.md` : items #14 et #16 supprimés, remplacés par item
-  « Cadre santé végétale complet » conditionnel à un modèle de
-  phénologie cultures.
+- 6 EditMode tests using `HedgeChalaraEvent` → rewritten by replacing the
+  `hedge-chalara#NN` references with `drought-prolonged#NN` and
+  `PlantHedgesRecommendation` with `IrrigationAdviceRecommendation` as a
+  fixture (preserves coverage on supersession and dedup).
+- `docs/BACKLOG.md`: items #14 and #16 removed, replaced by a "Complete
+  plant-health framework" item conditional on a crop phenology model.
 
-**Raison** : conforme au principe directeur §17 (CLAUDE.md). Soit on
-remet un écosystème santé végétale d'un coup (pathologies + ravageurs
-avec capteurs adaptés), soit rien. Le compromis « chalara seul
-dormant » donne le goût d'inachevé que le MVP refuse explicitement.
+**Rationale**: consistent with the guiding principle §17 (CLAUDE.md).
+Either we put back a plant-health ecosystem all at once (pathologies +
+pests with suitable sensors), or nothing. The "dormant chalara alone"
+compromise gives the taste of unfinished that the MVP explicitly refuses.
 
-**Conséquence opérationnelle** : chantier E1 de la nouvelle
-`ROADMAP.md`. Le stash `stash@{0}` contient des patches cleanup
-chalara partiels récupérables via `git stash show -p stash@{0}`.
-Estimation 2-4 h (incluant réécriture tests).
+**Operational consequence**: workstream E1 of the new `ROADMAP.md`. The
+stash `stash@{0}` contains partial chalara cleanup patches recoverable
+via `git stash show -p stash@{0}`. Estimate 2-4 h (including test
+rewrite).
 
-**Alternative écartée** : réintroduire chalara avec un capteur adapté
-(NDVI drone, enquête terrain) sans le reste de l'écosystème santé
-végétale — ouvre à nouveau le problème de la maladie isolée.
+**Rejected alternative**: reintroduce chalara with a suitable sensor
+(NDVI drone, field survey) without the rest of the plant-health
+ecosystem — reopens the isolated-disease problem.
 
 ---
 
-### 47. Refactor unifié des actions manuelles via le journal
+### 47. Unified refactor of manual actions via the journal
 
-**Contexte** : à la sub-étape 10a, 3 boutons « interventions
-ponctuelles » (PlantHedges, Irrigation, ReduceInputs) ont été câblés
-via `SimulationRunner.ApplyManualXxx()` qui appliquent l'effet
-directement sur le modèle réel, sans passer par le `DecisionJournal`.
-Asymétrie discutable : les recos auto traversent journal + verdict +
-supersession, les actions manuelles bypass complètement. Friction
-audit recadrage : traçabilité du run réel incomplète, le futur
-`SessionReporter` (jamais construit — BACKLOG #4) ne verrait pas les
-actions manuelles.
+**Context**: at sub-step 10a, 3 "occasional intervention" buttons
+(PlantHedges, Irrigation, ReduceInputs) were wired via
+`SimulationRunner.ApplyManualXxx()` which apply the effect directly on
+the real model, without going through the `DecisionJournal`. Debatable
+asymmetry: the auto recos go through journal + verdict + supersession,
+the manual actions bypass entirely. Reframing audit friction: real run
+traceability incomplete, the future `SessionReporter` (never built —
+BACKLOG #4) would not see the manual actions.
 
-**Décision** : toutes les actions manuelles passent par le
-`DecisionJournal` sous forme de `IRecommendation` « manual »
-auto-acceptée. Plus de bypass direct du modèle.
+**Decision**: all manual actions go through the `DecisionJournal` as a
+"manual" auto-accepted `IRecommendation`. No more direct model bypass.
 
-Implications mécaniques :
+Mechanical implications:
 
-- `SimulationRunner.ApplyManualXxx()` → créent une `IRecommendation`
-  avec `DefaultVerdict = AutoAccepted` et l'ajoutent au journal via
+- `SimulationRunner.ApplyManualXxx()` → create an `IRecommendation` with
+  `DefaultVerdict = AutoAccepted` and add it to the journal via
   `DecisionJournal.Append()`.
-- `AutoActionPipeline.Apply()` reste seul à modifier le modèle (pas
-  de bypass).
-- Convention `Id` : `"manual-plant-hedges#<day>"`,
+- `AutoActionPipeline.Apply()` remains the only one to modify the model
+  (no bypass).
+- `Id` convention: `"manual-plant-hedges#<day>"`,
   `"manual-irrigation#<day>"`, `"manual-reduce-inputs#<day>"`.
-- Convention `TriggeredByEventId = null`. Adapter
-  `RecommendationProvenance.Format()` : fallback « Action déclenchée
-  par l'utilisateur le jour X » si `TriggeredByEventId == null`.
-- Supersession des actions manuelles répétées : **cumulables**. Comme
-  l'action manuelle est `AutoAccepted` dès création (pas `Pending`),
-  elle ne déclenche pas la supersession des autres entrées du même
-  type. `PlantHedges` +30 m/ha puis +30 m/ha → +60 m/ha total,
-  2 entrées journal distinctes.
-- `PlantHedgesRecommendation` reste utile (côté manuel uniquement —
-  n'est plus émise par `RecommendationEngine.TryProduceFor` depuis
-  10b).
+- `TriggeredByEventId = null` convention. Adapt
+  `RecommendationProvenance.Format()`: fallback « Action déclenchée par
+  l'utilisateur le jour X » (Action triggered by the user on day X) if
+  `TriggeredByEventId == null`.
+- Supersession of repeated manual actions: **cumulative**. Since the
+  manual action is `AutoAccepted` from creation (not `Pending`), it does
+  not trigger the supersession of other entries of the same type.
+  `PlantHedges` +30 m/ha then +30 m/ha → +60 m/ha total, 2 distinct
+  journal entries.
+- `PlantHedgesRecommendation` remains useful (manual side only — no
+  longer emitted by `RecommendationEngine.TryProduceFor` since 10b).
 
-**Raison** : discipline architecturale propre, traçabilité totale des
-décisions joueur, supersession applicable, plus défendable pour
-jury M1. Aligne la sémantique « auto » et « manuel » sur un même
-canal.
+**Rationale**: clean architectural discipline, total traceability of
+player decisions, applicable supersession, more defensible for an M1
+jury. Aligns the "auto" and "manual" semantics on the same channel.
 
-**Conséquence opérationnelle** : chantier E1 de la nouvelle
-`ROADMAP.md`. Estimation 3-4 h (refactor + tests).
+**Operational consequence**: workstream E1 of the new `ROADMAP.md`.
+Estimate 3-4 h (refactor + tests).
 
-**Alternative écartée** : garder le bypass actuel — viole le principe
-de traçabilité unique et complique le futur `SessionReporter`.
+**Rejected alternative**: keep the current bypass — violates the single
+traceability principle and complicates the future `SessionReporter`.
 
 ---
 
-### 48. Modèle carbone sol 1-pool + EddyTower bout-en-bout
+### 48. 1-pool soil carbon model + end-to-end EddyTower
 
-**Contexte** : le sprite EddyTower (tour de covariance) est présent en
-scène depuis l'Étape 6c mais sans variable d'état correspondante.
-Violation pratique du principe primauté du capteur (CLAUDE.md §9).
-L'item BACKLOG #13 (variable d'état carbone sol) attendait son tour.
-À l'audit recadrage : soit on retire le sprite (perte d'un argument
-scientifique majeur), soit on le branche.
+**Context**: the EddyTower sprite (covariance tower) has been present in
+the scene since Step 6c but with no corresponding state variable.
+Practical violation of the sensor primacy principle (CLAUDE.md §9).
+BACKLOG item #13 (soil carbon state variable) was awaiting its turn. At
+the reframing audit: either we remove the sprite (loss of a major
+scientific argument), or we wire it.
 
-**Décision** : implémenter le modèle carbone sol 1-pool dans le MVP.
-Le sprite EddyTower devient un capteur fonctionnel bout-en-bout
-(mesure → indicateur affiché, sans événement ni reco — conforme §17
-principe directeur « OU indicateur affiché »).
+**Decision**: implement the 1-pool soil carbon model in the MVP. The
+EddyTower sprite becomes a functional end-to-end sensor
+(measurement → displayed indicator, with no event or reco — consistent
+with §17 guiding principle "OR displayed indicator").
 
-Implications mécaniques :
+Mechanical implications:
 
-- Nouvelle variable d'état `SoilCarbonStock` (tC/ha) dans
-  `EcosystemModel`, default 50.
-- Nouvelle règle `SoilCarbonDynamicsRule` (Couche 01) : modèle 1-pool
-  `dC/dt = inputs − k·C`, `k = 1/40 an⁻¹` (calibration cf
+- New state variable `SoilCarbonStock` (tC/ha) in `EcosystemModel`,
+  default 50.
+- New rule `SoilCarbonDynamicsRule` (Layer 01): 1-pool model
+  `dC/dt = inputs − k·C`, `k = 1/40 yr⁻¹` (calibration cf
   `CALIBRATION.md`).
-- 2 nouveaux leviers dans `ScenarioContext` :
-  `CoverCropsCoveragePercent` (0-100 %) et
-  `ResidueRestitutionPercent` (0-100 %), avec sliders dans scenario
+- 2 new levers in `ScenarioContext`:
+  `CoverCropsCoveragePercent` (0-100%) and
+  `ResidueRestitutionPercent` (0-100%), with sliders in the scenario
   panel.
-- Nouveau `EddyTowerSensorReader` (Couche 02) : mesure flux net
-  journalier CO2 avec bruit gaussien. Sous-flux RNG
-  `"eddy-tower"`.
-- Nouveau `SoilCarbonIndicator` (Couche 04) + `RC_SoilCarbonStock`
+- New `EddyTowerSensorReader` (Layer 02): measures daily net CO2 flux
+  with Gaussian noise. RNG sub-stream `"eddy-tower"`.
+- New `SoilCarbonIndicator` (Layer 04) + `RC_SoilCarbonStock`
   (Data/RuntimeContainers).
-- Affichage dans onglet Climat & Ressources (cf ADR #54).
-- Panneau d'inspection EddyTower (cf ADR #53) : graphe flux journalier
-  + stock cumulé.
-- 4-5 tests EditMode.
+- Display in the Climate & Resources tab (cf ADR #54).
+- EddyTower inspection panel (cf ADR #53): daily flux graph + cumulative
+  stock.
+- 4-5 EditMode tests.
 
-**Raison** : brancher EddyTower renforce massivement la défensibilité
-scientifique (sujet « 4 pour 1000 » INRAE, marchés volontaires CO2,
-Label Bas-Carbone). Un sprite capteur sans réalité dans le modèle est
-une violation visible du principe primauté du capteur, anti-portfolio.
+**Rationale**: wiring EddyTower massively strengthens the scientific
+defensibility (INRAE "4 per 1000" topic, voluntary CO2 markets,
+Low-Carbon Label). A sensor sprite with no reality in the model is a
+visible violation of the sensor primacy principle, anti-portfolio.
 
-**Conséquence opérationnelle** : chantier E3 de la nouvelle
-`ROADMAP.md`. Sources : Solagro Afterres 2050, INRAE 4 pour 1000,
-Efese services écosystémiques, BDAT. Estimation 10-14 h (incluant
-panneau inspection EddyTower).
+**Operational consequence**: workstream E3 of the new `ROADMAP.md`.
+Sources: Solagro Afterres 2050, INRAE 4 per 1000, Efese ecosystem
+services, BDAT. Estimate 10-14 h (including the EddyTower inspection
+panel).
 
-**Alternative écartée** : retirer le sprite EddyTower — résout le
-problème de cohérence visuelle/code mais perd un argument
-scientifique majeur du DT.
+**Rejected alternative**: remove the EddyTower sprite — resolves the
+visual/code consistency problem but loses a major scientific argument of
+the DT.
 
 ---
 
-### 49. Faune visible — 4 espèces en pool avec animations frame-swap
+### 49. Visible fauna — 4 species pooled with frame-swap animations
 
-**Contexte** : sans faune visible, l'indice `RC_BiodiversityComposite`
-reste un chiffre abstrait. La disparition des espèces quand la biodiv
-chute est le signal pédagogique central du sujet bocage. Items
-BACKLOG #1 + #2 reportés depuis l'Étape 9. Ébauches de sprites déjà
-disponibles dans `Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`
-(4 espèces × 3-4 frames partiellement présents).
+**Context**: without visible fauna, the `RC_BiodiversityComposite` index
+remains an abstract number. The disappearance of species when biodiv
+drops is the central pedagogical signal of the bocage subject. BACKLOG
+items #1 + #2 deferred since Step 9. Sprite drafts already available in
+`Assets/_Project/05_Presentation/Scene/Sprites/Fauna/`
+(4 species × 3-4 frames partially present).
 
-**Décision** : implémenter le pool de 4 espèces visibles (héron,
-chouette, buse, hirondelle) avec animations frame-swap, courbes de
-réponse sur la biodiv.
+**Decision**: implement the pool of 4 visible species (heron, owl,
+buzzard, swallow) with frame-swap animations, response curves on biodiv.
 
-Implications mécaniques :
+Mechanical implications:
 
-- `FaunaSpeciesDefinition.cs` : ScriptableObject par espèce avec
-  sprites, seuil d'apparition, position de spawn, pattern d'animation.
-- `FaunaPool.cs` (Couche 05) : object pooling sans Instantiate runtime
-  (CLAUDE.md §6 conforme).
-- `FaunaIdleMotion.cs` (Couche 05) : animation frame-swap simple
-  (cycle de 3-4 frames).
-- `FaunaPoolBinding.cs` (Couche 05) : observe
+- `FaunaSpeciesDefinition.cs`: ScriptableObject per species with sprites,
+  appearance threshold, spawn position, animation pattern.
+- `FaunaPool.cs` (Layer 05): object pooling without runtime Instantiate
+  (CLAUDE.md §6 compliant).
+- `FaunaIdleMotion.cs` (Layer 05): simple frame-swap animation
+  (3-4 frame cycle).
+- `FaunaPoolBinding.cs` (Layer 05): observes
   `RC_BiodiversityComposite` + `RC_FaunaFactor*` (cf ADR #51) →
-  spawn/despawn espèces selon courbes de réponse.
-- Crunch DXT5 conditionnel sur les nouveaux sprites (cf décision
-  conditionnelle dans `docs/ROADMAP.md` chantier E7).
-- Pas de modulation `_HealthT` sur faune (item BACKLOG #3 supprimé
-  définitivement, hors MVP).
+  spawn/despawn species according to response curves.
+- Conditional Crunch DXT5 on the new sprites (cf conditional decision in
+  `docs/ROADMAP.md` workstream E7).
+- No `_HealthT` modulation on fauna (BACKLOG item #3 permanently removed,
+  out of MVP).
 
-**Raison** : la faune visible est l'élément qui transforme un
-dashboard d'indicateurs en un digital twin vivant. Sans elle, la
-chaîne pédagogique « intrants ↑ → biodiv ↓ → faune disparaît » reste
-abstraite. Sprites ébauchés sans intégration = goût d'inachevé
-explicitement refusé par §17.
+**Rationale**: visible fauna is the element that transforms an indicator
+dashboard into a living digital twin. Without it, the pedagogical chain
+"inputs ↑ → biodiv ↓ → fauna disappears" remains abstract. Sketched
+sprites with no integration = taste of unfinished explicitly refused by
+§17.
 
-**Conséquence opérationnelle** : chantier E4 de la nouvelle
-`ROADMAP.md`. Sources : ZNIEFF Perche, ONF, PNR du Perche pour
-bestiaire et seuils. Estimation 10-13 h (sprites déjà ébauchés,
-corrections finales à charge utilisateur).
+**Operational consequence**: workstream E4 of the new `ROADMAP.md`.
+Sources: ZNIEFF Perche, ONF, PNR du Perche for the bestiary and
+thresholds. Estimate 10-13 h (sprites already sketched, final corrections
+the user's responsibility).
 
-**Alternative écartée** : reporter la faune en post-MVP — viole le
-principe directeur §17.
-
----
-
-### 50. Capital d'investissement + horizon de rentabilité
-
-**Contexte** : `IntegratedProfitabilityIndicator` agrège revenus −
-coûts opérationnels + aides, sans notion de capital amortissable.
-L'action `PlantHedges` (manuel via ADR #47) est sans coût upfront
-représenté → arbitrage agriculteur faussé vers acceptation
-systématique. Item BACKLOG #9 attendait son tour. Pour un jury M1,
-c'est la critique facile : « votre modèle économique ignore le
-capital, c'est inutilisable en conseil agricole ».
-
-**Décision** : modéliser le capital d'investissement (sur PlantHedges
-uniquement, seule action avec coût upfront réel) et calculer
-l'horizon de rentabilité via shadow vs real.
-
-Implications mécaniques :
-
-- Champ `InvestmentCost` (€/ha) sur `IRecommendation` (calculé pour
-  `ManualPlantHedgesRecommendation` : densité plantée × prix au m
-  linéaire, source Réseau Haies 3-10 €/m).
-- Texte « Coût upfront estimé : X €/ha » affiché dans popup décision
-  (manuel).
-- Cumul `TotalInvestment` dans `DecisionJournal` (somme des
-  `InvestmentCost` des entrées appliquées).
-- Nouveau `InvestmentHorizonIndicator` (Couche 04) : calcul des
-  années pour récupérer l'investissement, basé sur divergence
-  rentabilité réel vs shadow.
-- Affichage : ligne « Horizon rentabilité : X ans » dans popup
-  décision et onglet Économie. « Non encore atteint » si pas atteint
-  dans la simulation.
-- Pour Irrigation et ReduceInputs manuels : `InvestmentCost = 0`
-  (action ponctuelle, coût intégré dans `InputCost`).
-
-**Raison** : la thèse centrale du DT est « convergence honnête éco/
-écolo ». Sans capital, planter est gratuit, donc trivial à accepter,
-et la thèse est faussée. L'horizon rentabilité est l'argument décisif
-d'un agriculteur réel — standard du métier (Chambre d'agriculture,
-référentiel MAEC).
-
-**Conséquence opérationnelle** : chantier E5 (groupé avec ADR #51).
-Sources : Réseau Haies de France, MAEC référentiel coûts plantation,
-FranceAgriMer prix blé/lait, Chambre d'agriculture. Estimation 6-8 h.
-
-**Alternative écartée** : reporter en post-MVP — perd la critique
-anticipable du jury M1.
+**Rejected alternative**: defer the fauna post-MVP — violates the guiding
+principle §17.
 
 ---
 
-### 51. Biodiv enrichie — exposition de 3 facteurs (refonte minimale)
+### 50. Investment capital + profitability horizon
 
-**Contexte** : `BiodiversityCompositeIndicator` agrège 50 % fauna +
-30 % hedge + 20 % water inverse, pondérations auto-justifiées sans
-citation précise. Item BACKLOG #15 (refonte biodiv) attendait son
-tour. Compromis MVP : ajouter un 4ème facteur « Diversité paysage »
-demanderait 2 nouveaux sliders scenario (`GrasslandPercent`,
-`CropDiversityIndex`) → complexité ajoutée.
+**Context**: `IntegratedProfitabilityIndicator` aggregates revenues −
+operating costs + subsidies, with no notion of depreciable capital. The
+`PlantHedges` action (manual via ADR #47) has no represented upfront cost
+→ farmer trade-off skewed toward systematic acceptance. BACKLOG item #9
+was awaiting its turn. For an M1 jury, this is the easy criticism: "your
+economic model ignores capital, it is unusable in agricultural advice".
 
-**Décision** : refonte limitée — pas de 4ème facteur dans le MVP.
-Exposition individuelle des 3 facteurs actuels (habitat, eau,
-intrants) via des `RC_*` distincts pour affichage onglet Biodiv.
-Recalibration des pondérations. Ajout d'effets faibles sourcés depuis
-météo journalière (canicule) et carbone sol.
+**Decision**: model investment capital (on PlantHedges only, the only
+action with a real upfront cost) and compute the profitability horizon
+via shadow vs real.
 
-Implications mécaniques :
+Mechanical implications:
 
-- `FaunaDynamicsRule` (Couche 01) refondue : 3 facteurs (habitat, eau,
-  intrants) calculés explicitement, exposés via `RC_FaunaFactorHabitat`,
+- `InvestmentCost` field (€/ha) on `IRecommendation` (computed for
+  `ManualPlantHedgesRecommendation`: planted density × price per linear
+  meter, source Réseau Haies 3-10 €/m).
+- Text « Coût upfront estimé : X €/ha » (Estimated upfront cost) displayed
+  in the decision popup (manual).
+- `TotalInvestment` accumulation in `DecisionJournal` (sum of the
+  `InvestmentCost` of applied entries).
+- New `InvestmentHorizonIndicator` (Layer 04): computes the years to
+  recover the investment, based on the real vs shadow profitability
+  divergence.
+- Display: « Horizon rentabilité : X ans » (Profitability horizon: X years)
+  line in the decision popup and the Economy tab. « Non encore atteint »
+  (Not yet reached) if not reached in the simulation.
+- For manual Irrigation and ReduceInputs: `InvestmentCost = 0` (occasional
+  action, cost integrated in `InputCost`).
+
+**Rationale**: the central thesis of the DT is "honest eco/eco
+convergence". Without capital, planting is free, therefore trivial to
+accept, and the thesis is skewed. The profitability horizon is the
+decisive argument of a real farmer — an industry standard (Chamber of
+Agriculture, MAEC reference framework).
+
+**Operational consequence**: workstream E5 (grouped with ADR #51).
+Sources: Réseau Haies de France, MAEC planting cost reference framework,
+FranceAgriMer wheat/milk prices, Chamber of Agriculture. Estimate 6-8 h.
+
+**Rejected alternative**: defer post-MVP — loses the anticipable
+criticism of the M1 jury.
+
+---
+
+### 51. Enriched biodiv — exposure of 3 factors (minimal overhaul)
+
+**Context**: `BiodiversityCompositeIndicator` aggregates 50% fauna +
+30% hedge + 20% inverse water, self-justified weightings with no precise
+citation. BACKLOG item #15 (biodiv overhaul) was awaiting its turn. MVP
+compromise: adding a 4th factor "Landscape diversity" would require 2 new
+scenario sliders (`GrasslandPercent`, `CropDiversityIndex`) → added
+complexity.
+
+**Decision**: limited overhaul — no 4th factor in the MVP. Individual
+exposure of the 3 current factors (habitat, water, inputs) via distinct
+`RC_*` for display in the Biodiv tab. Recalibration of the weightings.
+Addition of weak effects sourced from daily weather (heatwave) and soil
+carbon.
+
+Mechanical implications:
+
+- `FaunaDynamicsRule` (Layer 01) overhauled: 3 factors (habitat, water,
+  inputs) explicitly computed, exposed via `RC_FaunaFactorHabitat`,
   `RC_FaunaFactorWater`, `RC_FaunaFactorInputs`.
-- Ajout d'un effet faible météo journalière (canicule) sur fauna :
-  pénalité au-delà de seuil T° quotidien (sourcé Hallmann 2017).
-- Ajout d'un effet faible carbone sol sur fauna : bonus si stock
-  C > seuil (sols vivants = plus de macrofaune).
-- Recalibration des pondérations du `BiodiversityCompositeIndicator`
-  sur base littérature (Vigie-Nature, Hallmann 2017, MNHN 2024).
-- 3 lignes affichables dans onglet Biodiv (cf ADR #54).
+- Addition of a weak daily-weather effect (heatwave) on fauna: penalty
+  beyond a daily T° threshold (sourced Hallmann 2017).
+- Addition of a weak soil-carbon effect on fauna: bonus if stock
+  C > threshold (living soils = more macrofauna).
+- Recalibration of the weightings of the `BiodiversityCompositeIndicator`
+  based on the literature (Vigie-Nature, Hallmann 2017, MNHN 2024).
+- 3 displayable lines in the Biodiv tab (cf ADR #54).
 
-**Raison** : compromis raisonnable. 3 lignes affichables,
-scientifiquement défendable, sans complexité ajoutée des nouveaux
-sliders scenario qui auraient demandé un retravail UI scenario panel.
+**Rationale**: reasonable compromise. 3 displayable lines, scientifically
+defensible, without the added complexity of new scenario sliders that
+would have required a rework of the scenario panel UI.
 
-**Conséquence opérationnelle** : chantier E5 (groupé avec ADR #50).
-Sources : INRAE Vigie-Nature, Constant et al. 1976 (Réseau Haies),
-Hallmann et al. 2017 (Krefeld), MNHN 2024. Estimation 6-8 h. Partie
-reportée en BACKLOG (4ème facteur Diversité paysage).
+**Operational consequence**: workstream E5 (grouped with ADR #50).
+Sources: INRAE Vigie-Nature, Constant et al. 1976 (Réseau Haies),
+Hallmann et al. 2017 (Krefeld), MNHN 2024. Estimate 6-8 h. Part deferred
+to BACKLOG (4th Landscape diversity factor).
 
-**Alternative écartée** : refonte complète avec 4ème facteur +
-2 sliders — coût plus élevé sans gain MVP critique.
+**Rejected alternative**: complete overhaul with a 4th factor +
+2 sliders — higher cost with no critical MVP gain.
 
 ---
 
-### 52. Saisonnalité + WeatherStation chaîne complète
+### 52. Seasonality + WeatherStation complete chain
 
-**Contexte** : `WeatherUpdateRule` tire chaque jour autour de moyennes
-annuelles fixes (12 °C, 2 mm/jour), sans cycle saisonnier. Le jour 1
-et le jour 180 ont la même distribution météo. Item BACKLOG #12
-attendait son tour. Manque scientifique le plus visible aux yeux
-d'un agroécologue. Sprite WeatherStation présent depuis 6c sans
-Reader formel. Audit recadrage : double problème (modèle + chaîne
-capteur incomplète) résoluble d'un coup.
+**Context**: `WeatherUpdateRule` draws each day around fixed annual
+means (12 °C, 2 mm/day), with no seasonal cycle. Day 1 and day 180 have
+the same weather distribution. BACKLOG item #12 was awaiting its turn.
+Most visible scientific gap in the eyes of an agroecologist.
+WeatherStation sprite present since 6c with no formal Reader. Reframing
+audit: double problem (model + incomplete sensor chain) solvable at once.
 
-**Décision** : implémenter Piste J intégrale — saisonnalité avec
-données mensuelles Météo-France (station Mortagne-au-Perche 61,
-normales 1991-2020), modèle stochastique Niveau 3 (chaîne de Markov
-ON/OFF pour pluie + log-normale intensité), WeatherStation comme
-capteur de mesure pure bout-en-bout.
+**Decision**: implement the full Track J — seasonality with monthly
+Météo-France data (Mortagne-au-Perche 61 station, 1991-2020 normals),
+Level 3 stochastic model (ON/OFF Markov chain for rain + log-normal
+intensity), WeatherStation as an end-to-end pure-measurement sensor.
 
-Implications mécaniques :
+Mechanical implications:
 
-- `SeasonalWeatherDataAsset.cs` (Couche 01) : ScriptableObject avec
-  12 valeurs T° + 12 valeurs précip + paramètres Markov mensuels
+- `SeasonalWeatherDataAsset.cs` (Layer 01): ScriptableObject with 12 T°
+  values + 12 precip values + monthly Markov parameters
   (p_wet, mu, sigma).
-- Refonte `WeatherUpdateRule` : lit le mois courant + anomalies
-  scenario + tire Bernoulli(p_wet[mois]) puis LogNormal(mu[mois],
-  sigma[mois]) si pluvieux + bruit gaussien T° (σ = 2 °C). Sous-flux
-  RNG `"markov-rain"` et `"weather-noise"`.
-- Widget « Mois de démarrage » (combo Jan-Déc) dans section
-  « Conditions initiales ».
-- `WeatherStationReader` (Couche 02) : mesure pure T° + précip avec
-  bruit gaussien. Pas d'événement, pas de reco — lecture pure
-  (option a actée).
-- Cascade saisonnière gratuite : `WaterTableDynamicsRule`,
-  `HedgerowGrowthRule`, `FaunaDynamicsRule` deviennent saisonnières
-  via leurs inputs (water table notamment).
-- Extension `CropYieldDynamicsRule` + `InputCostDynamicsRule` à la
-  météo journalière (option a) : ajout d'un terme dépendant de la
-  météo réelle (canicule WeatherStation → effet direct économique).
-- Panneau « Normales climatiques mois courant + suivant » intégré au
-  panneau inspection WeatherStation (cf ADR #53).
-- Crises saisonnières (canicule, inondation) et effets visuels
-  saisonniers (ciel, prairie) en BACKLOG hors MVP.
+- `WeatherUpdateRule` overhaul: reads the current month + scenario
+  anomalies + draws Bernoulli(p_wet[month]) then LogNormal(mu[month],
+  sigma[month]) if rainy + Gaussian T° noise (σ = 2 °C). RNG sub-streams
+  `"markov-rain"` and `"weather-noise"`.
+- « Mois de démarrage » (Starting month) widget (Jan-Dec combo) in the
+  « Conditions initiales » (Initial conditions) section.
+- `WeatherStationReader` (Layer 02): pure T° + precip measurement with
+  Gaussian noise. No event, no reco — pure reading (option a adopted).
+- Free seasonal cascade: `WaterTableDynamicsRule`, `HedgerowGrowthRule`,
+  `FaunaDynamicsRule` become seasonal via their inputs (notably water
+  table).
+- Extension of `CropYieldDynamicsRule` + `InputCostDynamicsRule` to daily
+  weather (option a): addition of a term dependent on the real weather
+  (WeatherStation heatwave → direct economic effect).
+- « Normales climatiques mois courant + suivant » (Climate normals current
+  + next month) panel integrated into the WeatherStation inspection panel
+  (cf ADR #53).
+- Seasonal crises (heatwave, flood) and seasonal visual effects (sky,
+  meadow) in the BACKLOG, out of MVP.
 
-**Raison** : sans saisonnalité, le DT est défendable en démonstration
-technique mais inattaquable scientifiquement par un agroécologue.
-WeatherStation sans Reader formel viole le principe primauté du
-capteur. Résolution conjointe = haute valeur portfolio.
+**Rationale**: without seasonality, the DT is defensible in technical
+demonstration but scientifically unassailable by an agroecologist.
+WeatherStation with no formal Reader violates the sensor primacy
+principle. Joint resolution = high portfolio value.
 
-**Conséquence opérationnelle** : chantier E2 de la nouvelle
-`ROADMAP.md`. Sources : Météo-France normales 1991-2020 station
-Mortagne-au-Perche (61), INRAE échelle BBCH, ARVALIS Eure-et-Loir.
-Estimation 16-22 h (16 h base + 3 h extension CropYield/InputCost +
-6-10 h niveau 3 Markov).
+**Operational consequence**: workstream E2 of the new `ROADMAP.md`.
+Sources: Météo-France 1991-2020 normals Mortagne-au-Perche (61) station,
+INRAE BBCH scale, ARVALIS Eure-et-Loir. Estimate 16-22 h (16 h base +
+3 h CropYield/InputCost extension + 6-10 h Markov level 3).
 
-**Alternative écartée** : saisonnalité moyennes annuelles + bruit
-seul (sans Markov) — moins défendable scientifiquement, le gain de
-complexité du Markov est modeste pour un bénéfice élevé en jury.
+**Rejected alternative**: seasonality with annual means + noise only
+(without Markov) — less scientifically defensible, the complexity gain of
+Markov is modest for a high benefit in front of a jury.
 
 ---
 
-### 53. Panneau d'inspection des capteurs cliquables
+### 53. Inspection panel of clickable sensors
 
-**Contexte** : les 5 capteurs sont visibles en scène mais ne révèlent
-leurs mesures que via les indicateurs Hero ou Niveau B agrégés. Aucun
-moyen d'inspecter directement un capteur, de voir sa série de mesures,
-de comprendre l'incertitude (acoustique fragile à faible densité par
-exemple).
+**Context**: the 5 sensors are visible in the scene but only reveal their
+measurements via the aggregated Hero or Tier B indicators. No way to
+directly inspect a sensor, to see its measurement series, to understand
+the uncertainty (acoustic fragile at low density for example).
 
-**Décision** : les 5 capteurs deviennent cliquables. Un panneau
-d'inspection s'ouvre au clic, avec un contenu spécifique par capteur
-(graphes des mesures historiques vs références).
+**Decision**: the 5 sensors become clickable. An inspection panel opens on
+click, with content specific to each sensor (graphs of historical
+measurements vs references).
 
-Contenu par capteur :
+Content per sensor:
 
-| Capteur | Contenu du panneau au clic |
+| Sensor | Panel content on click |
 |---|---|
-| Piezometer | Graphe profondeur nappe 365 j + 2 seuils (3,5 m alerte drought, 5 m critique) + compteur « jours consécutifs > 3,5 m ». |
-| WeatherStation | 2 graphes superposés : T° journalière vs normale mensuelle, précip journalière vs normale mensuelle. Affichage normales mois courant et suivant. |
-| AcousticSensor | Graphe abondance mesurée (bruitée) vs vraie abondance (modèle). Visualise l'incertitude — pédagogie acoustique fragile à faible densité. |
-| CameraTrap | Idem AcousticSensor. Permet de comprendre la fusion via `FaunaSensorReader`. |
-| EddyTower | Graphe flux journalier CO2 + stock C cumulé (cf ADR #48). |
+| Piezometer | Water table depth graph 365 d + 2 thresholds (3.5 m drought alert, 5 m critical) + "consecutive days > 3.5 m" counter. |
+| WeatherStation | 2 superimposed graphs: daily T° vs monthly normal, daily precip vs monthly normal. Display of current and next month normals. |
+| AcousticSensor | Measured abundance graph (noisy) vs true abundance (model). Visualizes the uncertainty — acoustic fragility pedagogy at low density. |
+| CameraTrap | Same as AcousticSensor. Allows understanding the fusion via `FaunaSensorReader`. |
+| EddyTower | Daily CO2 flux graph + cumulative C stock (cf ADR #48). |
 
-Implications mécaniques :
+Mechanical implications:
 
-- Détection clic sur sprite 2D : `Collider2D` + `IPointerClickHandler`
-  via Unity EventSystem + `Physics2DRaycaster` sur la caméra.
-- Stockage sliding window 365 j dans chaque `*SensorReader`
-  (mutualisé via interface `ISensorHistory<T>`, partagé avec ADR #54
-  onglets).
-- Composant `SensorInspectorPanel.uxml` (UXML + USS) réutilisable, se
-  reconfigure selon le capteur cliqué.
-- Composant graphe custom en `VisualElement` avec
+- Click detection on a 2D sprite: `Collider2D` + `IPointerClickHandler`
+  via Unity EventSystem + `Physics2DRaycaster` on the camera.
+- Sliding window 365 d storage in each `*SensorReader`
+  (mutualized via `ISensorHistory<T>` interface, shared with ADR #54
+  tabs).
+- Reusable `SensorInspectorPanel.uxml` component (UXML + USS),
+  reconfigures according to the clicked sensor.
+- Custom graph component in `VisualElement` with
   `generateVisualContent` callback.
-- Fermeture : clic dehors, touche Échap, bouton fermer.
-- Nouveau binding `SensorInspectorPanelBinding` (Couche 05).
+- Closing: click outside, Esc key, close button.
+- New binding `SensorInspectorPanelBinding` (Layer 05).
 
-**Raison** : transforme les capteurs de « décor instrumenté » en
-« interfaces d'inspection », aligné avec l'identité station
-d'observation du DT. Permet à un visiteur portfolio de comprendre
-l'incertitude de mesure en 2 clics, signal de maturité scientifique.
+**Rationale**: transforms the sensors from "instrumented scenery" into
+"inspection interfaces", aligned with the DT's observation station
+identity. Allows a portfolio visitor to understand measurement
+uncertainty in 2 clicks, a signal of scientific maturity.
 
-**Conséquence opérationnelle** : chantier E6 (groupé avec ADR #54).
-Estimation 12-21 h (4-6 h système générique + 3-5 h graphe custom +
-5-10 h contenus 5 capteurs).
+**Operational consequence**: workstream E6 (grouped with ADR #54).
+Estimate 12-21 h (4-6 h generic system + 3-5 h custom graph + 5-10 h
+content for the 5 sensors).
 
-**Alternative écartée** : afficher les séries de mesure dans un onglet
-dédié — moins direct, casse la spatialité du DT.
-
----
-
-### 54. 3 onglets Niveau B tous remplis
-
-**Contexte** : les 3 panneaux Niveau B (Biodiversité, Climat &
-Ressources, Économie) sont en place depuis l'Étape 6b mais largement
-remplis de placeholders « à venir ». Friction visible : structure UI
-riche, contenu pauvre.
-
-**Décision** : les 3 onglets Niveau B sont tous remplis avec des
-sous-indicateurs riches utilisant les variables existantes + nouvelles
-(saisonnalité, carbone sol, faune visible, capital, biodiv 3 facteurs).
-
-Contenu détaillé par onglet :
-
-**Biodiversité** :
-
-| Ligne | Variable source |
-|---|---|
-| Indice composite | `BiodiversityCompositeIndicator` |
-| Composante habitat (haies) | `RC_FaunaFactorHabitat` (nouveau via ADR #51) |
-| Composante eau | `RC_FaunaFactorWater` (nouveau via ADR #51) |
-| Composante intrants | `RC_FaunaFactorInputs` (nouveau via ADR #51) |
-| Comptage espèces visibles | dérivé de `FaunaPool` (nouveau via ADR #49) |
-
-**Climat & Ressources** :
-
-| Ligne | Variable source |
-|---|---|
-| Profondeur nappe | `WaterTableDepth` (déjà) |
-| T° moyenne 365 j glissants | `CurrentWeather` history (nouveau via ADR #52) |
-| Précipitations cumulées 365 j glissants | `CurrentWeather` history (nouveau via ADR #52) |
-| Stock carbone sol | `SoilCarbonStock` (nouveau via ADR #48) |
-| Flux net CO2 | `EddyTowerSensorReader` history (nouveau via ADR #48) |
-
-**Économie** :
-
-| Ligne | Variable source |
-|---|---|
-| Rendement cultures | `CropYield` (déjà) |
-| Coût intrants | `InputCost` (déjà) |
-| Coût entretien haies | `MaintenanceCost` (déjà) |
-| Paiement PSE | calculé (déjà) |
-| Paiement PAC (DPB + redistributif + écorégime + bonus haies) | constantes (déjà) |
-| Investissement cumulé | `journal.TotalInvestment` (nouveau via ADR #50) |
-| Horizon rentabilité | `InvestmentHorizonIndicator` (nouveau via ADR #50) |
-
-Implications mécaniques :
-
-- Nouveaux bindings : `OngletBiodivBinding`, `OngletClimatBinding`,
-  `OngletEconomieBinding` (Couche 05).
-- Sliding windows 365 j pour `CurrentWeather` history et `EddyTower`
-  flux history mutualisées avec celles d'ADR #53.
-- USS / UXML existants des onglets à enrichir.
-
-**Raison** : avec toutes les pistes activées (E2-E5), on a précisément
-créé les variables qui remplissent ces onglets. Les retirer serait
-gâcher le bénéfice des décisions précédentes. Aligné avec principe
-directeur §17 « tout onglet présent doit afficher de l'info utile ».
-
-**Conséquence opérationnelle** : chantier E6 (groupé avec ADR #53).
-Estimation 10-12 h.
-
-**Alternative écartée** : remplir partiellement avec les variables
-existantes seulement — résultat : 3 onglets affichant 2-3 lignes
-chacun, goût d'inachevé refusé par §17.
+**Rejected alternative**: display the measurement series in a dedicated
+tab — less direct, breaks the spatiality of the DT.
 
 ---
 
-### 55. Pattern rationale uniforme (action concrète + Effet modélisé)
+### 54. 3 Tier B tabs all filled
 
-**Contexte** : 3 propositions de wording précédentes pour les recos
-avaient été rejetées car elles évoquaient des effets non modélisés
-(auxiliaires, brise-vent secondaire, résilience générale). Le
-`RecommendationPopupBinding` actuel affiche des rationales
-hétérogènes selon l'origine de la reco.
+**Context**: the 3 Tier B panels (Biodiversity, Climate & Resources,
+Economy) have been in place since Step 6b but largely filled with "coming
+soon" placeholders. Visible friction: rich UI structure, poor content.
 
-**Décision** : adopter un pattern uniforme de rédaction des rationales
-pour toutes les recommandations (manuelles ET auto). Format : Title
-court (verbe + objet) + Rationale = phrase d'action concrète + ligne
-`Effet modélisé : ...` chiffrée sur les variables effectivement
-touchées. Pas d'envolée, pas de chimères non modélisées.
+**Decision**: the 3 Tier B tabs are all filled with rich sub-indicators
+using the existing + new variables (seasonality, soil carbon, visible
+fauna, capital, 3-factor biodiv).
 
-Wordings exacts pour actions manuelles :
+Detailed content per tab:
+
+**Biodiversity**:
+
+| Line | Source variable |
+|---|---|
+| Composite index | `BiodiversityCompositeIndicator` |
+| Habitat component (hedges) | `RC_FaunaFactorHabitat` (new via ADR #51) |
+| Water component | `RC_FaunaFactorWater` (new via ADR #51) |
+| Inputs component | `RC_FaunaFactorInputs` (new via ADR #51) |
+| Visible species count | derived from `FaunaPool` (new via ADR #49) |
+
+**Climate & Resources**:
+
+| Line | Source variable |
+|---|---|
+| Water table depth | `WaterTableDepth` (already) |
+| Mean T° 365 d rolling | `CurrentWeather` history (new via ADR #52) |
+| Cumulative precipitation 365 d rolling | `CurrentWeather` history (new via ADR #52) |
+| Soil carbon stock | `SoilCarbonStock` (new via ADR #48) |
+| Net CO2 flux | `EddyTowerSensorReader` history (new via ADR #48) |
+
+**Economy**:
+
+| Line | Source variable |
+|---|---|
+| Crop yield | `CropYield` (already) |
+| Input cost | `InputCost` (already) |
+| Hedge maintenance cost | `MaintenanceCost` (already) |
+| PSE payment | computed (already) |
+| CAP payment (BPS + redistributive + eco-scheme + hedge bonus) | constants (already) |
+| Cumulative investment | `journal.TotalInvestment` (new via ADR #50) |
+| Profitability horizon | `InvestmentHorizonIndicator` (new via ADR #50) |
+
+Mechanical implications:
+
+- New bindings: `OngletBiodivBinding`, `OngletClimatBinding`,
+  `OngletEconomieBinding` (Layer 05).
+- 365 d sliding windows for `CurrentWeather` history and `EddyTower` flux
+  history mutualized with those of ADR #53.
+- Existing USS / UXML of the tabs to enrich.
+
+**Rationale**: with all the tracks activated (E2-E5), we have precisely
+created the variables that fill these tabs. Removing them would waste the
+benefit of the previous decisions. Aligned with the guiding principle §17
+"every present tab must display useful info".
+
+**Operational consequence**: workstream E6 (grouped with ADR #53).
+Estimate 10-12 h.
+
+**Rejected alternative**: fill partially with the existing variables only
+— result: 3 tabs displaying 2-3 lines each, a taste of unfinished refused
+by §17.
+
+---
+
+### 55. Uniform rationale pattern (concrete action + « Effet modélisé » / Modeled effect)
+
+**Context**: 3 previous wording proposals for the recos had been rejected
+because they evoked non-modeled effects (beneficials, secondary
+windbreak, general resilience). The current `RecommendationPopupBinding`
+displays heterogeneous rationales depending on the origin of the reco.
+
+**Decision**: adopt a uniform rationale writing pattern for all
+recommendations (manual AND auto). Format: short Title (verb + object) +
+Rationale = concrete action sentence + a « Effet modélisé : ... » (Modeled
+effect) line with figures on the variables actually touched. No flourish,
+no non-modeled chimeras.
+
+Exact wordings for manual actions (literal French UI strings displayed
+in-app):
 
 | Reco | Title | Rationale |
 |---|---|---|
@@ -1498,498 +1452,491 @@ Wordings exacts pour actions manuelles :
 | `manual-irrigation` | Irrigation ponctuelle | Apport d'eau ciblé sur 30 jours. Effet modélisé : remontée temporaire de la nappe phréatique de X m (plancher 0,5 m). |
 | `manual-reduce-inputs` | Baisser l'intensité d'intrants | Réduction des intrants chimiques sur 30 jours. Effet modélisé : +Y de population faune, −Z €/ha de coût d'intrants. |
 
-X, Y, Z = valeurs paramétrées par le slider de magnitude au moment du
-clic.
+X, Y, Z = values parameterized by the magnitude slider at the moment of
+the click.
 
-Uniformisation des recos auto (option α actée) : appliquer le même
-pattern aux 2 recos auto existantes, en ajoutant une ligne
-`Déclenché par : <événement>` en plus :
+Standardization of the auto recos (option α adopted): apply the same
+pattern to the 2 existing auto recos, adding a « Déclenché par : <event> »
+(Triggered by) line in addition:
 
-- `IrrigationAdviceRecommendation` (auto) : Title « Irrigation ciblée
-  + couvert anti-évaporation » ; Rationale « Apport d'eau ciblé +
-  couverts sur 30 jours. Effet modélisé : ... Déclenché par :
-  Sécheresse prolongée détectée par le piézomètre. »
-- `ReduceInputsRecommendation` (auto) : Title « Baisser l'intensité
-  d'intrants » ; Rationale « Réduction des intrants chimiques sur
-  30 jours. Effet modélisé : ... Déclenché par : Anomalie acoustique
-  faune détectée par le capteur acoustique. »
+- `IrrigationAdviceRecommendation` (auto): Title « Irrigation ciblée +
+  couvert anti-évaporation »; Rationale « Apport d'eau ciblé + couverts sur
+  30 jours. Effet modélisé : ... Déclenché par : Sécheresse prolongée
+  détectée par le piézomètre. »
+- `ReduceInputsRecommendation` (auto): Title « Baisser l'intensité
+  d'intrants »; Rationale « Réduction des intrants chimiques sur 30 jours.
+  Effet modélisé : ... Déclenché par : Anomalie acoustique faune détectée
+  par le capteur acoustique. »
 
-**Raison** : la ligne `Effet modélisé : ...` indique explicitement
-les limites du modèle — discipline qu'on revendique partout. Format
-uniforme = lecture immédiate par le visiteur, et garde-fou contre
-les chimères non modélisées.
+**Rationale**: the « Effet modélisé : ... » (Modeled effect) line
+explicitly indicates the limits of the model — a discipline we claim
+everywhere. Uniform format = immediate reading by the visitor, and a
+guardrail against non-modeled chimeras.
 
-**Conséquence opérationnelle** : chantier E1 (couplé refactor actions
-manuelles ADR #47). Réécriture libellés. Estimation incluse dans E1.
+**Operational consequence**: workstream E1 (coupled with the manual
+actions refactor ADR #47). Rewriting of labels. Estimate included in E1.
 
-**Alternative écartée** : rationales libres au gré des recos — perd
-l'uniformité et risque la mention d'effets non modélisés.
-
----
-
-### 56. Suppression de la stratégie de coupe pré-décidée
-
-**Contexte** : section §17 historique de `CLAUDE.md` listait un ordre
-de coupe (décision moyenne → suppression healthT → réduction tests →
-réduction sprites → ne pas couper architecture). Audit recadrage :
-le scope est verrouillé par cette session (cf ADR #45), le slack
-budget est confortable (~30-65 h sur cible 150 h), les dépassements
-historiques étaient liés à des pivots de scope (maintenant interdits
-par discipline §18 règle 2), pas à de mauvaises estimations.
-
-**Décision** : la section §17 « stratégie de coupe finale » de
-`CLAUDE.md` est supprimée. Pas de stratégie de coupe pré-décidée.
-Si on dépasse 150 h, l'utilisateur arbitre au cas par cas en
-cohérence avec le principe directeur.
-
-**Raison** : cohérent avec la règle « compléter ou supprimer » (§18
-règle 8) — on choisit de ne pas avoir cette mécanique plutôt que d'en
-avoir une à moitié. Avoir une stratégie de coupe documentée alors
-qu'on ne compte pas l'utiliser invite à l'auto-justification de
-raccourcis.
-
-**Conséquence opérationnelle** : §17 supprimé dans `CLAUDE.md`,
-remplacé par §17 Scope MVP + §18 Discipline. §18 En cas de doute
-renuméroté en §19.
-
-**Alternative écartée** : conserver une stratégie de coupe « au cas
-où » — contredit le scope verrouillé et le principe directeur.
+**Rejected alternative**: free-form rationales at the whim of the recos —
+loses uniformity and risks mentioning non-modeled effects.
 
 ---
 
-### 57. Tous les capteurs rendus comme « branché » — concept « en attente » reporté
+### 56. Removal of the pre-decided cutting strategy
 
-**Contexte** : `SensorPlacement_Default.asset` distinguait historiquement
-des capteurs `Online` et `Deferred` (visuellement : dot vert vs dot
-ocre dans la liste « Capteurs déployés », plus une légende au pied de
-la liste). État au 2026-06-02 (livraison E6) : les 5 capteurs ont tous
-une chaîne complète bout-en-bout — `PiezometerReader`,
-`WeatherStationReader`, `EddyTowerSensorReader`, et les deux canaux
-`AcousticSensorReader`/`CameraTrapSensorReader` exposés par
-`FaunaSensorReader` ont chacun un historique 365 j et alimentent le
-panneau d'inspection (ADR #53). Aucun capteur n'est plus « en
-attente » au sens technique.
+**Context**: the historical §17 section of `CLAUDE.md` listed a cutting
+order (medium decision → healthT removal → test reduction → sprite
+reduction → do not cut architecture). Reframing audit: the scope is
+locked by this session (cf ADR #45), the budget slack is comfortable
+(~30-65 h on a 150 h target), the historical overruns were linked to
+scope pivots (now forbidden by discipline §18 rule 2), not to bad
+estimates.
 
-Mais corriger le SO (passer les 3 capteurs encore marqués `Deferred`
-à `Online`) a buté sur un cache Unity tenace : le fichier disque
-corrigé n'était pas relu, et même après reimport explicite la liste
-UI continuait à afficher gris. Forcer la valeur via l'Inspector Unity
-fonctionnait sur l'asset mais pas en runtime — déconnexion non
-diagnostiquée à temps raisonnable.
+**Decision**: the "final cutting strategy" §17 section of `CLAUDE.md` is
+removed. No pre-decided cutting strategy. If we exceed 150 h, the user
+arbitrates on a case-by-case basis in accordance with the guiding
+principle.
 
-**Décision** :
+**Rationale**: consistent with the "complete or remove" rule (§18 rule 8)
+— we choose not to have this mechanic rather than having a half-done one.
+Having a documented cutting strategy when we do not intend to use it
+invites self-justification of shortcuts.
 
-- `SensorListBinding.BuildRow` ignore désormais `meta.OnlineStatus`
-  et applique inconditionnellement la classe `.sensor-status-dot--online`.
-- La légende online/deferred au pied de `Dashboard.uxml` (bloc
-  `.sensor-list-legend`) est supprimée — un seul état visuel ne mérite
-  pas une légende.
-- Le champ `OnlineStatus` reste présent dans `SensorPlacementDefinition`
-  et `SensorMetadataTag` pour ne pas perdre la donnée — quand un
-  backlog item « capteur en panne / maintenance » réactivera le
-  concept avec un VRAI cas d'usage scénaristique, le code y revient
-  en retirant la ligne hardcodée et en restaurant la légende.
+**Operational consequence**: §17 removed in `CLAUDE.md`, replaced by §17
+MVP Scope + §18 Discipline. §18 In case of doubt renumbered to §19.
 
-**Raison** : aligné avec le principe directeur §17 « tout élément
-présent doit avoir un effet observable et un intérêt narratif
-compréhensible ». Un dot ocre sans cas d'usage concret (pas de
-scénario panne, pas de maintenance simulée, pas d'événement « capteur
-défaillant ») est de l'info parasite — l'utilisateur portfolio voit
-3 dots gris et se demande légitimement « qu'est-ce qui ne marche pas
-chez moi ». Réponse : rien. Donc on retire le distinguo plutôt que
-d'expliquer un faux problème.
-
-**Conséquence opérationnelle** : aucune sur la roadmap E1-E7. Le
-ré-introduction du concept est conditionnée à un futur item backlog
-qui mettrait en scène un capteur intentionnellement offline (panne,
-maintenance, batterie morte d'un sensor solar-powered, etc.) — ce
-qui justifierait pédagogiquement la distinction visuelle.
-
-**Alternative écartée** : continuer à débugger le cache Unity et
-maintenir le distinguo. Diagnostic coûteux (déjà brûlé ~30 min sans
-identifier la cause racine), zéro gain narratif tant que le concept
-reste théorique.
+**Rejected alternative**: keep a "just in case" cutting strategy —
+contradicts the locked scope and the guiding principle.
 
 ---
 
-### 58. Shadow run = contrefactuel à baseline gelée (frozen-baseline)
+### 57. All sensors rendered as "online" — "pending" concept deferred
 
-**Contexte** : à l'ouverture du chantier E8 (refonte du delta tech), la
-chaîne shadow telle que documentée par les ADRs #9, #24 et #43 reposait
-sur deux idées qui ne tenaient plus à l'implémentation. (1) #9 et #24
-décrivaient un shadow run « mêmes seeds, mêmes inputs » porté par une
-interface `ISimulationRun` à deux instances et un flag `applyTechActions`.
-(2) #43 supposait que le `ScenarioContext` était partagé par référence
-entre run réel et shadow, ce qui interdisait à `ReduceInputs` de toucher
-`InputIntensityFactor` (la shadow aurait subi la même baisse, annulant
-le KPI). Aucune de ces deux constructions n'a survécu : `ISimulationRun`
-et `applyTechActions` n'ont jamais été écrits, et le partage total du
-scénario rendait impossible un changement de pratique mesurable.
+**Context**: `SensorPlacement_Default.asset` historically distinguished
+`Online` and `Deferred` sensors (visually: green dot vs ochre dot in the
+« Capteurs déployés » (Deployed sensors) list, plus a legend at the foot
+of the list). State at
+2026-06-02 (E6 delivery): the 5 sensors all have a complete end-to-end
+chain — `PiezometerReader`, `WeatherStationReader`,
+`EddyTowerSensorReader`, and the two channels
+`AcousticSensorReader`/`CameraTrapSensorReader` exposed by
+`FaunaSensorReader` each have a 365 d history and feed the inspection
+panel (ADR #53). No sensor is any longer "pending" in the technical
+sense.
 
-**Décision** : le shadow run est un contrefactuel à baseline gelée. Il
-partage avec le run réel les paramètres exogènes (climat, MAEC, PSE)
-**par référence**, mais **gèle à leur valeur de lancement** les quatre
-leviers de décision agriculteur (`HedgeRemovalRate`,
-`InputIntensityFactor`, `CoverCropsCoveragePercent`,
-`ResidueRestitutionPercent`) via `ScenarioContext.CreateFrozenShadowFrom`.
-Le shadow possède son propre `EcosystemModel` et avance par
-`TickWithoutAdvancingScenario` (il ne fait pas progresser le scénario,
-qui reste piloté par le run réel). Le KPI de valeur tech mesure
-exactement l'écart réel-vs-agriculteur-gelé : tout ce que l'utilisateur
-change après le lancement diverge du jumeau figé.
+But correcting the SO (moving the 3 sensors still marked `Deferred` to
+`Online`) ran into a stubborn Unity cache: the corrected disk file was
+not re-read, and even after an explicit reimport the UI list continued to
+display gray. Forcing the value via the Unity Inspector worked on the
+asset but not at runtime — disconnect not diagnosed in reasonable time.
 
-**Raison** :
-- Un shadow « mêmes inputs » partagé par référence ne peut pas servir de
-  contrefactuel dès qu'une décision modifie le scénario : il bouge avec
-  le run réel et le delta s'annule. Geler les seuls leviers agriculteur,
-  tout en partageant le climat et les cadres de paiement, isole
-  proprement la contribution des décisions de gestion — c'est la
-  sémantique « jumeau sans décisions tech » que la thèse du DT prétend
-  mesurer (cf #43, tension désormais résolue).
-- Partager les exogènes par référence garantit qu'aucune divergence ne
-  provient du climat ou des barèmes : la non-divergence due au scénario
-  exogène est structurelle, pas à recalibrer.
-- Débloque le changement de pratique : `ReduceInputs` peut redevenir un
-  vrai curseur sur `InputIntensityFactor` (transition §15) sans casser
-  le KPI, puisque la baseline gelée ne suit pas.
+**Decision**:
 
-**Conséquence opérationnelle** : remplace le cadrage « mêmes inputs » des
-ADRs #9 et #24 et renverse la prémisse du scénario partagé de l'ADR #43.
-`ISimulationRun` / `applyTechActions` sont actés comme jamais construits
-(fantômes). Preuves dans le code : `ScenarioContext.CreateFrozenShadowFrom`,
-`ShadowSimulationRunner` (second `SimulationEngine` concret +
+- `SensorListBinding.BuildRow` now ignores `meta.OnlineStatus` and
+  unconditionally applies the `.sensor-status-dot--online` class.
+- The online/deferred legend at the foot of `Dashboard.uxml` (block
+  `.sensor-list-legend`) is removed — a single visual state does not
+  deserve a legend.
+- The `OnlineStatus` field remains present in `SensorPlacementDefinition`
+  and `SensorMetadataTag` so as not to lose the data — when a backlog
+  item "sensor broken / maintenance" reactivates the concept with a REAL
+  narrative use case, the code returns to it by removing the hardcoded
+  line and restoring the legend.
+
+**Rationale**: aligned with the guiding principle §17 "every present
+element must have an observable effect and an understandable narrative
+interest". An ochre dot with no concrete use case (no failure scenario,
+no simulated maintenance, no "faulty sensor" event) is parasitic info —
+the portfolio user sees 3 gray dots and legitimately wonders "what is
+not working on my end". Answer: nothing. So we remove the distinction
+rather than explain a false problem.
+
+**Operational consequence**: none on the E1-E7 roadmap. The
+reintroduction of the concept is conditioned on a future backlog item
+that would stage an intentionally offline sensor (failure, maintenance,
+dead battery of a solar-powered sensor, etc.) — which would pedagogically
+justify the visual distinction.
+
+**Rejected alternative**: continue debugging the Unity cache and maintain
+the distinction. Costly diagnosis (already burned ~30 min without
+identifying the root cause), zero narrative gain as long as the concept
+remains theoretical.
+
+---
+
+### 58. Shadow run = frozen-baseline counterfactual
+
+**Context**: at the opening of workstream E8 (tech delta overhaul), the
+shadow chain as documented by ADRs #9, #24 and #43 rested on two ideas
+that no longer held at implementation. (1) #9 and #24 described a "same
+seeds, same inputs" shadow run carried by an `ISimulationRun` interface
+with two instances and an `applyTechActions` flag. (2) #43 assumed that
+the `ScenarioContext` was shared by reference between the real run and
+the shadow, which forbade `ReduceInputs` from touching
+`InputIntensityFactor` (the shadow would have undergone the same drop,
+canceling the KPI). Neither of these two constructions survived:
+`ISimulationRun` and `applyTechActions` were never written, and the total
+sharing of the scenario made a measurable practice change impossible.
+
+**Decision**: the shadow run is a frozen-baseline counterfactual. It
+shares with the real run the exogenous parameters (climate, MAEC, PSE)
+**by reference**, but **freezes at their launch value** the four farmer
+decision levers (`HedgeRemovalRate`, `InputIntensityFactor`,
+`CoverCropsCoveragePercent`, `ResidueRestitutionPercent`) via
+`ScenarioContext.CreateFrozenShadowFrom`. The shadow has its own
+`EcosystemModel` and advances via `TickWithoutAdvancingScenario` (it does
+not advance the scenario, which remains driven by the real run). The tech
+value KPI measures exactly the real-vs-frozen-farmer gap: everything the
+user changes after launch diverges from the frozen twin.
+
+**Rationale**:
+- A "same inputs" shadow shared by reference cannot serve as a
+  counterfactual as soon as a decision modifies the scenario: it moves
+  with the real run and the delta cancels out. Freezing the farmer levers
+  alone, while sharing the climate and payment frameworks, cleanly
+  isolates the contribution of the management decisions — this is the
+  "twin without tech decisions" semantics that the DT thesis claims to
+  measure (cf #43, tension now resolved).
+- Sharing the exogenous parameters by reference guarantees that no
+  divergence comes from the climate or the schedules: the non-divergence
+  due to the exogenous scenario is structural, not to be recalibrated.
+- Unlocks the practice change: `ReduceInputs` can go back to being a real
+  slider on `InputIntensityFactor` (transition §15) without breaking the
+  KPI, since the frozen baseline does not follow.
+
+**Operational consequence**: replaces the "same inputs" framing of ADRs #9
+and #24 and reverses the shared-scenario premise of ADR #43.
+`ISimulationRun` / `applyTechActions` are recorded as never built
+(ghosts). Evidence in the code: `ScenarioContext.CreateFrozenShadowFrom`,
+`ShadowSimulationRunner` (second concrete `SimulationEngine` +
 `TickWithoutAdvancingScenario`).
 
-**Alternative écartée** : cloner intégralement le `ScenarioContext` pour
-donner au shadow un scénario indépendant — perd le partage des exogènes
-(le climat divergerait), réintroduit l'invariant d'unicité du scénario
-discuté en #43, et brouille la sémantique du delta.
+**Rejected alternative**: fully clone the `ScenarioContext` to give the
+shadow an independent scenario — loses the sharing of the exogenous
+parameters (the climate would diverge), reintroduces the scenario
+uniqueness invariant discussed in #43, and blurs the delta semantics.
 
 ---
 
-### 59. « Apport de la techno » = valeur NET cumulée (gain brut intégré moins investissement des actions), payback = jour où le NET franchit 0
+### 59. "Tech contribution" = cumulative NET value (integrated gross gain minus action investment), payback = day the NET crosses 0
 
-**Contexte** : à la refonte E8, le Hero KPI « delta tech » devait
-quantifier honnêtement l'apport de l'instrumentation et des décisions.
-Le cadrage implicite hérité de l'ADR #40 (« agrégat calculable sur
-(real − shadow) ») laissait penser à un écart instantané de rentabilité.
-Or l'effet d'une action ponctuelle sur l'écart instantané fait un pic au
-moment de l'action puis décroît vers 0 quand le système se rééquilibre :
-un KPI instantané afficherait alors un apport qui « s'évapore », ce qui
-est faux du point de vue de la valeur réellement créée.
+**Context**: at the E8 overhaul, the "tech delta" Hero KPI had to honestly
+quantify the contribution of instrumentation and decisions. The implicit
+framing inherited from ADR #40 ("aggregate computable on (real −
+shadow)") suggested an instantaneous profitability gap. But the effect of
+an occasional action on the instantaneous gap peaks at the moment of the
+action then decreases toward 0 as the system rebalances: an instantaneous
+KPI would then display a contribution that "evaporates", which is false
+from the standpoint of the value actually created.
 
-**Décision** : le KPI intègre depuis le jour 0 l'écart journalier de
-rentabilité intégrée entre le run réel et le shadow frozen-baseline
-(grandeur **brute**, cumulée), puis **soustrait le capital upfront
-cumulé des actions** (coûts des capteurs exclus) pour afficher la valeur
-**NET** en €/ha. L'horizon de rentabilité (« payback ») latche le
-**premier jour où le NET atteint l'équilibre** (NET ≥ 0).
+**Decision**: the KPI integrates from day 0 the daily gap in integrated
+profitability between the real run and the frozen-baseline shadow
+(**gross** quantity, cumulative), then **subtracts the cumulative upfront
+capital of the actions** (sensor costs excluded) to display the **NET**
+value in €/ha. The profitability horizon ("payback") latches the **first
+day the NET reaches equilibrium** (NET ≥ 0).
 
-**Raison** :
-- Intégrer capitalise la valeur réellement créée : un pic transitoire qui
-  retombe à 0 a quand même produit de la valeur sur sa durée, et
-  l'intégrale la conserve. On juge une stratégie sur son horizon vrai,
-  pas sur un instantané trompeur.
-- Soustraire l'investissement des actions donne un NET honnête : un gain
-  brut élevé obtenu au prix d'un capital lourd n'est pas le même résultat
-  qu'un gain brut modeste gratuit. Le payback (jour où le NET franchit 0)
-  est l'argument décisif côté agriculteur.
-- Exclure les coûts capteurs : l'instrumentation est l'hypothèse du DT
-  (le poste « observer »), pas une action de gestion comptabilisée dans
-  l'arbitrage ; on mesure l'apport des décisions, capteurs supposés en
+**Rationale**:
+- Integrating capitalizes the value actually created: a transient peak
+  that falls back to 0 still produced value over its duration, and the
+  integral preserves it. A strategy is judged on its true horizon, not on
+  a misleading snapshot.
+- Subtracting the action investment gives an honest NET: a high gross gain
+  obtained at the cost of heavy capital is not the same result as a modest
+  gross gain for free. The payback (day the NET crosses 0) is the decisive
+  argument on the farmer side.
+- Excluding sensor costs: instrumentation is the DT's hypothesis (the
+  "observe" line item), not a management action accounted for in the
+  trade-off; we measure the contribution of decisions, sensors assumed in
   place.
-- Supersède le cadrage instantané suggéré par l'ADR #40.
+- Supersedes the instantaneous framing suggested by ADR #40.
 
-**Conséquence opérationnelle** : preuves dans le code —
-`CumulativeTechValueIndicator` (gain brut intégré),
-`InvestmentHorizonIndicator` (latch du payback NET), `SimulationRunner`
+**Operational consequence**: evidence in the code —
+`CumulativeTechValueIndicator` (integrated gross gain),
+`InvestmentHorizonIndicator` (NET payback latch), `SimulationRunner`
 (`net = gross − totalInvestment`).
 
-**Alternative écartée** : afficher l'écart instantané de rentabilité —
-spike puis décroissance vers 0, sous-estime massivement la valeur d'une
-stratégie dont l'effet est transitoire mais réel, et rend le KPI
-illisible dans le temps.
+**Rejected alternative**: display the instantaneous profitability gap —
+spike then decrease toward 0, massively underestimates the value of a
+strategy whose effect is transient but real, and makes the KPI illegible
+over time.
 
 ---
 
-### 60. Réponse rendement concave (Mitscherlich) + coût intrants fixe/variable (70/30) ⇒ optimum de profit émergent I\* ≈ 0,81
+### 60. Concave yield response (Mitscherlich) + fixed/variable input cost (70/30) ⇒ emergent profit optimum I\* ≈ 0.81
 
-**Contexte** : la réponse du rendement à l'intensité d'intrants était
-linéaire, et le coût des intrants était traité comme entièrement
-variable. Conséquence : le profit était monotone en intensité (plus
-d'intrants = toujours plus ou toujours moins de profit selon les pentes),
-sans optimum intérieur. Or les recommandations économiques de E9
-(notamment « remonter les intrants vers l'optimum ») n'ont de sens que
-s'il existe un point de profit maximal vers lequel orienter l'agriculteur.
+**Context**: the response of yield to input intensity was linear, and the
+input cost was treated as entirely variable. Consequence: profit was
+monotonic in intensity (more inputs = always more or always less profit
+depending on the slopes), with no interior optimum. But the E9 economic
+recommendations (notably "raise inputs toward the optimum") only make
+sense if there is a maximum profit point toward which to orient the
+farmer.
 
-**Décision** : remplacer la réponse linéaire rendement-vs-intensité par
-une courbe concave à plateau (type Mitscherlich, **courbure 0,70**,
-plateau au-delà de I = 1), et scinder le coût des intrants en **70 % fixe
-structurel + 30 % variable** (`VariableCostShare = 0.30`). La combinaison
-« rendement à rendements décroissants + part variable du coût » fait
-émerger un **maximum de profit intérieur près de I ≈ 0,8** (optimum
-calculé I\* ≈ 0,81), cible vers laquelle les recommandations économiques
-orientent.
+**Decision**: replace the linear yield-vs-intensity response with a
+concave plateau curve (Mitscherlich type, **curvature 0.70**, plateau
+beyond I = 1), and split the input cost into **70% structural fixed +
+30% variable** (`VariableCostShare = 0.30`). The combination "decreasing
+returns yield + variable share of the cost" makes an **interior profit
+maximum near I ≈ 0.8** emerge (computed optimum I\* ≈ 0.81), the target
+toward which the economic recommendations orient.
 
-**Raison** :
-- Une réponse concave est la forme agronomique correcte (loi des
-  rendements décroissants : chaque unité d'intrant supplémentaire rapporte
-  moins). Le plateau borne le gain au-delà de la dose de référence.
-- Une part de coût fixe (structure, mécanisation, foncier) qui ne décroît
-  pas avec l'intensité est ce qui crée l'optimum intérieur : sans elle, le
-  profit resterait monotone. Le couple courbure/part variable est ce qui
-  produit I\* ≈ 0,81.
-- Donne un point d'ancrage chiffré et défendable aux contre-recommandations
-  économiques de l'ADR #61 (« remonter vers I\* »).
+**Rationale**:
+- A concave response is the correct agronomic form (law of diminishing
+  returns: each additional input unit returns less). The plateau bounds
+  the gain beyond the reference dose.
+- A fixed cost share (structure, mechanization, land) that does not
+  decrease with intensity is what creates the interior optimum: without
+  it, profit would remain monotonic. The curvature/variable-share pair is
+  what produces I\* ≈ 0.81.
+- Gives a quantified and defensible anchor point to the economic
+  counter-recommendations of ADR #61 ("raise toward I\*").
 
-**Conséquence opérationnelle** : sources et dérivation de la courbure
-0,70, de `VariableCostShare = 0.30` et du calcul de I\* dans
-`CALIBRATION.md` section E8-E9. La cible I\* est consommée par le moteur
-de recommandations (ADR #61).
+**Operational consequence**: sources and derivation of the 0.70 curvature,
+of `VariableCostShare = 0.30` and of the I\* computation in
+`CALIBRATION.md` section E8-E9. The I\* target is consumed by the
+recommendation engine (ADR #61).
 
-**Alternative écartée** : conserver la réponse linéaire + coût tout
-variable — pas d'optimum intérieur, donc les recommandations économiques
-« remonter/baisser les intrants vers la cible » n'auraient aucun point
-de convergence à viser.
+**Rejected alternative**: keep the linear response + all-variable cost —
+no interior optimum, so the economic recommendations "raise/lower inputs
+toward the target" would have no convergence point to aim for.
 
 ---
 
-### 61. Système de recommandations E9 : 8 recos / 6 leviers, dispatch état-conscient, contre-recommandations économiques, surfaçage popup-vs-liste par classification d'outcome
+### 61. E9 recommendation system: 8 recos / 6 levers, state-aware dispatch, economic counter-recommendations, popup-vs-list surfacing by outcome classification
 
-**Contexte** : le moteur de recommandations comptait 3 recos (irrigation,
-réduction d'intrants, plantation manuelle) sur un faible nombre de
-leviers, toutes orientées « plus d'écologie ». Trois manques pour le
-chantier E9 : (1) aucune recommandation économique de redressement quand
-la rentabilité décroche, (2) aucun déclencheur sur le carbone sol bas
-malgré le modèle 1-pool (ADR #48), (3) un surfaçage indifférencié — toute
-reco interrompait par popup, sans distinguer un gain franc d'un
-compromis chargé de valeurs.
+**Context**: the recommendation engine had 3 recos (irrigation, input
+reduction, manual planting) on a small number of levers, all oriented
+"more ecology". Three gaps for workstream E9: (1) no economic recovery
+recommendation when profitability drops, (2) no trigger on low soil
+carbon despite the 1-pool model (ADR #48), (3) undifferentiated surfacing
+— every reco interrupted with a popup, without distinguishing a clear
+gain from a value-laden compromise.
 
-**Décision** : passer de 3 à 8 recommandations sur 6 leviers (nouveaux :
+**Decision**: move from 3 to 8 recommendations on 6 levers (new:
 `RaiseInputs`, `SowCoverCrops`, `RestoreResidue`, `ReduceHedgeRemoval`,
-`IncreaseHedgeRemoval`). Le moteur opère un **dispatch état-conscient** :
-il sélectionne le levier qui a une marge de manœuvre réelle dans l'état
-courant (et reste silencieux si aucun, conforme §17), et émet des
-**contre-recommandations économiques** (remonter les intrants vers
-I\* — cf ADR #60 ; éclaircir des haies surdenses non subventionnées) sur
-un nouvel **`LowProfitabilityEvent`** (seuil 50 €/ha — événement de seuil
-d'indicateur, **pas** une lecture capteur), aux côtés d'un nouveau
-**`SoilCarbonLowEvent`** (seuil 45 tC/ha). Les contre-recommandations
-économiques sont **conditionnées à une biodiversité ≥ 0,30** (on ne
-pousse pas à intensifier quand l'écosystème est déjà critique). Chaque
-reco est classée par le signe de ses deltas projetés long terme
-(profit / biodiversité) dans `RecommendationSurfacing.Kind` ∈ {`WinWin`,
-`EconomicTradeoff`, `EcologicalTradeoff`, `LoseLose`}. Surfaçage :
-- `WinWin` → **toujours** en popup.
-- `EcologicalTradeoff` → popup **uniquement** si biodiversité critique
-  (< 0,30).
-- `EconomicTradeoff` → reste dans la **liste passive**, avec un badge
-  « compromis » ; n'interrompt pas.
-- `LoseLose` → non poussé.
+`IncreaseHedgeRemoval`). The engine performs a **state-aware dispatch**:
+it selects the lever that has real room for maneuver in the current state
+(and stays silent if none, consistent with §17), and emits **economic
+counter-recommendations** (raise inputs toward I\* — cf ADR #60; thin out
+unsubsidized over-dense hedges) on a new **`LowProfitabilityEvent`**
+(threshold 50 €/ha — an indicator-threshold event, **not** a sensor
+reading), alongside a new **`SoilCarbonLowEvent`** (threshold 45 tC/ha).
+The economic counter-recommendations are **conditioned on a biodiversity
+≥ 0.30** (we do not push to intensify when the ecosystem is already
+critical). Each reco is classified by the sign of its projected long-term
+deltas (profit / biodiversity) in `RecommendationSurfacing.Kind` ∈
+{`WinWin`, `EconomicTradeoff`, `EcologicalTradeoff`, `LoseLose`}.
+Surfacing:
+- `WinWin` → **always** in popup.
+- `EcologicalTradeoff` → popup **only** if biodiversity critical
+  (< 0.30).
+- `EconomicTradeoff` → stays in the **passive list**, with a « compromis »
+  (compromise) badge; does not interrupt.
+- `LoseLose` → not pushed.
 
-**Raison** :
-- Un moteur qui ne sait que recommander « plus d'écologie » n'est pas un
-  outil d'aide à la décision honnête : un agriculteur dont la rentabilité
-  décroche a besoin de leviers économiques. Les contre-recommandations,
-  gatées sur biodiv ≥ 0,30, équilibrent la thèse sans trahir l'écologie.
-- Le dispatch état-conscient (levier avec marge) évite de recommander une
-  action sans effet (ex. réduire des intrants déjà bas) et justifie le
-  silence quand aucun levier n'a de marge (§17).
-- Classer par le signe des deltas projetés rend le surfaçage **dérivé du
-  modèle**, pas d'un script : seul un gain franc (win-win) ou un arbitrage
-  écologique en situation critique mérite d'interrompre ; tout compromis
-  chargé de valeurs (économique) reste passif et signalé « compromis »,
-  laissant l'arbitrage à l'utilisateur.
-- `LowProfitabilityEvent` est explicitement un événement de **seuil
-  d'indicateur** (rentabilité < 50 €/ha), pas une mesure capteur :
-  cohérent avec le principe primauté du capteur (§9), il dérive d'un
-  calcul du modèle tracé jusqu'à `IntegratedProfitability`.
+**Rationale**:
+- An engine that only knows how to recommend "more ecology" is not an
+  honest decision-support tool: a farmer whose profitability is dropping
+  needs economic levers. The counter-recommendations, gated on biodiv ≥
+  0.30, balance the thesis without betraying ecology.
+- The state-aware dispatch (lever with room) avoids recommending an action
+  with no effect (e.g. reducing already-low inputs) and justifies silence
+  when no lever has room (§17).
+- Classifying by the sign of the projected deltas makes the surfacing
+  **derived from the model**, not from a script: only a clear gain
+  (win-win) or an ecological trade-off in a critical situation deserves to
+  interrupt; any value-laden (economic) compromise stays passive and
+  flagged « compromis » (compromise), leaving the arbitration to the user.
+- `LowProfitabilityEvent` is explicitly an **indicator-threshold** event
+  (profitability < 50 €/ha), not a sensor measurement: consistent with the
+  sensor primacy principle (§9), it derives from a model computation
+  traced to `IntegratedProfitability`.
 
-**Conséquence opérationnelle** : preuves dans le code —
-`RecommendationEngine`, `RecommendationSurfacing`, les 5 nouvelles recos,
-`SoilCarbonLowEvent` / `LowProfitabilityEvent`. Table de surfaçage
-(Kind × condition → popup/liste) dans `CALIBRATION.md`.
+**Operational consequence**: evidence in the code —
+`RecommendationEngine`, `RecommendationSurfacing`, the 5 new recos,
+`SoilCarbonLowEvent` / `LowProfitabilityEvent`. Surfacing table
+(Kind × condition → popup/list) in `CALIBRATION.md`.
 
-**Alternative écartée** : conserver 3 recos toutes écologiques et un
-surfaçage popup uniforme — moteur déséquilibré (aucun redressement
-économique), et popups intrusifs sur des compromis que l'utilisateur
-devrait arbitrer lui-même dans la liste.
+**Rejected alternative**: keep 3 all-ecological recos and a uniform popup
+surfacing — unbalanced engine (no economic recovery), and intrusive
+popups on compromises that the user should arbitrate themselves in the
+list.
 
 ---
 
-### 62. Décision dérivée du modèle : projection forward, objectif d'agriculteur, optimum émergent
+### 62. Model-derived decision: forward projection, farmer objective, emergent optimum
 
-**Contexte** : les outcomes affichés sous chaque recommandation (les
-fourchettes profit / biodiversité pire-attendu-meilleur) étaient des
-**coefficients figés** (ancien `OutcomeProjector`), indépendants de l'état
-courant. Trois conséquences : (1) la projection pouvait mentir sur l'état
-(sous stress climatique RCP4.5, une reco affichait un gain que le modèle
-contredit), (2) l'optimum de profit était **chiffré en dur** (`I* ≈ 0,8`,
-cf ADR #60), (3) la sélection du levier suivait une **priorité fixe** (cf
-ADR #61). Pour un digital twin, les recommandations ET leurs outcomes
-doivent être **dérivés du modèle couplé**, pas affirmés.
+**Context**: the outcomes displayed under each recommendation (the
+worst-expected-best profit / biodiversity ranges) were **frozen
+coefficients** (old `OutcomeProjector`), independent of the current
+state. Three consequences: (1) the projection could lie about the state
+(under RCP4.5 climate stress, a reco displayed a gain that the model
+contradicts), (2) the profit optimum was **hard-coded** (`I* ≈ 0.8`, cf
+ADR #60), (3) the lever selection followed a **fixed priority** (cf ADR
+#61). For a digital twin, the recommendations AND their outcomes must be
+**derived from the coupled model**, not asserted.
 
-**Décision** : refondre la chaîne de décision pour qu'elle se calcule sur
-le modèle.
-- **`ModelOutcomeProjector`** (Couche 03) : pour un levier, simule en avant
-  (vrai `SimulationEngine`, sur une copie indépendante de l'état) le run
-  « avec levier » contre une baseline « sans », même graine et même météo,
-  et prend le ΔKPI réel (profit, biodiversité). La bande pire/attendu/meilleur
-  est le **spread sur 3 réalisations météo** (favorable / médiane /
-  défavorable), pas un ×0,5 / ×1,25 arbitraire. Les indicateurs Couche 04
-  sont injectés en délégués : la Couche 03 ne dépend pas de la 04.
-- **`FarmerObjective`** : une fonction-objectif interne
-  `U = w_eco · profit̂ + w_bio · Δbiodiv`, à **poids d'agriculteur**
-  (économie dominante `w_eco = 0,80` ; biodiversité directe faible
-  `w_bio = 0,20`, mais qui entre fortement par l'économie — le profit
-  projeté embarque déjà l'effet brise-vent des haies, la fertilité du sol,
-  les aides PSE/MAEC et la résilience du rendement). Poids internes (pas de
-  nouveau curseur, §17), sourcés sur la littérature de décision agricole
-  (Edwards-Jones 2006 ; Reimer et al. 2012).
+**Decision**: overhaul the decision chain so that it computes itself on
+the model.
+- **`ModelOutcomeProjector`** (Layer 03): for a lever, simulates forward
+  (real `SimulationEngine`, on an independent copy of the state) the run
+  "with lever" against a baseline "without", same seed and same weather,
+  and takes the real ΔKPI (profit, biodiversity). The worst/expected/best
+  band is the **spread over 3 weather realizations** (favorable / median /
+  unfavorable), not an arbitrary ×0.5 / ×1.25. The Layer 04 indicators are
+  injected as delegates: Layer 03 does not depend on Layer 04.
+- **`FarmerObjective`**: an internal objective function
+  `U = w_eco · profit̂ + w_bio · Δbiodiv`, with **farmer weights**
+  (dominant economy `w_eco = 0.80`; weak direct biodiversity
+  `w_bio = 0.20`, but which enters strongly through the economy — the
+  projected profit already embeds the windbreak effect of hedges, the soil
+  fertility, the PSE/MAEC subsidies and the yield resilience). Internal
+  weights (no new slider, §17), sourced from the agricultural decision
+  literature (Edwards-Jones 2006; Reimer et al. 2012).
 
-  > **Mise à jour (post-R7)** : la pondération `w_eco/w_bio 0,80/0,20` décrite
-  > ci-dessus a depuis été remplacée — `FarmerObjective` calcule une **marge
-  > ajustée du risque** `U = E[Δmarge] − λ·(E[Δmarge] − Δmarge_pire)` (λ=0,5),
-  > sans poids biodiversité (l'écologie est déjà monétisée dans la marge).
-  > Réf. à jour : `docs/refonte/08_MODELE.md` §9.1 + `FarmerObjective.cs`. Et la
-  > projection échantillonne désormais **9 réalisations** seedées (cf ADR R7), pas 3.
-- **Sélection par ΔU** : pour chaque événement, le moteur construit les
-  leviers **faisables** (garde-fous de marge conservés, §17), projette
-  chacun, et garde celui qui améliore le mieux `U`.
-- **Optimum émergent** : le `0,8` en dur disparaît
-  (`RaiseInputsRecommendation.ProfitOptimalIntensityFactor` supprimé). Une
-  contre-recommandation économique ne se déclenche **que si la projection
-  montre un gain de profit réel** — au-delà de l'optimum, remonter les
-  intrants projette une perte et est écarté. L'optimum se recalcule donc
-  tout seul si la calibration bouge.
-- **Surfaçage dérivé du vrai** : `RecommendationSurfacing` classe à partir
-  de l'`OutcomeDistribution` réelle (logique signe → Kind inchangée). Les
-  bindings popup/liste **mémoïsent** la projection (forward sim = milliers
-  de ticks, jamais sur un chemin par frame). Un événement décliné est
-  **marqué considéré** (`DecisionJournal.MarkEventConsidered`) pour ne
-  jamais être re-projeté.
+  > **Update (post-R7)**: the `w_eco/w_bio 0.80/0.20` weighting described
+  > above has since been replaced — `FarmerObjective` computes a
+  > **risk-adjusted margin** `U = E[Δmargin] − λ·(E[Δmargin] − Δmargin_worst)`
+  > (λ=0.5), without a biodiversity weight (ecology is already monetized in
+  > the margin). Up-to-date ref: `docs/refonte/08_MODELE.md` §9.1 +
+  > `FarmerObjective.cs`. And the projection now samples **9 seeded
+  > realizations** (cf ADR R7), not 3.
+- **Selection by ΔU**: for each event, the engine builds the **feasible**
+  levers (margin guardrails kept, §17), projects each, and keeps the one
+  that best improves `U`.
+- **Emergent optimum**: the hard-coded `0.8` disappears
+  (`RaiseInputsRecommendation.ProfitOptimalIntensityFactor` removed). An
+  economic counter-recommendation triggers **only if the projection shows
+  a real profit gain** — beyond the optimum, raising inputs projects a loss
+  and is discarded. The optimum thus recomputes itself if the calibration
+  moves.
+- **Surfacing derived from the true value**: `RecommendationSurfacing`
+  classifies from the real `OutcomeDistribution` (sign → Kind logic
+  unchanged). The popup/list bindings **memoize** the projection
+  (forward sim = thousands of ticks, never on a per-frame path). A declined
+  event is **marked considered** (`DecisionJournal.MarkEventConsidered`) so
+  as never to be re-projected.
 
-**Raison** :
-- C'est ce qui rend la thèse honnête ET rigoureuse : avec des poids
-  d'agriculteur (économie d'abord), l'écologie n'est recommandée que là où
-  l'instrumentation révèle qu'elle paie — la réponse **émerge du modèle
-  couplé**, elle n'est imposée ni par les poids ni par des coefficients.
-- L'optimum dérivé supprime une valeur magique (« précis et inattaquable,
-  toute approximation assumée »). La calibration concave + coût 70/30 de
-  l'ADR #60 (qui FAIT exister l'optimum) reste ; seule sa valeur n'est plus
-  écrite en dur.
-- Chaque projection sert une décision réelle (sélection, gating, surfaçage)
-  — pas de mécanique décorative (§17).
+**Rationale**:
+- This is what makes the thesis honest AND rigorous: with farmer weights
+  (economy first), ecology is only recommended where the instrumentation
+  reveals that it pays — the response **emerges from the coupled model**,
+  imposed neither by the weights nor by coefficients.
+- The derived optimum removes a magic value ("precise and unassailable,
+  every approximation assumed"). The concave calibration + 70/30 cost of
+  ADR #60 (which MAKES the optimum exist) remains; only its value is no
+  longer written in hard code.
+- Each projection serves a real decision (selection, gating, surfacing) —
+  no decorative mechanic (§17).
 
-**Conséquence opérationnelle** : preuves dans le code —
+**Operational consequence**: evidence in the code —
 `ModelOutcomeProjector`, `FarmerObjective`, `RecommendationEngine`
-(sélection par ΔU + gating économique), `RecommendationSurfacing`,
+(selection by ΔU + economic gating), `RecommendationSurfacing`,
 `DecisionJournal.MarkEventConsidered`, bindings `DecisionPopupBinding` /
-`DecisionPanelBinding`. Poids `w_eco` / `w_bio` + échelle de normalisation
-profit (150 €/ha) documentés dans `CALIBRATION.md`. 261 tests EditMode verts
-(runner dotnet headless, Couches 01-04).
+`DecisionPanelBinding`. Weights `w_eco` / `w_bio` + profit normalization
+scale (150 €/ha) documented in `CALIBRATION.md`. 261 EditMode tests green
+(headless dotnet runner, Layers 01-04).
 
-**Supersession** : remplace le projecteur à coefficients figés et le
-dispatch à priorité fixe de l'ADR #61 (la table de surfaçage Kind × condition
-→ popup/liste reste valable, mais les signes viennent désormais de la
-projection réelle). L'ADR #60 reste valable pour la forme rendement/coût qui
-crée l'optimum ; seul l'ancrage chiffré `I* ≈ 0,8` n'est plus consommé en
-dur — l'optimum émerge.
+**Supersession**: replaces the frozen-coefficient projector and the
+fixed-priority dispatch of ADR #61 (the surfacing table Kind × condition →
+popup/list remains valid, but the signs now come from the real
+projection). ADR #60 remains valid for the yield/cost form that creates
+the optimum; only the quantified anchor `I* ≈ 0.8` is no longer consumed
+in hard code — the optimum emerges.
 
-**Alternative écartée** :
-- Garder les coefficients figés (moins cher en calcul) — mais la projection
-  ment sur l'état (cas RCP4.5), exactement le défaut qu'un digital twin doit
-  éviter.
-- Optimisation continue de la magnitude (chercher la dose optimale du levier)
-  — sur-ingénierie : l'utilisateur choisit la magnitude au curseur, la
-  projection à magnitude par défaut suffit à classer (§17).
+**Rejected alternative**:
+- Keep the frozen coefficients (cheaper in computation) — but the
+  projection lies about the state (RCP4.5 case), exactly the flaw a
+  digital twin must avoid.
+- Continuous optimization of the magnitude (search for the lever's optimal
+  dose) — over-engineering: the user chooses the magnitude with the
+  slider, the projection at default magnitude is enough to classify (§17).
 
 ---
 
-## Refonte du backend (2026) — décisions clés
+## Backend overhaul (2026) — key decisions
 
-Décisions structurantes de la réécriture du modèle (I1-I6) et du cutover S5.
+Structuring decisions of the model rewrite (I1-I6) and the S5 cutover.
 
-### R1. Refonte en namespaces parallèles `*.Refonte`, puis cutover
+### R1. Overhaul in parallel `*.Refonte` namespaces, then cutover
 
-**Contexte** : le modèle pré-refonte (couches 01-04) avait atteint ses limites (couplages incomplets, décision à coefficients figés). Réécrire en place aurait cassé l'app pendant des semaines.
+**Context**: the pre-overhaul model (layers 01-04) had reached its limits (incomplete couplings, frozen-coefficient decision). Rewriting in place would have broken the app for weeks.
 
-**Décision** : développer le nouveau modèle sous des sous-namespaces `*.Refonte`, coexistant avec l'ancien, puis basculer (cutover S5) en supprimant tout l'ancien une fois la refonte validée en Play Mode.
+**Decision**: develop the new model under `*.Refonte` sub-namespaces, coexisting with the old one, then switch over (S5 cutover) by removing the entire old model once the overhaul is validated in Play Mode.
 
-**Raison** : l'app reste lançable à chaque étape ; le harnais headless valide les couches 01-04 en continu ; la bascule est un seul commit atomique vérifiable.
+**Rationale**: the app stays launchable at each step; the headless harness validates layers 01-04 continuously; the switchover is a single atomic verifiable commit.
 
-### R2. Recalibration de la réponse azotée du rendement (Arvalis/COMIFER/INRAE)
+### R2. Recalibration of the yield's nitrogen response (Arvalis/COMIFER/INRAE)
 
-**Contexte** : le rendement plafonnait trop bas et le plancher « zéro azote » s'effondrait sous le réalisme agronomique.
+**Context**: yield capped too low and the "zero nitrogen" floor collapsed under agronomic realism.
 
-**Décision** : `Y_pot` 7,0 → 7,6 t/ha (potentiel atteignable, Agreste blé Eure-et-Loir) ; ajout d'un terme de minéralisation de la fraction active `Mh` ≈ 40 kgN/ha/an que le 2-pools ICBM sous-représentait ; perte organique azotée 0,8 → 0,6/an.
+**Decision**: `Y_pot` 7.0 → 7.6 t/ha (achievable potential, Agreste wheat Eure-et-Loir); addition of a mineralization term for the active fraction `Mh` ≈ 40 kgN/ha/year that the ICBM 2-pools under-represented; organic nitrogen loss 0.8 → 0.6/year.
 
-**Raison** : Référence N120 → ~5,5 t/ha stable (sans transitoire), plancher N=0 ~52 % du plateau, optimum ~N120-160 conforme Arvalis, ~13 % de CV inter-annuel. Verrouillé par `NitrogenResponseCalibrationTests`. Cf `docs/refonte/08_MODELE.md`.
+**Rationale**: N120 reference → ~5.5 t/ha stable (no transient), N=0 floor ~52% of the plateau, optimum ~N120-160 consistent with Arvalis, ~13% inter-annual CV. Locked by `NitrogenResponseCalibrationTests`. Cf `docs/refonte/08_MODELE.md`.
 
-### R3. Cadrage « culture annuelle représentative d'une rotation blé/colza »
+### R3. Framing "representative annual crop of a wheat/rapeseed rotation"
 
-**Contexte** : un bocage normand ne fait pas de monoculture ; défendre la rotation est plus honnête. Mais le modèle est mécaniquement mono-culture.
+**Context**: a Norman bocage does not do monoculture; defending the rotation is more honest. But the model is mechanically mono-crop.
 
-**Décision** : la culture annuelle représente une rotation blé/colza, **calibrée sur le blé** (culture dominante, courbes azote documentées) ; le rendement actuel ~5,5 t/ha est la moyenne représentative.
+**Decision**: the annual crop represents a wheat/rapeseed rotation, **calibrated on wheat** (dominant crop, documented nitrogen curves); the current yield ~5.5 t/ha is the representative average.
 
-**Raison** : garde des paramètres citables (une culture = une source) tout en assumant la rotation dans la narration et via le levier Prairie.
+**Rationale**: keeps citable parameters (one crop = one source) while assuming the rotation in the narration and via the Grassland lever.
 
-### R4. Transitions de leviers instantanées (MVP)
+### R4. Instantaneous lever transitions (MVP)
 
-**Décision** : les leviers s'appliquent immédiatement ; l'ancien lissage 7-14 jours (`TransitioningParameter`) est retiré.
+**Decision**: the levers apply immediately; the old 7-14 day smoothing (`TransitioningParameter`) is removed.
 
-**Raison** : simplicité MVP ; l'effet reste lisible et le modèle reste déterministe.
+**Rationale**: MVP simplicity; the effect remains legible and the model remains deterministic.
 
-### R5. Strip Hero réaligné sur le jeu spec (08 §8), supersède #39
+### R5. Hero strip realigned on the spec set (08 §8), supersedes #39
 
-**Contexte** : la Couche 04 (`HeroIndicators`) calculait déjà le jeu spec (Marge, Rendement, Biodiversité, Carbone du sol, Réserve en eau %RU), mais le strip Hero du dashboard affichait encore l'ancien jeu pré-refonte (densité de haies, profondeur de nappe, biodiversité, rentabilité, apport techno) verrouillé par #39 — avec des tooltips citant des formules supprimées (biodiv « 50 % fauna + 30 % haies + 20 % nappe », rentabilité « coûts entretien… champs d'EcosystemModel »).
+**Context**: Layer 04 (`HeroIndicators`) already computed the spec set (Margin, Yield, Biodiversity, Soil carbon, Water reserve %RU), but the dashboard's Hero strip still displayed the old pre-overhaul set (hedge density, water table depth, biodiversity, profitability, tech contribution) locked by #39 — with tooltips citing removed formulas (biodiv "50% fauna + 30% hedges + 20% water table", profitability "maintenance costs… EcosystemModel fields").
 
-**Décision** : aligner le strip sur les **6 cartes spec**, ordre cause → effet : Réserve en eau (%RU) → Carbone du sol → Biodiversité → Rendement → Marge → Apport techno. Les cartes Haies et Nappe quittent le strip (leurs RC restent vivants : haies → shader haie, nappe → shader mare + onglet Climat). Ajout de `RC_CropYield` (seul KPI spec encore non publié) + 3 bindings Hero (`CropYieldLabelBinding`, `SoilCarbonLabelBinding`, `WaterReserveLabelBinding`) ; suppression des 2 bindings Hero-only devenus morts (`HedgerowDensityLabelBinding`, `WaterTableLabelBinding`). La carte Marge garde le Label `profitability-value` pour réutiliser `IntegratedProfitabilityLabelBinding` sans recâblage.
+**Decision**: align the strip on the **6 spec cards**, cause → effect order: Water reserve (%RU) → Soil carbon → Biodiversity → Yield → Margin → Tech contribution. The Hedges and Water table cards leave the strip (their RCs stay alive: hedges → hedge shader, water table → pond shader + Climate tab). Addition of `RC_CropYield` (the only spec KPI still not published) + 3 Hero bindings (`CropYieldLabelBinding`, `SoilCarbonLabelBinding`, `WaterReserveLabelBinding`); removal of the 2 Hero-only bindings that became dead (`HedgerowDensityLabelBinding`, `WaterTableLabelBinding`). The Margin card keeps the `profitability-value` Label to reuse `IntegratedProfitabilityLabelBinding` without rewiring.
 
-**Raison** : les 5 KPI d'état spec sont les variables-phares du modèle refonte (défendables en soutenance) ; l'ancien ordre #39 décrivait un modèle qui n'existe plus. La Réserve en eau ouvre la cascade (carrefour θ), d'où sa tête de strip. Supersède **DECISIONS #39** (ordre Hero pré-refonte).
+**Rationale**: the 5 spec state KPIs are the flagship variables of the overhaul model (defensible at the defense); the old #39 order described a model that no longer exists. The Water reserve opens the cascade (θ crossroads), hence its position at the head of the strip. Supersedes **DECISIONS #39** (pre-overhaul Hero order).
 
-### R6. Enrichissements V1 : 4ᵉ facteur biodiv, santé haie visible, orphelins complétés, recos persistantes
+### R6. V1 enrichments: 4th biodiv factor, visible hedge health, orphans completed, persistent recos
 
-**Contexte** : post-publication, lot de finitions sur le modèle vivant et l'UI.
+**Context**: post-publication, batch of finishing touches on the living model and the UI.
 
-**Décisions** :
-- **4ᵉ facteur biodiversité « paysage »** (`BiodiversityRule.LandscapeFactor`) : évenness de la mosaïque culture/prairie + maillage de haies, distinct de l'habitat (récompense l'hétérogénéité, pas la quantité — une monoculture, même de prairie, est peu diverse). Poids recomposés 0,35/0,20/0,30/0,15. Exposé en 4ᵉ ligne de l'onglet Biodiv via `RC_FaunaFactorLandscape`. *(Benton et al. 2003 ; Efese)*
-- **Santé de haie visible** (`HedgeFloraRule.VisualVigor`) : vigueur [0,1] **sans** le plancher de résilience qui pilote la dynamique de densité, dédiée à la teinte du shader (la haie brunit sous sécheresse / excès d'azote). Découplée exprès pour ne **pas** toucher la dynamique de densité.
-- **2 RC orphelins complétés** (§18.8) : `RC_Nitrogen` (write-only) → ligne azote de l'onglet Climat ; `RC_HedgerowHealth` (writer-less) → écrit depuis `VisualVigor`, consommé par le shader haie (correction du `Spawn Root` qui pointait sur `_Scene_Visual` au lieu de `Composition`).
-- **Recos persistantes** : une reco reste en attente jusqu'à traitement (Valider / Ignorer) ou satisfaction du levier, au lieu d'expirer 45 j après son événement — une reco passive devenait injouable à vitesse rapide. Inbox bornée à 1 par type d'événement.
+**Decisions**:
+- **4th biodiversity factor "landscape"** (`BiodiversityRule.LandscapeFactor`): evenness of the crop/grassland mosaic + hedge mesh, distinct from habitat (rewards heterogeneity, not quantity — a monoculture, even of grassland, is not very diverse). Weights recomposed 0.35/0.20/0.30/0.15. Exposed as the 4th line of the Biodiv tab via `RC_FaunaFactorLandscape`. *(Benton et al. 2003; Efese)*
+- **Visible hedge health** (`HedgeFloraRule.VisualVigor`): vigor [0,1] **without** the resilience floor that drives the density dynamics, dedicated to the shader tint (the hedge browns under drought / nitrogen excess). Deliberately decoupled so as **not** to touch the density dynamics.
+- **2 orphan RCs completed** (§18.8): `RC_Nitrogen` (write-only) → nitrogen line of the Climate tab; `RC_HedgerowHealth` (writer-less) → written from `VisualVigor`, consumed by the hedge shader (fix of the `Spawn Root` that pointed at `_Scene_Visual` instead of `Composition`).
+- **Persistent recos**: a reco stays pending until processed (Accept / Ignore) or the lever is satisfied, instead of expiring 45 d after its event — a passive reco became unplayable at fast speed. Inbox bounded to 1 per event type.
 
-**Raison** : compléter plutôt que supprimer (§18.8), densifier la biodiversité (défendabilité jury), et rendre les chaînes capteur → visuel / onglet lisibles de bout en bout.
+**Rationale**: complete rather than remove (§18.8), densify the biodiversity (jury defensibility), and make the sensor → visual / tab chains legible end-to-end.
 
-### R7. Report « apport techno négatif en RCP4.5 » : transitoire assumé + 2 correctifs
+### R7. "Negative tech contribution in RCP4.5" report: assumed transient + 2 fixes
 
-**Contexte** : en RCP4.5, valider les recos faisait passer l'apport techno (Hero
-KPI) sous zéro. Investigation headless (sonde jetable, 8 seeds × 3 mois de
-départ, climatologie saisonnière de Tourouvre) : **ce n'est pas un bug de calcul
-des recos**. Chaque reco surfacée a une Δmarge espérée projetée strictement
-positive (garde `Utility > 0` ⇒ `E[Δmarge] > 0`), et les 24 cas finissent
-fortement positifs (+970 à +2060 €/ha). Le négatif est un **transitoire d'un KPI
-cumulatif** (`capital_réel − capital_fantôme − investissements`) : valider une
-bonne adaptation (couper l'azote, passer en prairie) fait plonger le cumul le
-temps que la prairie fraîchement implantée dépasse la culture encore debout en
-début d'année de sécheresse, puis il rattrape largement le fantôme gelé qui
-continue de cramer ses intrants.
+**Context**: in RCP4.5, accepting the recos pushed the tech contribution (Hero
+KPI) below zero. Headless investigation (throwaway probe, 8 seeds × 3 starting
+months, seasonal climatology of Tourouvre): **this is not a reco computation
+bug**. Each surfaced reco has a strictly positive projected expected Δmargin
+(guard `Utility > 0` ⇒ `E[Δmargin] > 0`), and the 24 cases end strongly positive
+(+970 to +2060 €/ha). The negative is a **transient of a cumulative KPI**
+(`real_capital − ghost_capital − investments`): accepting a good adaptation
+(cutting the nitrogen, switching to grassland) makes the cumulative dive for the
+time it takes the freshly planted grassland to overtake the still-standing crop
+at the start of the drought year, then it largely catches up with the frozen
+ghost which keeps burning its inputs.
 
-**Décisions** :
-- **Transitoire laissé tel quel** (choix utilisateur) : c'est le coût réel d'une
-  transition, et le montrer est cohérent avec la thèse du modèle honnête (§1).
-  Pas de lissage du KPI, pas de note UI.
-- **MAEC gatée sur l'IFT effectif** (`EconomyRule`, Couche 01) : elle se
-  débloquait sur le slider phyto brut, donc une ferme 100 % prairie (aucune
-  culture à traiter, `part_cultivée = 0`) perdait les 90 €/ha si le slider
-  restait à sa valeur de référence. Désormais gatée sur `part_cultivée ×
-  intensité` : une prairie permanente ne pulvérise rien et reste éligible.
-  Inchangé pour une ferme tout-culture (g=0). Effet de bord bienvenu : raccourcit
-  le transitoire ci-dessus.
-- **Projection à 9 réalisations météo** (`ModelOutcomeProjector`, Couche 03,
-  était 3) : le min sur 3 tirages était un estimateur trop bruité du pire cas →
-  recos parfois mal classées. 9 stabilise l'espérance et le downside, au prix de
-  ~3× le temps de projection par reco (ne tourne qu'une fois par événement).
+**Decisions**:
+- **Transient left as is** (user choice): it is the real cost of a transition,
+  and showing it is consistent with the honest model thesis (§1). No KPI
+  smoothing, no UI note.
+- **MAEC gated on the effective IFT** (`EconomyRule`, Layer 01): it unlocked on
+  the raw phyto slider, so a 100% grassland farm (no crop to treat,
+  `cultivated_share = 0`) lost the 90 €/ha if the slider stayed at its reference
+  value. Now gated on `cultivated_share × intensity`: a permanent grassland
+  sprays nothing and stays eligible. Unchanged for an all-crop farm (g=0).
+  Welcome side effect: shortens the transient above.
+- **Projection with 9 weather realizations** (`ModelOutcomeProjector`, Layer 03,
+  was 3): the min over 3 draws was too noisy an estimator of the worst case →
+  recos sometimes misclassified. 9 stabilizes the expectation and the downside,
+  at the cost of ~3× the projection time per reco (only runs once per event).
 
-**Raison** : ne pas maquiller un comportement honnête en bug, mais corriger au
-passage une inéligibilité MAEC injustifiée et fiabiliser la bande d'incertitude
-des recos. Tests headless 129 → 132 (2 MAEC + 1 projection), tous verts.
+**Rationale**: do not disguise honest behavior as a bug, but fix in passing an
+unjustified MAEC ineligibility and make the recos' uncertainty band more
+reliable. Headless tests 129 → 132 (2 MAEC + 1 projection), all green.
